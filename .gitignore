@@ -4,8 +4,6 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-!**/src/main/frontend/node_modules/
-
 ### STS ###
 .apt_generated
 .classpath
@@ -36,3 +34,5 @@ out/
 
 ### VS Code ###
 .vscode/
+
+src/main/frontend/node_modules
