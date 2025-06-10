@@ -1,0 +1,108 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <div th:fragment="id-card-auto-read">
+    <div class="mt-3 flex gap-x-4">
+      <h1 class="text-2xl font-semibold dark:text-white">Auto Read</h1>
+      <button
+        type="button"
+        class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+        hx-get="/fphps/barcode/run-auto-read"
+      >
+        RUN
+      </button>
+    </div>
+    <div id="header" class="mt-2 mb-2 px-4 sm:px-0">
+      <h3 class="text-4xl font-semibold text-gray-900">Barcode Information</h3>
+      <p class="mt-1 max-w-2xl text-lg text-gray-500">
+        Data details after reading the Barcode
+      </p>
+    </div>
+    <div class="grid grid-cols-3 grid-rows-2 gap-4 justfy-items-stretch">
+      <div class="col-span-2">
+        <div class="flex space-x-4 p-2">
+          <div class="flex flex-row gap-2">
+            <div class="flex flex-col items-center space-y-1">
+              <img
+                class="w-md h-md aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+                id="wh-image"
+                th:src="@{/image/image-batch.jpg}"
+                alt="barcode-image"
+              />
+              <h3 class="text-md font-semibold">Barcode</h3>
+            </div>
+          </div>
+          <div class="p-2">
+            <dl class="flex flex-col gap-2">
+              <div class="flex flex-col px-2 py-2">
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  BARCODE TYPE
+                </dt>
+                <dd
+                  class="mt-1 ms-3 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                  id="barcode-type"
+                >
+                  QR CODE
+                </dd>
+              </div>
+              <div class="flex flex-col px-2 py-2">
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  DATA
+                </dt>
+                <dd
+                  class="mt-1 ms-3 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                  id="barcode-data"
+                >
+                  DATA
+                </dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="col-span-1 row-span-2">
+        <fieldset class="fieldset">
+          <legend class="fieldset-legend">Log Messages</legend>
+          <textarea
+            id="notifications"
+            class="textarea textarea-sm w-md"
+            rows="15"
+            disabled
+          ></textarea>
+        </fieldset>
+      </div>
+    </div>
+  </div>
+  <script>
+    const socket = new WebSocket("ws://localhost:8080/fastpass");
+    socket.onmessage = function (event) {
+      const message = JSON.parse(event.data);
+      console.log("message", message);
+      switch (message.eventCodeString) {       
+        case "FPHPS_EVENTS.FPHPS_EV_WH_IMAGE_CAPTURED":
+          var el = document.querySelector("#wh-image");
+          el.setAttribute(
+            "src",
+            "data:image/png;base64, " + message.image.imageData
+          );
+          // console.log("GET WH-IMAGE");
+          break;
+        case "FPHPS_EVENTS.FPHPS_EV_PAGE_CAPTURED":
+          console.log("result: ", message);
+          var barcodeType = document.querySelector("#barcode-type");
+          barcodeType.innerHTML = message.barCode.typeString;
+          var barcodeData = document.querySelector("#barcode-data");
+          barcodeData.innerHTML = message.barCode.data;
+          break;
+        default:
+          break;
+      }
+      // add notification messages
+      // const div = document.createElement("div");
+      // div.className =
+      //   "p-2 bg-gray-100 dark:bg-gray-800 rounded shadow text-sm text-gray-800 dark:text-white";
+      // div.textContent = message.eventCodeString + " :: " + message.lParam;
+      // document.getElementById("notifications").appendChild(div);
+      var messgetText = message.eventCodeString + " :: " + message.lParam;
+      document.getElementById("notifications").append(messgetText);
+    };
+  </script>
+</html>

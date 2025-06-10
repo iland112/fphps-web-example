@@ -1,0 +1,9 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <div th:fragment="image">
+    <img
+      class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+      th:src="@{'data:image/png;base64, '+${image}}"
+      alt="mrz-photo"
+    />
+  </div>
+</html>

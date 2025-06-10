@@ -1,0 +1,114 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <div th:fragment="mrz-info">
+    <div id="mrz-info" class="flex space-x-4 border-t border-gray-100 p-2">
+      <div id="photo" class="flex flex-row gap-2">
+        <div class="flex flex-col items-center space-y-1">
+          <img
+            class="w-36 h-44 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+            id="viz-photo"
+            th:src="@{'data:image/ png;base64, '+${response.photoImage}}"
+            alt="document-photp"
+          />
+          <h3 class="text-md font-semibold">Document</h3>
+        </div>
+        <div class="flex flex-col items-center space-y-1">
+          <img
+            class="w-36 h-44 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+            id="epass-photo"
+            th:src="@{'data:image/png;base64, '+${response.ePassPhotoImage}}"
+            alt="chip-photo"
+          />
+          <h3 class="text-md font-semibold">Chip</h3>
+        </div>
+      </div>
+      <div id="mrz-info" class="p-2" th:object="${response.mrzInfoDto}">
+        <dl class="grid grid-cols-3">
+          <div class="flex flex-col px-2 py-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              DOCUMENT TYPE
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{docType}"
+            >
+              P
+            </dd>
+          </div>
+          <div class="flex flex-col px-2 py-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              ISSUING STATE
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{issuingState}"
+            >
+              UTO
+            </dd>
+          </div>
+          <div class="flex flex-col px-2 py-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              DOCUMENT NUMBER
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{passportNumber}"
+            >
+              BC765432
+            </dd>
+          </div>
+          <div class="flex flex-col px-2 py-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">NAME</dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{name}"
+            >
+              JOHN DOE
+            </dd>
+          </div>
+          <div class="flex flex-col px-2 py-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              NATIONALITY
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{nationality}"
+            >
+              UTOPIA
+            </dd>
+          </div>
+          <div class="flex flex-col px-2 py-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              DATE OF BIRTH
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{birth}"
+            >
+              07/02/1980
+            </dd>
+          </div>
+          <div class="flex flex-col px-2 py-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">SEX</dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{sex}"
+            >
+              07/02/1980
+            </dd>
+          </div>
+          <div class="flex flex-col px-2 py-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              DATE OF EXPIRY
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{expiryDate}"
+            >
+              07/02/2023
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</html>

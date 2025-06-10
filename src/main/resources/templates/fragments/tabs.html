@@ -1,0 +1,106 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <div th:fragment="tabs">
+    <div class="tabs-border tabs">
+      <input
+        type="radio"
+        name="my_tabs_2"
+        class="tab"
+        aria-label="MRZ Image"
+        checked="checked"
+      />
+      <div class="tab-content border-base-300 bg-base-100 p-10">
+        <div id="mrz-image-ocr" class="mt-1 grid grid-cols-2 gap-4 p-2">
+          <div id="mrz-image" class="flex flex-col items-center gap-2">
+            <img
+              class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+              id="mrz-photo"
+              th:src="@{'data:image/png;base64, '+${response.mrzImage}}"
+              alt="mrz-photo"
+            />
+            <dt class="font-mono text-sm/6 font-semibold text-gray-900">
+              MRZ Image
+            </dt>
+          </div>
+          <div
+            id="mrz-ocr"
+            class="flex flex-col gap-2"
+            th:object="${response.mrzDto}"
+          >
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              Line 1
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{line1}"
+            >
+              LINE 1
+            </dd>
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              Line 2
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{line2}"
+            >
+              LINE 2
+            </dd>
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              Line 3
+            </dt>
+            <dd
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+              th:text="*{line3}"
+            >
+              LINE 3
+            </dd>
+          </div>
+        </div>
+      </div>
+
+      <input type="radio" name="my_tabs_2" class="tab" aria-label="IR" />
+      <div class="tab-content border-base-300 bg-base-100 p-10">
+        <div id="ir-image" class="flex flex-col items-center gap-2">
+          <img
+            class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+            id="ir-image"
+            th:src="@{'data:image/png;base64, '+${response.irFullImage}}"
+            alt="ir-image"
+          />
+          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
+            MRZ Image
+          </dt>
+        </div>
+      </div>
+
+      <input type="radio" name="my_tabs_2" class="tab" aria-label="UV" />
+      <div class="tab-content border-base-300 bg-base-100 p-10">
+        <div id="ir-image" class="flex flex-col items-center gap-2">
+          <img
+            class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+            id="uv-image"
+            th:src="@{'data:image/png;base64, '+${response.uvFullImage}}"
+            alt="uv-image"
+          />
+          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
+            UV Image
+          </dt>
+        </div>
+      </div>
+
+      <input type="radio" name="my_tabs_2" class="tab" aria-label="WH" />
+      <div class="tab-content border-base-300 bg-base-100 p-10">
+        <div id="wh-image" class="flex flex-col items-center gap-2">
+          <img
+            class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+            id="wh-image"
+            th:src="@{'data:image/png;base64, '+${response.whFullImage}}"
+            alt="wh-image"
+          />
+          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
+            WH Image
+          </dt>
+        </div>
+      </div>
+    </div>
+  </div>
+</html>

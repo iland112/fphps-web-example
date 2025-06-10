@@ -1,0 +1,110 @@
+<html xmlns:th="http://www.thymeleaf.org">
+    <div th:fragment="setting-form (properties)">
+        <form action="" method="post">
+            <div>
+                <div id="device-control" class="">
+                    <div>
+                        <p>
+                            <input type="checkbox" name="check-remove" id="">
+                            <label for="">Check Remove</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" name="enable-rf" id="">
+                            <label for="">Enable RF</label>
+                        </p>
+                    </div>
+                </div>
+                <div id="id-card">
+                    <p>
+                        <input type="checkbox" name="enable-idcard" id="">
+                        <label for="">Enable ID Card</label>
+                    </p>
+                </div>
+                <div id="barcode">
+                    <p>
+                        <input type="checkbox" name="enable-barcode" id="">
+                        <label for="">Enable Barcode</label>
+                    </p>
+                </div>
+                <div id="e-passport-properties">
+                    <p>
+                        <input type="checkbox" name="enable-dg" id="">
+                        <label for="">Enable DG</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="enable-auth" id="">
+                        <label for="">Enable Auth</label>
+                    </p>
+                    <p>
+                        <label for="">RF Read Size:</label>
+                        <input type="number" name="rf-read-size" id="">
+                    </p>
+                    <p>
+                        <input type="checkbox" name="rf-use-sfi" id="">
+                        <label for="">RF Use SFI</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="security-check" id="">
+                        <label for="">Security Check</label>
+                    </p>
+                </div>
+                <div id="image-control">
+                    <div id="batch-mode">
+                        <p>
+                            <input type="checkbox" name="batch-mode-ir" id="">
+                            <label for="">Batch Mode-IR</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" name="batch-mode-uv" id="">
+                            <label for="">Batch Mode-UV</label>
+                        </p>
+                        <p>
+                            <input type="checkbox" name="batch-mode-wh" id="">
+                            <label for="">Batch Mode-WH</label>
+                        </p>
+                    </div>
+                    <p>
+                        <input type="checkbox" name="anti-glair" id="">
+                        <label for="">Anti-Glare</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="anti-glair-ir" id="">
+                        <label for="">Anti-Glare IR</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="anti-glair-ir-half" id="">
+                        <label for="">Anti-Glare IRHALF</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="enhance-ir" id="">
+                        <label for="">Enhance IR</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="enhance-uv" id="">
+                        <label for="">Enhance UV</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="enhance-wh" id="">
+                        <label for="">Enhance WH</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="strength-ir" id="">
+                        <label for="">Strength IR</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="strength-uv" id="">
+                        <label for="">Strength UV</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="strength-wh" id="">
+                        <label for="">Strength WH</label>
+                    </p>
+                    <p>
+                        <input type="checkbox" name="crop" id="">
+                        <label for="">Crop</label>
+                    </p>
+                </div>
+            </div>
+        </form>
+    </div>
+</html>

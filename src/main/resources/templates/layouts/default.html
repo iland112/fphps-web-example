@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    lang="en"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastPass SDK</title>
+    <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+    <!-- Tailwindcss-->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+    <!-- <script src="https://unpkg.com/htmx-ext-ws@2.0.2" integrity="sha384-vuKxTKv5TX/b3lLzDKP2U363sOAoRo5wSvzzc3LJsbaQRSBSS+3rKKHcOx5J8doU" crossorigin="anonymous"></script> -->
+
+    <!-- placeholder for script of each page -->
+    <!-- <th:block layout:fragment="script"></th:block> -->
+    <!-- placeholder for css of each page -->
+    <!-- <th:block layout:fragment="css"></th:block> -->
+</head>
+<body class="bg-stone-200">
+    <div th:replace="~{fragments/header::header}"></div>
+    <div layout:fragment="content" class="content"></div>
+    <div th:replace="~{fragments/footer::footer}"></div>
+    <script th:src="@{/js/preline.js}"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            window.HSStaticMethods.autoInit();
+            console.log("....");
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http//www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layouts/default}"
+>
+  <div layout:fragment="content">
+    <!-- ========== MAIN CONTENT ========== -->
+    <!-- Breadcrumb -->
+    <div th:replace="~{fragments/breadcrumb::breadcrumb}"></div>
+    <!-- End Breadcrumb -->
+
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar::sidebar}"></div>
+    <!-- End Sidebar -->
+
+    <!-- Content -->
+    <div class="w-full pt-2 px-2 sm:px-6 md:px-8 lg:ps-72">
+      <header id="brand-header">
+        <div
+          class="h-24 flex justify-center items-center space-x-0.5 bg-blue-900"
+        >
+          <img
+            class="size-28 rounded-full"
+            th:src="@{/image/fastpass-p1.png}"
+            alt="FastPass-P1"
+          />
+          <h1 class="text-3xl text-white font-mono font-extrabold">
+            FastPass JAVA SDK Demo
+          </h1>
+        </div>
+      </header>
+      <section>
+        <div id="response">
+          <div class="flex flex-col justify-start space-y-0.5 h-max">
+            <h1
+              class="px-1.5 text-2xl font-bold text-gray-900"
+              th:text="${device.deviceSerial}"
+            >
+              Device Serial
+            </h1>
+            <p class="px-1.5 text-lg font-medium text-green-900">
+              was connected on your desktop computer!!
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <!-- End Content -->
+    <!-- ========== END MAIN CONTENT ========== -->
+  </div>
+</html>

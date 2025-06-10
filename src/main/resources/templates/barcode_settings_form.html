@@ -1,0 +1,235 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <div class="m-2" th:fragment="barcode-settings">
+    <h1 class="mb-2 bg-gray-100 p-4 font-mono text-2xl font-semibold">
+      Device Settings
+    </h1>
+    <form
+      id="sform"
+      class="flex flex-col gap-1"
+      action="#"
+      th:action="@{/fphps/barcode/settings}"
+      th:method="post"
+    >
+      <!-- <div th:text="${settingsForm.toString()}">ddd</div> -->
+      <!-- Device Option -->
+      <div
+        class="flex flex-col rounded-xl border border-gray-200 bg-white shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-neutral-700/70"
+      >
+        <div class="p-4 md:p-5">
+          <h3 class="mb-3 text-lg font-bold text-gray-800 dark:text-white">
+            Device Options
+          </h3>
+          <div class="flex flex-col gap-2 p-4 text-sm">
+            <fieldset
+              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
+            >
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  th:field="${settingsForm.checkRemove}"
+                  id="hs-checkbox-check-remove"
+                />
+                <label
+                  for="hs-checkbox-check-remove"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Check Document Remove</label
+                >
+              </div>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-barcode"
+                  th:field="${settingsForm.enableBarcode}"
+                />
+                <label
+                  for="hs-checkbox-barcode"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Enable Barcode</label
+                >
+              </div>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+      <!-- Image Control Card -->
+      <div
+        class="flex flex-col rounded-xl border border-gray-200 bg-white shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-neutral-700/70"
+      >
+        <div class="p-4 md:p-5">
+          <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+            Image Control Properties
+          </h3>
+          <div class="flex flex-col gap-5 text-sm">
+            <fieldset
+              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
+            >
+              <legend>Batch Mode</legend>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-batchmode-ir"
+                  th:field="${settingsForm.ir}"
+                />
+                <label
+                  for="hs-checkbox-batchmode-ir"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >IR</label
+                >
+              </div>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-batchmode-uv"
+                  th:field="${settingsForm.uv}"
+                />
+                <label
+                  for="hs-checkbox-batchmode-uv"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >UV</label
+                >
+              </div>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-batchmode-wh"
+                  th:field="${settingsForm.wh}"
+                />
+                <label
+                  for="hs-checkbox-batchmode-wh"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >WH</label
+                >
+              </div>
+            </fieldset>
+            <fieldset
+              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
+            >
+              <legend>Anti-Glair</legend>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-antiglare"
+                  th:field="${settingsForm.antiGlare}"
+                />
+                <label
+                  for="hs-checkbox-antiglare"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Anti-Glair</label
+                >
+              </div>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-antiglare-ir"
+                  th:field="${settingsForm.antiGlareIR}"
+                />
+                <label
+                  for="hs-checkbox-antiglare-ir"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Anti-Glare IR</label
+                >
+              </div>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-antiglare-irhalf"
+                  th:field="${settingsForm.antiGlareIRHalf}"
+                />
+                <label
+                  for="hs-checkbox-antiglare-irhalf"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Anti-Glare IRHALF</label
+                >
+              </div>
+            </fieldset>
+            <fieldset
+              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
+            >
+              <legend>Enhance Image</legend>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-enhance-ir"
+                  th:field="${settingsForm.enableEnhanceIR}"
+                />
+                <label
+                  for="hs-checkbox-enhance-ir"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Enhance IR</label
+                >
+              </div>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-enhance-uv"
+                  th:field="${settingsForm.enableEnhanceUV}"
+                />
+                <label
+                  for="hs-checkbox-enhance-uv"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Enhance UV</label
+                >
+              </div>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-enhance-wh"
+                  th:field="${settingsForm.enableEnhanceWH}"
+                />
+                <label
+                  for="hs-checkbox-enhance-wh"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Enhance WH</label
+                >
+              </div>
+            </fieldset>
+            <fieldset
+              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
+            >
+              <legend>Etc.</legend>
+              <div class="flex">
+                <input
+                  type="checkbox"
+                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                  id="hs-checkbox-crop"
+                  th:field="${settingsForm.crop}"
+                />
+                <label
+                  for="hs-checkbox-crop"
+                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                  >Crop</label
+                >
+              </div>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+      <!-- Submit button -->
+      <div>
+        <button
+          type="submit"
+          class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+        >
+          Update
+        </button>
+      </div>
+    </form>
+    <script>
+      let formData = new FormData(document.getElementById("sform"));
+      formData.forEach(function (value, key) {
+        console.log(key, value);
+      });
+    </script>
+  </div>
+</html>
