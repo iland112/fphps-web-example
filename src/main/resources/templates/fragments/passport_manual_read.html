@@ -12,12 +12,7 @@
       class="mt-2 grid grid-cols-2 items-baseline border-t border-gray-100 px-4 sm:px-0"
     >
       <div class="flex flex-row space-x-3 p-3">
-        <img
-          class="max-w-2xl place-self-center"
-          th:src="@{${response.mrzInfo.countryFlagUrl}}"
-          width="60"
-          alt="Country Flag"
-        />
+        <div th:replace="~{fragments/country_flag :: countryFlag (${response.mrzInfo.countryFlagUrl})}"></div>
         <p
           class="max-w-2xl justify-self-stretch text-2xl font-bold text-gray-500"
         >
