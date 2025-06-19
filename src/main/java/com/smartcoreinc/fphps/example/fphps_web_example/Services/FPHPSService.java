@@ -33,9 +33,14 @@ public final class FPHPSService {
     public FPHPSService(FastPassWebSocketHandler fastPassWebSocketHandler) {
         this.fastPassWebSocketHandler = fastPassWebSocketHandler;
         this.deviceManager = FPHPSDeviceManager.getInstance();
+        try {
+            initDevices();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
     }
 
-    public void initDevices() {
+    private void initDevices() {
         this.deviceManager.enumerateDevices();
         this.device = this.deviceManager.getDevice();
     }

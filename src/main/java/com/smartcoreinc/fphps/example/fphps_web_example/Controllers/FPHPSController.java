@@ -32,8 +32,6 @@ public class FPHPSController {
 
     @GetMapping("")  
     public String index(Model model) {
-        fphpsService.initDevices();
-        
         DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
         model.addAttribute("device", deviceInfo);
         return "index";
