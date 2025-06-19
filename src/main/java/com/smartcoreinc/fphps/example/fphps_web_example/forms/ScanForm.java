@@ -1,4 +1,4 @@
-package com.smartcoreinc.fphps.example.fphps_web_example.Controllers;
+package com.smartcoreinc.fphps.example.fphps_web_example.forms;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

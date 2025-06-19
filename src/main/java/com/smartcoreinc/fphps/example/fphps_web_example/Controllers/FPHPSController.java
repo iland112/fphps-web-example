@@ -5,8 +5,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.smartcoreinc.fphps.dto.DeviceInfo;
 import com.smartcoreinc.fphps.dto.DocumentReadResponse;
 import com.smartcoreinc.fphps.dto.FPHPSImage;
-import com.smartcoreinc.fphps.dto.properties.DeviceProperties;
+import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FPHPSService;
+import com.smartcoreinc.fphps.example.fphps_web_example.forms.ScanForm;
+import com.smartcoreinc.fphps.example.fphps_web_example.forms.SettingsForm;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,7 +59,7 @@ public class FPHPSController {
 
     @GetMapping("/device-setting")
     public String getDeviceSetting(Model model) {
-        DeviceProperties deviceProperties = fphpsService.getCurrentDeviceProperties();
+        FPHPSDeviceProperties deviceProperties = fphpsService.getCurrentDeviceProperties();
         SettingsForm settingsForm = SettingsForm.from(deviceProperties);
         model.addAttribute("settingsForm", settingsForm);
         return "settings_form";
@@ -66,7 +68,7 @@ public class FPHPSController {
     @PostMapping("/device-setting")
     public String setDeviceSetting(@ModelAttribute SettingsForm settingsForm) {
         
-        DeviceProperties deviceProperties = SettingsForm.to(settingsForm);
+        FPHPSDeviceProperties deviceProperties = SettingsForm.to(settingsForm);
         fphpsService.setDeviceProperties(deviceProperties);
 
         return "redirect:/fphps";

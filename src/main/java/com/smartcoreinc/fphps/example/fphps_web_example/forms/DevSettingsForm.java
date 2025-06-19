@@ -1,11 +1,11 @@
-package com.smartcoreinc.fphps.example.fphps_web_example.Controllers;
+package com.smartcoreinc.fphps.example.fphps_web_example.forms;
 
 import java.io.Serializable;
 
 import com.smartcoreinc.fphps.dto.properties.BatchModeProperties;
-import com.smartcoreinc.fphps.dto.properties.DevDeviceProperties;
 import com.smartcoreinc.fphps.dto.properties.EPassportAuthProperties;
 import com.smartcoreinc.fphps.dto.properties.EPassportDGProperties;
+import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -105,7 +105,7 @@ public class DevSettingsForm implements Serializable {
 	// private int threashold;
 	// private int imageZoomRatio;
 
-    public static DevSettingsForm from(DevDeviceProperties deviceProperties) {
+    public static DevSettingsForm from(FPHPSDeviceProperties deviceProperties) {
         return DevSettingsForm.builder()
             .readTimeout(deviceProperties.getReadTimeout())
             .detectDelayTime(deviceProperties.getDetectDelayTime())
@@ -184,8 +184,8 @@ public class DevSettingsForm implements Serializable {
             .build();
     }
 
-    public static DevDeviceProperties to(DevSettingsForm settingsForm) {
-        DevDeviceProperties deviceProperties = new DevDeviceProperties();
+    public static FPHPSDeviceProperties to(DevSettingsForm settingsForm) {
+        FPHPSDeviceProperties deviceProperties = new FPHPSDeviceProperties();
         deviceProperties.setReadMethod(settingsForm.getReadMethod());
         deviceProperties.setCheckRemove(settingsForm.isCheckRemove() ? 1 : 0);
         deviceProperties.setEnableRF(settingsForm.isEnableRF() ? 1 : 0);
