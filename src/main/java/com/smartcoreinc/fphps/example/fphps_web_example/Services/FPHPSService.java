@@ -65,7 +65,7 @@ public final class FPHPSService {
     public DocumentReadResponse read(String docType, boolean isAuto) {
         DocumentReadResponse response = null;
         try {
-            if (device.isDeviceOpened()) {
+            if (!device.isDeviceOpened()) {
                 device.openDevice();
             }
             int readType = 1;   // Default Passport
