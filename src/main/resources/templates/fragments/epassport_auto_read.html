@@ -1,230 +1,537 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <div th:fragment="e-passport-auto-read">
-  <div class="mt-3 flex gap-x-4">
-  <h1 class="text-2xl font-semibold dark:text-white">Auto Read</h1>
-  <button type="button" class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50" hx-get="/fphps/passport/run-auto-read">RUN</button>
-</div>
-<div id="header" class="px-4 sm:px-0">
-  <h3 class="text-4xl font-semibold text-gray-900">Passport Information</h3>
-  <p class="mt-1 max-w-2xl text-lg text-gray-500">Data details after reading the passport/e-passport</p>
-</div>
-<div id="title" class="mt-2 grid grid-cols-2 items-baseline px-4 sm:px-0">
-  <div class="flex flex-row space-x-3 p-3">
-    <img id="country-flag" class="max-w-2xl place-self-center" width="60" alt="Country Flag" />
-    <p class="max-w-2xl justify-self-stretch text-2xl font-bold text-gray-500">
-      <span id="span-passport-number">BC765432</span>
-      / <span id="span-name">JOHN DOE</span>
-    </p>
-  </div>
-  <svg class="max-w-2xl justify-self-end fill-amber-600" xmlns="http://www.w3.org/2000/svg" width="80" height="20" viewBox="0 0 210 297">
-    <path d="M-111.5625 24.75V136.125H23.539306A82.5 82.5 0 0 1 105 66 82.5 82.5 0 0 1 186.5 136.125H321.5625V24.75ZM105 90.75A57.75 57.75 0 0 0 47.25 148.5 57.75 57.75 0 0 0 105 206.25 57.75 57.75 0 0 0 162.75 148.5 57.75 57.75 0 0 0 105 90.75Zm-216.5625 70.125V272.25h433.125V160.875H186.46068A82.5 82.5 0 0 1 105 231 82.5 82.5 0 0 1 23.5 160.875Z" stroke-width="81.90428162" />
-  </svg>
-</div>
-<!-- name of each tab group should be unique -->
-<div class="tabs-border tabs">
-  <input type="radio" name="my_tabs_2" class="tab" aria-label="Document Information" checked="checked" />
-  <div class="tab-content border-base-300 bg-base-100 p-10">
-    <div class="grid grid-cols-3 grid-rows-2 gap-4 justfy-items-stretch">
-      <div class="col-span-2">
-        <div id="mrz-info" class="flex space-x-4 border-t border-gray-100 p-2">
+    <!-- auto read run command button -->
+    <div class="mt-3 flex gap-x-4">
+      <h1 class="text-2xl font-semibold dark:text-white">Auto Read</h1>
+      <button
+        type="button"
+        class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+        hx-get="/fphps/passport/run-auto-read"
+      >
+        RUN
+      </button>
+    </div>
+    <!-- title section -->
+    <div id="header" class="px-4 sm:px-0 lg:flex lg:items-baseline lg:gap-2">
+      <h3 class="text-2xl font-semibold text-gray-900">Passport Information</h3>
+      <p class="mt-1 max-w-2xl text-lg text-gray-500">
+        Data details after reading the passport/e-passport
+      </p>
+    </div>
+    <div id="title" class="mt-2 grid grid-cols-2 items-baseline px-4 sm:px-0">
+      <div class="flex flex-row space-x-3 p-3">
+        <img
+          id="country-flag"
+          class="max-w-2xl place-self-center"
+          width="60"
+          th:src="@{/image/flags/kr.svg}"
+          alt="Country Flag"
+        />
+        <p
+          class="max-w-2xl justify-self-stretch text-2xl font-bold text-gray-500"
+        >
+          <span id="span-passport-number">BC765432</span>
+          / <span id="span-name">JOHN DOE</span>
+        </p>
+      </div>
+      <svg
+        class="max-w-2xl justify-self-end fill-amber-600"
+        xmlns="http://www.w3.org/2000/svg"
+        width="80"
+        height="20"
+        viewBox="0 0 210 297"
+      >
+        <path
+          d="M-111.5625 24.75V136.125H23.539306A82.5 82.5 0 0 1 105 66 82.5 82.5 0 0 1 186.5 136.125H321.5625V24.75ZM105 90.75A57.75 57.75 0 0 0 47.25 148.5 57.75 57.75 0 0 0 105 206.25 57.75 57.75 0 0 0 162.75 148.5 57.75 57.75 0 0 0 105 90.75Zm-216.5625 70.125V272.25h433.125V160.875H186.46068A82.5 82.5 0 0 1 105 231 82.5 82.5 0 0 1 23.5 160.875Z"
+          stroke-width="81.90428162"
+        />
+      </svg>
+    </div>
+    <!-- log message section -->
+    <div class="p-2">
+      <fieldset class="fieldset">
+        <legend class="fieldset-legend">Log Messages</legend>
+        <textarea
+          id="notifications"
+          class="textarea textarea-sm w-full"
+          rows="5"
+          disabled
+        ></textarea>
+      </fieldset>
+    </div>
+    <div class="flex flex-wrap border-t border-gray-100">
+      <div class="flex flex-col">
+        <div
+          id="mrz-info"
+          class="flex space-x-4 border-t border-gray-100 p-2"
+        >
           <div id="photo" class="flex flex-row gap-2">
             <div class="flex flex-col items-center space-y-1">
-              <img class="aspect-auto h-44 w-36 flex-none rounded-sm bg-gray-50 object-cover" id="viz-photo" th:src="@{/image/image-photo.jpg}" alt="document-photo" />
+              <img
+                class="w-32 h-36 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+                id="viz-photo"
+                th:src="@{/image/image-photo.jpg}"
+                alt="document-photo"
+              />
               <h3 class="text-md font-semibold">Document</h3>
             </div>
             <div class="flex flex-col items-center space-y-1">
-              <img class="aspect-auto h-44 w-36 flex-none rounded-sm bg-gray-50 object-cover" id="epass-photo" th:src="@{/image/image-photo.jpg}" alt="chip-photo" />
+              <img
+                class="w-32 h-36 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+                id="epass-photo"
+                th:src="@{/image/image-photo.jpg}"
+                alt="chip-photo"
+              />
               <h3 class="text-md font-semibold">Chip</h3>
             </div>
           </div>
           <div id="mrz-info" class="p-2">
             <dl class="grid grid-cols-3">
               <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">DOCUMENT TYPE</dt>
-                <dd id="doc-type" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">P</dd>
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  DOCUMENT TYPE
+                </dt>
+                <dd
+                  id="doc-type"
+                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                >
+                  P
+                </dd>
               </div>
               <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">ISSUING STATE</dt>
-                <dd id="issuing-state" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">UTO</dd>
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  ISSUING STATE
+                </dt>
+                <dd
+                  id="issuing-state"
+                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                >
+                  UTO
+                </dd>
               </div>
               <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">DOCUMENT NUMBER</dt>
-                <dd id="passport-number" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">BC765432</dd>
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  DOCUMENT NUMBER
+                </dt>
+                <dd
+                  id="passport-number"
+                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                >
+                  BC765432
+                </dd>
               </div>
               <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">NAME</dt>
-                <dd id="name" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">JOHN DOE</dd>
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  NAME
+                </dt>
+                <dd
+                  id="name"
+                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                >
+                  JOHN DOE
+                </dd>
               </div>
               <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">NATIONALITY</dt>
-                <dd id="nationality" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">UTOPIA</dd>
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  NATIONALITY
+                </dt>
+                <dd
+                  id="nationality"
+                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                >
+                  UTOPIA
+                </dd>
               </div>
               <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">DATE OF BIRTH</dt>
-                <dd id="birth" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">07/02/1980</dd>
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  DATE OF BIRTH
+                </dt>
+                <dd
+                  id="birth"
+                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                >
+                  07/02/1980
+                </dd>
               </div>
               <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">SEX</dt>
-                <dd id="sex" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">M</dd>
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  SEX
+                </dt>
+                <dd
+                  id="sex"
+                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                >
+                  M
+                </dd>
               </div>
               <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">DATE OF EXPIRY</dt>
-                <dd id="expiry-date" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">07/02/2023</dd>
+                <dt class="font-mono text-sm/6 font-medium text-gray-900">
+                  DATE OF EXPIRY
+                </dt>
+                <dd
+                  id="expiry-date"
+                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+                >
+                  07/02/2023
+                </dd>
               </div>
             </dl>
           </div>
         </div>
-      </div>
-      <div class="col-span-1 row-span-2">
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend">Log Messages</legend>
-          <textarea id="notifications" class="textarea textarea-sm w-md" rows="15" disabled></textarea>
-        </fieldset>
-        <!-- <div id="notifications">
-        </div> -->
-      </div>
-      <div class="col-span-2">
+        <div id="mrz-image-ocr" class="mt-1 grid grid-cols-2 gap-4 p-2">
+          <div id="mrz-image" class="flex flex-col items-center gap-2">
+            <img
+              class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover"
+              id="mrz-photo"
+              th:src="@{/image/image-batch.jpg}"
+              alt="mrz-photo"
+            />
+            <dt class="font-mono text-sm/6 font-semibold text-gray-900">
+              MRZ Image
+            </dt>
+          </div>
+          <div id="mrz-ocr" class="flex flex-col gap-2">
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              Line 1
+            </dt>
+            <dd
+              id="mrz-line-1"
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+            >
+              LINE 1
+            </dd>
+            <dt class="font-mono text-sm/6 font-medium text-gray-900">
+              Line 2
+            </dt>
+            <dd
+              id="mrz-line-2"
+              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+            >
+              LINE 2
+            </dd>
+          </div>
+        </div>
         <div id="e-pass-result" class="grid grid-cols-2 gap-10">
-          <fieldset class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2 font-mono" disabled>
+          <fieldset
+            class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2 font-mono"
+            disabled
+          >
             <legend>DG Read Results</legend>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg1" />
-              <label for="hs-checkbox-dg1" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG01</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg1"
+              />
+              <label
+                for="hs-checkbox-dg1"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG01</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg2" />
-              <label for="hs-checkbox-dg2" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG02</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg2"
+              />
+              <label
+                for="hs-checkbox-dg2"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG02</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg3" />
-              <label for="hs-checkbox-dg3" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG03</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg3"
+              />
+              <label
+                for="hs-checkbox-dg3"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG03</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg4" />
-              <label for="hs-checkbox-d04" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG04</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg4"
+              />
+              <label
+                for="hs-checkbox-d04"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG04</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg5" />
-              <label for="hs-checkbox-dg5" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG05</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg5"
+              />
+              <label
+                for="hs-checkbox-dg5"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG05</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg6" />
-              <label for="hs-checkbox-dg6" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG06</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg6"
+              />
+              <label
+                for="hs-checkbox-dg6"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG06</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg7" />
-              <label for="hs-checkbox-dg7" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG07</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg7"
+              />
+              <label
+                for="hs-checkbox-dg7"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG07</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg8" />
-              <label for="hs-checkbox-dg8" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG08</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg8"
+              />
+              <label
+                for="hs-checkbox-dg8"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG08</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg9" />
-              <label for="hs-checkbox-dg9" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG09</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg9"
+              />
+              <label
+                for="hs-checkbox-dg9"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG09</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg10" />
-              <label for="hs-checkbox-dg10" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG10</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg10"
+              />
+              <label
+                for="hs-checkbox-dg10"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG10</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg11" />
-              <label for="hs-checkbox-dg11" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG11</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg11"
+              />
+              <label
+                for="hs-checkbox-dg11"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG11</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg12" />
-              <label for="hs-checkbox-dg12" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG12</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg12"
+              />
+              <label
+                for="hs-checkbox-dg12"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG12</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg13" />
-              <label for="hs-checkbox-dg13" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG13</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg13"
+              />
+              <label
+                for="hs-checkbox-dg13"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG13</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg14" />
-              <label for="hs-checkbox-dg14" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG14</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg14"
+              />
+              <label
+                for="hs-checkbox-dg14"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG14</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg15" />
-              <label for="hs-checkbox-dg15" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG15</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg15"
+              />
+              <label
+                for="hs-checkbox-dg15"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG15</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-dg16" />
-              <label for="hs-checkbox-dg16" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">DG16</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-dg16"
+              />
+              <label
+                for="hs-checkbox-dg16"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >DG16</label
+              >
             </div>
           </fieldset>
-          <fieldset class="grid grid-cols-1 rounded-sm border border-gray-300 p-2 font-mono" disabled>
+          <fieldset
+            class="grid grid-cols-1 rounded-sm border border-gray-300 p-2 font-mono"
+            disabled
+          >
             <legend>Authentication Results</legend>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-auth-bac" />
-              <label for="hs-checkbox-auth-bac" class="ms-3 text-sm text-gray-500 dark:text-neutral-400" id="hs-label-auth-bac">BAC</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-auth-bac"
+              />
+              <label
+                for="hs-checkbox-auth-bac"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                id="hs-label-auth-bac"
+                >BAC</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-auth-pa" />
-              <label for="hs-checkbox-auth-pa" class="ms-3 text-sm text-gray-500 dark:text-neutral-400" id="hs-label-auth-pa">PA</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-auth-pa"
+              />
+              <label
+                for="hs-checkbox-auth-pa"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                id="hs-label-auth-pa"
+                >PA</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-auth-aa" />
-              <label for="hs-checkbox-auth-aa" class="ms-3 text-sm text-gray-500 dark:text-neutral-400" id="hs-label-auth-aa">AA</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-auth-aa"
+              />
+              <label
+                for="hs-checkbox-auth-aa"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                id="hs-label-auth-aa"
+                >AA</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-auth-ca" />
-              <label for="hs-checkbox-auth-ca" class="ms-3 text-sm text-gray-500 dark:text-neutral-400" id="hs-label-auth-ca">CA</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-auth-ca"
+              />
+              <label
+                for="hs-checkbox-auth-ca"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                id="hs-label-auth-ca"
+                >CA</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-auth-ta" />
-              <label id="hs-label-auth-ta" for="hs-checkbox-auth-ta" class="ms-3 text-sm text-gray-500 dark:text-neutral-400">TA</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-auth-ta"
+              />
+              <label
+                id="hs-label-auth-ta"
+                for="hs-checkbox-auth-ta"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                >TA</label
+              >
             </div>
             <div class="flex">
-              <input type="checkbox" class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800" id="hs-checkbox-auth-sac" />
-              <label for="hs-checkbox-auth-sac" class="ms-3 text-sm text-gray-500 dark:text-neutral-400" id="hs-label-auth-sac">SAC</label>
+              <input
+                type="checkbox"
+                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                id="hs-checkbox-auth-sac"
+              />
+              <label
+                for="hs-checkbox-auth-sac"
+                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                id="hs-label-auth-sac"
+                >SAC</label
+              >
             </div>
           </fieldset>
         </div>
       </div>
-    </div>
-  </div>
-  <input type="radio" name="my_tabs_2" class="tab" aria-label="MRZ Image" />
-  <div class="tab-content border-base-300 bg-base-100 p-10">
-    <div id="mrz-image-ocr" class="mt-1 grid grid-cols-2 gap-4 p-2">
-      <div id="mrz-image" class="flex flex-col items-center gap-2">
-        <img class="aspect-auto flex-none rounded-sm bg-gray-50 object-cover" id="mrz-photo" th:src="@{/image/image-batch.jpg}" alt="mrz-photo" />
-        <dt class="font-mono text-sm/6 font-semibold text-gray-900">MRZ Image</dt>
+      <div class="flex flex-col">
+        <fieldset class="p-2 border rounded-md border-gray-100">
+          <legend class="font-mono text-sm/6 font-semibold text-gray-900">
+            WH Image
+          </legend>
+          <img
+            class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
+            id="wh-image"
+            th:src="@{/image/image-batch.jpg}"
+            alt="wh-image"
+          />
+        </fieldset>
+        <fieldset class="p-2 border rounded-md border-gray-100">
+          <legend class="font-mono text-sm/6 font-semibold text-gray-900">
+            IR Image
+          </legend>
+          <img
+            class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
+            id="ir-image"
+            th:src="@{/image/image-batch.jpg}"
+            alt="ir-image"
+          />
+        </fieldset>
+        <fieldset class="p-2 border rounded-md border-gray-100">
+          <legend class="font-mono text-sm/6 font-semibold text-gray-900">
+            UV Image
+          </legend>
+          <img
+            class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
+            id="uv-image"
+            th:src="@{/image/image-batch.jpg}"
+            alt="uv-image"
+          />
+        </fieldset>
       </div>
-      <div id="mrz-ocr" class="flex flex-col gap-2">
-        <dt class="font-mono text-sm/6 font-medium text-gray-900">Line 1</dt>
-        <dd id="mrz-line-1" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">LINE 1</dd>
-        <dt class="font-mono text-sm/6 font-medium text-gray-900">Line 2</dt>
-        <dd id="mrz-line-2" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">LINE 2</dd>
-        <dt class="font-mono text-sm/6 font-medium text-gray-900">Line 3</dt>
-        <dd id="mrz-line-3" class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0">LINE 3</dd>
-      </div>
     </div>
-  </div>
-
-  <input type="radio" name="my_tabs_2" class="tab" aria-label="IR" />
-  <div class="tab-content border-base-300 bg-base-100 p-10">
-    <div class="flex flex-col gap-2 items-start">
-      <img class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover" id="ir-image" th:src="@{/image/image-batch.jpg}" alt="ir-image" />
-      <dt class="font-mono text-sm/6 font-semibold text-gray-900">IR Image</dt>
-    </div>
-  </div>
-
-  <input type="radio" name="my_tabs_2" class="tab" aria-label="UV" />
-  <div class="tab-content border-base-300 bg-base-100 p-10">
-    <div class="flex flex-col gap-2 items-start">
-      <img class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover" id="uv-image" th:src="@{/image/image-batch.jpg}" alt="uv-image" />
-      <dt class="font-mono text-sm/6 font-semibold text-gray-900">UV Image</dt>
-    </div>
-  </div>
-
-  <input type="radio" name="my_tabs_2" class="tab" aria-label="WH" />
-  <div class="tab-content border-base-300 bg-base-100 p-10">
-    <div class="flex flex-col gap-2 items-start">
-      <img class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover" id="wh-image" th:src="@{/image/image-batch.jpg}" alt="wh-image" />
-      <dt class="font-mono text-sm/6 font-semibold text-gray-900">WH Image</dt>
-    </div>
-  </div>
-</div>
   </div>
   <script>
     const socket = new WebSocket("ws://localhost:8080/fastpass");
@@ -234,32 +541,50 @@
       switch (message.eventCodeString) {
         case "FPHPS_EVENTS.FPHPS_EV_VIZ_PHOTO_CAPTURED":
           var el = document.querySelector("#viz-photo");
-          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          el.setAttribute(
+            "src",
+            "data:image/png;base64, " + message.image.imageData
+          );
           // console.log("GET VIZ-PHOTO");
           break;
         case "FPHPS_EVENTS.FPHPS_EV_EPASS_READ_FACE":
           var el = document.querySelector("#epass-photo");
-          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          el.setAttribute(
+            "src",
+            "data:image/png;base64, " + message.image.imageData
+          );
           // console.log("GET EPASS-PHOTO");
           break;
         case "FPHPS_EVENTS.FPHPS_EV_IR_MRZ_IMAGE_CAPTURED":
           var el = document.querySelector("#mrz-photo");
-          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          el.setAttribute(
+            "src",
+            "data:image/png;base64, " + message.image.imageData
+          );
           // console.log("GET MRZ-PHOTO");
           break;
         case "FPHPS_EVENTS.FPHPS_EV_WH_IMAGE_CAPTURED":
           var el = document.querySelector("#wh-image");
-          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          el.setAttribute(
+            "src",
+            "data:image/png;base64, " + message.image.imageData
+          );
           // console.log("GET WH-IMAGE");
           break;
         case "FPHPS_EVENTS.FPHPS_EV_IR_IMAGE_CAPTURED":
           var el = document.querySelector("#ir-image");
-          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          el.setAttribute(
+            "src",
+            "data:image/png;base64, " + message.image.imageData
+          );
           // console.log("GET IR-IMAGE");
           break;
         case "FPHPS_EVENTS.FPHPS_EV_UV_IMAGE_CAPTURED":
           var el = document.querySelector("#uv-image");
-          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          el.setAttribute(
+            "src",
+            "data:image/png;base64, " + message.image.imageData
+          );
           // console.log("GET UV-IMAGE");
           break;
         case "FPHPS_EVENTS.FPHPS_EV_PAGE_CAPTURED":
@@ -325,7 +650,7 @@
         case "FPHPS_EVENTS.FPHPS_EV_DOC_FRAME_FOUND":
           // console.log("line1: ", message.mrzLines.line1);
           var el = document.getElementById("mrz-line-1");
-          var line1 = message.mrzLines.line1.replace(/</g, '&lt');
+          var line1 = message.mrzLines.line1.replace(/</g, "&lt");
           // console.log("replaced line1: ", line1);
           el.innerHTML = line1;
           el = document.getElementById("mrz-line-2");

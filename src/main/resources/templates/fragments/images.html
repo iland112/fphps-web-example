@@ -1,0 +1,70 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <!-- photo image fragement -->
+    <div
+      th:fragment="photo(title, imageData)"
+      class="flex flex-col items-center space-y-1"
+    >
+      <img
+        class="w-32 h-36 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+        th:src="@{'data:image/ png;base64, '+${imageData}}"
+        alt="photo"
+      />
+      <h3 class="text-md font-semibold" th:text="${title}">Photo</h3>
+    </div>
+
+    <!-- MRZ image and OCR data fragments -->
+    <fieldset
+      th:fragment="mrzImage(data)"
+      class="p-2 flex border rounded-md border-gray-100"
+    >
+      <legend class="font-mono text-sm/6 font-semibold text-gray-900">
+        MRZ Image
+      </legend>
+      <img
+        class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover"
+        id="mrz-photo"
+        th:src="@{'data:image/png;base64, '+${data.mrzImage.imageData}}"
+        alt="mrz-photo"
+      />
+      <div
+        id="mrz-ocr"
+        class="p-2 flex flex-col gap-4"
+        th:object="${data.mrzLines}"
+      >
+        <dt class="font-mono text-sm/6 font-medium text-gray-900">Line 1</dt>
+        <dd
+          class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+          th:text="*{line1}"
+        >
+          LINE 1
+        </dd>
+        <dt class="font-mono text-sm/6 font-medium text-gray-900">Line 2</dt>
+        <dd
+          class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
+          th:text="*{line2}"
+        >
+          LINE 2
+        </dd>
+      </div>
+    </fieldset>
+
+    <!-- Visual Page Image fragement -->
+    <fieldset
+      th:fragment="vizPageImage(title, imageData)"
+      class="p-2 border rounded-md border-gray-100"
+    >
+      <legend
+        class="font-mono text-sm/6 font-semibold text-gray-900"
+        th:text="${title}"
+      >
+        Image
+      </legend>
+      <img
+        class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
+        th:src="@{'data:image/png;base64, '+${imageData}}"
+        alt="vizPageImage"
+      />
+    </fieldset>
+  </body>
+</html>
