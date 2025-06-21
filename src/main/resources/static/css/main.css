@@ -1709,6 +1709,12 @@
   .ms-3 {
     margin-inline-start: calc(var(--spacing) * 3);
   }
+  .ms-10 {
+    margin-inline-start: calc(var(--spacing) * 10);
+  }
+  .ms-80 {
+    margin-inline-start: calc(var(--spacing) * 80);
+  }
   .ms-auto {
     margin-inline-start: auto;
   }
