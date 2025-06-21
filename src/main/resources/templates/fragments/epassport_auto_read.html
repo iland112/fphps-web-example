@@ -1,22 +1,21 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <div th:fragment="e-passport-auto-read">
-    <!-- auto read run command button -->
-    <div class="mt-3 flex gap-x-4">
-      <h1 class="text-2xl font-semibold dark:text-white">Auto Read</h1>
-      <button
-        type="button"
-        class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-        hx-get="/fphps/passport/run-auto-read"
-      >
-        RUN
-      </button>
-    </div>
     <!-- title section -->
-    <div id="header" class="px-4 sm:px-0 lg:flex lg:items-baseline lg:gap-2">
+    <div
+      id="header"
+      class="mt-3 px-4 sm:px-0 lg:flex lg:items-baseline lg:gap-2"
+    >
       <h3 class="text-2xl font-semibold text-gray-900">Passport Information</h3>
       <p class="mt-1 max-w-2xl text-lg text-gray-500">
         Data details after reading the passport/e-passport
       </p>
+      <button
+        type="button"
+        class="ms-80 inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+        hx-get="/fphps/passport/run-auto-read"
+      >
+        Auto Read Run
+      </button>
     </div>
     <div id="title" class="mt-2 grid grid-cols-2 items-baseline px-4 sm:px-0">
       <div class="flex flex-row space-x-3 p-3">
@@ -47,24 +46,9 @@
         />
       </svg>
     </div>
-    <!-- log message section -->
-    <div class="p-2">
-      <fieldset class="fieldset">
-        <legend class="fieldset-legend">Log Messages</legend>
-        <textarea
-          id="notifications"
-          class="textarea textarea-sm w-full"
-          rows="5"
-          disabled
-        ></textarea>
-      </fieldset>
-    </div>
     <div class="flex flex-wrap border-t border-gray-100">
       <div class="flex flex-col">
-        <div
-          id="mrz-info"
-          class="flex space-x-4 border-t border-gray-100 p-2"
-        >
+        <div id="mrz-info" class="flex space-x-4 border-t border-gray-100 p-2">
           <div id="photo" class="flex flex-row gap-2">
             <div class="flex flex-col items-center space-y-1">
               <img
@@ -178,19 +162,20 @@
             </dl>
           </div>
         </div>
-        <div id="mrz-image-ocr" class="mt-1 grid grid-cols-2 gap-4 p-2">
-          <div id="mrz-image" class="flex flex-col items-center gap-2">
-            <img
-              class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover"
-              id="mrz-photo"
-              th:src="@{/image/image-batch.jpg}"
-              alt="mrz-photo"
-            />
-            <dt class="font-mono text-sm/6 font-semibold text-gray-900">
-              MRZ Image
-            </dt>
-          </div>
-          <div id="mrz-ocr" class="flex flex-col gap-2">
+        <fieldset
+          id="mrz-image"
+          class="p-2 flex border rounded-md border-gray-100"
+        >
+          <legend class="font-mono text-sm/6 font-semibold text-gray-900">
+            MRZ Image
+          </legend>
+          <img
+            class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover"
+            id="mrz-photo"
+            th:src="@{/image/image-batch.jpg}"
+            alt="mrz-photo"
+          />
+          <div id="mrz-ocr" class="p-2 flex flex-col gap-4">
             <dt class="font-mono text-sm/6 font-medium text-gray-900">
               Line 1
             </dt>
@@ -210,7 +195,7 @@
               LINE 2
             </dd>
           </div>
-        </div>
+        </fieldset>
         <div id="e-pass-result" class="grid grid-cols-2 gap-10">
           <fieldset
             class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2 font-mono"
@@ -496,39 +481,52 @@
           </fieldset>
         </div>
       </div>
-      <div class="flex flex-col">
-        <fieldset class="p-2 border rounded-md border-gray-100">
-          <legend class="font-mono text-sm/6 font-semibold text-gray-900">
-            WH Image
-          </legend>
-          <img
-            class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
-            id="wh-image"
-            th:src="@{/image/image-batch.jpg}"
-            alt="wh-image"
-          />
-        </fieldset>
-        <fieldset class="p-2 border rounded-md border-gray-100">
-          <legend class="font-mono text-sm/6 font-semibold text-gray-900">
-            IR Image
-          </legend>
-          <img
-            class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
-            id="ir-image"
-            th:src="@{/image/image-batch.jpg}"
-            alt="ir-image"
-          />
-        </fieldset>
-        <fieldset class="p-2 border rounded-md border-gray-100">
-          <legend class="font-mono text-sm/6 font-semibold text-gray-900">
-            UV Image
-          </legend>
-          <img
-            class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
-            id="uv-image"
-            th:src="@{/image/image-batch.jpg}"
-            alt="uv-image"
-          />
+      <div class="flex gap-4 justify-between">
+        <div class="flex flex-col">
+          <fieldset class="p-2 border rounded-md border-gray-100">
+            <legend class="font-mono text-sm/6 font-semibold text-gray-900">
+              WH Image
+            </legend>
+            <img
+              class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
+              id="wh-image"
+              th:src="@{/image/image-batch.jpg}"
+              alt="wh-image"
+            />
+          </fieldset>
+          <fieldset class="p-2 border rounded-md border-gray-100">
+            <legend class="font-mono text-sm/6 font-semibold text-gray-900">
+              IR Image
+            </legend>
+            <img
+              class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
+              id="ir-image"
+              th:src="@{/image/image-batch.jpg}"
+              alt="ir-image"
+            />
+          </fieldset>
+          <fieldset class="p-2 border rounded-md border-gray-100">
+            <legend class="font-mono text-sm/6 font-semibold text-gray-900">
+              UV Image
+            </legend>
+            <img
+              class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
+              id="uv-image"
+              th:src="@{/image/image-batch.jpg}"
+              alt="uv-image"
+            />
+          </fieldset>
+        </div>
+
+        <!-- log message section -->
+        <fieldset class="fieldset p-2 flex border rounded-md border-gray-100">
+          <legend class="font-mono text-sm/6 font-semibold text-gray-900">Log Messages</legend>
+          <textarea
+            id="notifications"
+            class="textarea textarea-sm w-full"
+            rows="20"
+            disabled
+          ></textarea>
         </fieldset>
       </div>
     </div>
@@ -697,7 +695,8 @@
       //   "p-2 bg-gray-100 dark:bg-gray-800 rounded shadow text-sm text-gray-800 dark:text-white";
       // div.textContent = message.eventCodeString + " :: " + message.lParam;
       // document.getElementById("notifications").appendChild(div);
-      var messgetText = message.eventCodeString + " :: " + message.lParam;
+      var messgetText =
+        message.eventCodeString + " :: " + message.lParam + "\n";
       document.getElementById("notifications").append(messgetText);
     };
   </script>
