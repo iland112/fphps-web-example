@@ -27,6 +27,8 @@ public final class FPHPSService {
 
     private final FPHPSDeviceManager deviceManager;
     private final FastPassWebSocketHandler fastPassWebSocketHandler;
+
+    private FPHPSDeviceProperties deviceProperties;
     
     private FPHPSDevice device;
 
@@ -191,7 +193,7 @@ public final class FPHPSService {
     }
 
     public FPHPSImage scanPage(int lightType) {
-        if (device.isDeviceOpened()) {
+        if (!device.isDeviceOpened()) {
             device.openDevice();
         }
         FPHPSDeviceProperties deviceProperties = device.getDeviceProperties();

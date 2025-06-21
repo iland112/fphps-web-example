@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastPass SDK</title>
+    <title layout:title-patterns="$LAYOUT_TITLE - $CONTENT_TITLE">FastPass JAVA SDK</title>
     <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
     <!-- Tailwindcss-->
     <link rel="stylesheet" th:href="@{/css/main.css}">
@@ -21,7 +21,18 @@
 </head>
 <body class="bg-stone-200">
     <div th:replace="~{fragments/header::header}"></div>
+    <!-- ========== MAIN CONTENT ========== -->
+    <!-- Breadcrumb -->
+    <div th:replace="~{fragments/breadcrumb::breadcrumb}"></div>
+    <!-- End Breadcrumb -->
+
+    <!-- Sidebar -->
+    <div th:replace="~{fragments/sidebar::sidebar}"></div>
+    <!-- End Sidebar -->
+
+    <!-- Main content -->
     <div layout:fragment="content" class="content"></div>
+    
     <div th:replace="~{fragments/footer::footer}"></div>
     <script th:src="@{/js/preline.js}"></script>
     <script>
