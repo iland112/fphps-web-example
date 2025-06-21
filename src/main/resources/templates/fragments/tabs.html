@@ -12,9 +12,9 @@
         <div id="mrz-image-ocr" class="mt-1 grid grid-cols-2 gap-4 p-2">
           <div id="mrz-image" class="flex flex-col items-center gap-2">
             <img
-              class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+              class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover"
               id="mrz-photo"
-              th:src="@{'data:image/png;base64, '+${response.mrzImage}}"
+              th:src="@{'data:image/png;base64, '+${response.mrzImage.imageData}}"
               alt="mrz-photo"
             />
             <dt class="font-mono text-sm/6 font-semibold text-gray-900">
@@ -24,7 +24,7 @@
           <div
             id="mrz-ocr"
             class="flex flex-col gap-2"
-            th:object="${response.mrzDto}"
+            th:object="${response.mrzLines}"
           >
             <dt class="font-mono text-sm/6 font-medium text-gray-900">
               Line 1
@@ -61,9 +61,9 @@
       <div class="tab-content border-base-300 bg-base-100 p-10">
         <div id="ir-image" class="flex flex-col items-center gap-2">
           <img
-            class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+            class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover"
             id="ir-image"
-            th:src="@{'data:image/png;base64, '+${response.irFullImage}}"
+            th:src="@{'data:image/png;base64, '+${response.irImage.imageData}}"
             alt="ir-image"
           />
           <dt class="font-mono text-sm/6 font-semibold text-gray-900">
@@ -76,9 +76,9 @@
       <div class="tab-content border-base-300 bg-base-100 p-10">
         <div id="ir-image" class="flex flex-col items-center gap-2">
           <img
-            class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+            class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover"
             id="uv-image"
-            th:src="@{'data:image/png;base64, '+${response.uvFullImage}}"
+            th:src="@{'data:image/png;base64, '+${response.uvImage.imageData}}"
             alt="uv-image"
           />
           <dt class="font-mono text-sm/6 font-semibold text-gray-900">
@@ -91,9 +91,9 @@
       <div class="tab-content border-base-300 bg-base-100 p-10">
         <div id="wh-image" class="flex flex-col items-center gap-2">
           <img
-            class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+            class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover"
             id="wh-image"
-            th:src="@{'data:image/png;base64, '+${response.whFullImage}}"
+            th:src="@{'data:image/png;base64, '+${response.whImage.imageData}}"
             alt="wh-image"
           />
           <dt class="font-mono text-sm/6 font-semibold text-gray-900">
