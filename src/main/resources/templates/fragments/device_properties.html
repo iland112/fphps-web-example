@@ -1,156 +1,242 @@
 <html xmlns:th="http://www.thymeleaf.org">
+  <body>
     <div th:fragment="device-properties (properties)">
-        <form action="" method="post">
-            <div>
-                <div id="device-control" class="">
-                    <div id="read-mode" class="flex flex-row">
-                        <p>
-                            <input type="radio" name="read-mode" value="0" id="read-mode-one-step">
-                            <label for="read-mode-one-step">One Step (DETECT+OCR+RF)</label>
-                        </p>
-                        <p>
-                            <input type="radio" name="read-mode" value="1" id="read-mode-two-step">
-                            <label for="read-mode-two-step">Two Step (DETECT => OCR+RF)</label>
-                        </p>
-                        <p>
-                            <input type="radio" name="read-mode" value="2" id="read-mode-three-step">
-                            <label for="read-mode-three-step">Three Step (DETECT => OCR => RF)</label>
-                        </p>
-                    </div>
-                    <div>
-                        <p>
-                            <input type="checkbox" name="check-remove" id="">
-                            <label for="">Check Remove</label>
-                        </p>
-                        <p>
-                            <input type="checkbox" name="enable-rf" id="">
-                            <label for="">Enable RF</label>
-                        </p>
-                        <p>
-                            <input type="checkbox" name="user-mode-led" id="">
-                            <label for="">User Mode LED</label>
-                        </p>
-                        <p>
-                            <input type="checkbox" name="enable-buzzer" id="">
-                            <label for="">Enable Buzzer</label>
-                        </p>
-                        <p>
-                            <label for="">Read Timeout: </label>
-                            <input type="number" name="read-timeout" id=""> ms
-                        </p>
-                        <p>
-                            <label for="">Detect Delay Time: </label>
-                            <input type="number" name="detect-delay-time" id=""> ms
-                        </p>
-                    </div>
-                </div>
-                <div id="id-card">
-                    <p>
-                        <input type="checkbox" name="enable-idcard" id="">
-                        <label for="">Enable ID Card</label>
-                    </p>
-                </div>
-                <div id="barcode">
-                    <p>
-                        <input type="checkbox" name="enable-barcode" id="">
-                        <label for="">Enable Barcode</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="barcode-config" id="">
-                        <label for="">Barcode Config</label>
-                    </p>
-                </div>
-                <div id="e-passport-properties">
-                    <p>
-                        <input type="checkbox" name="enable-dg" id="">
-                        <label for="">Enable DG</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="enable-auth" id="">
-                        <label for="">Enable Auth</label>
-                    </p>
-                    <p>
-                        <label for="">RF Read Size:</label>
-                        <input type="number" name="rf-read-size" id="">
-                    </p>
-                    <p>
-                        <input type="checkbox" name="rf-use-sfi" id="">
-                        <label for="">RF Use SFI</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="e-passport-auth-bypadd" id="">
-                        <label for="">E Passport Authentication Bypass</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="security-check" id="">
-                        <label for="">Security Check</label>
-                    </p>
-                </div>
-                <div id="image-control">
-                    <div id="batch-mode">
-                        <p>
-                            <input type="checkbox" name="batch-mode-ir" id="">
-                            <label for="">Batch Mode-IR</label>
-                        </p>
-                        <p>
-                            <input type="checkbox" name="batch-mode-uv" id="">
-                            <label for="">Batch Mode-UV</label>
-                        </p>
-                        <p>
-                            <input type="checkbox" name="batch-mode-wh" id="">
-                            <label for="">Batch Mode-WH</label>
-                        </p>
-                    </div>
-                    <p>
-                        <input type="checkbox" name="anti-glair" id="">
-                        <label for="">Anti-Glare</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="anti-glair-ir" id="">
-                        <label for="">Anti-Glare IR</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="anti-glair-ir-half" id="">
-                        <label for="">Anti-Glare IRHALF</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="enhance-ir" id="">
-                        <label for="">Enhance IR</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="enhance-uv" id="">
-                        <label for="">Enhance UV</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="enhance-wh" id="">
-                        <label for="">Enhance WH</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="strength-ir" id="">
-                        <label for="">Strength IR</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="strength-uv" id="">
-                        <label for="">Strength UV</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="strength-wh" id="">
-                        <label for="">Strength WH</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="enable-uv-subtract" id="">
-                        <label for="">Enable UV Subtract</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="change-sc" id="">
-                        <label for="">Change SC</label>
-                    </p>
-                    <p>
-                        <input type="checkbox" name="crop" id="">
-                        <label for="">Crop</label>
-                    </p>
-                </div>
+      <form action="" method="post">
+        <div>
+          <div id="device-control" class="">
+            <div id="read-mode" class="flex flex-row">
+              <p>
+                <input
+                  type="radio"
+                  name="read-mode"
+                  value="0"
+                  id="read-mode-one-step"
+                />
+                <label for="read-mode-one-step">One Step (DETECT+OCR+RF)</label>
+              </p>
+              <p>
+                <input
+                  type="radio"
+                  name="read-mode"
+                  value="1"
+                  id="read-mode-two-step"
+                />
+                <label for="read-mode-two-step"
+                  >Two Step (DETECT => OCR+RF)</label
+                >
+              </p>
+              <p>
+                <input
+                  type="radio"
+                  name="read-mode"
+                  value="2"
+                  id="read-mode-three-step"
+                />
+                <label for="read-mode-three-step"
+                  >Three Step (DETECT => OCR => RF)</label
+                >
+              </p>
             </div>
-        </form>
+            <div>
+              <p>
+                <input type="checkbox" name="check-remove" id="" />
+                <label for="">Check Remove</label>
+              </p>
+              <p>
+                <input type="checkbox" name="enable-rf" id="" />
+                <label for="">Enable RF</label>
+              </p>
+              <p>
+                <input type="checkbox" name="user-mode-led" id="" />
+                <label for="">User Mode LED</label>
+              </p>
+              <p>
+                <input type="checkbox" name="enable-buzzer" id="" />
+                <label for="">Enable Buzzer</label>
+              </p>
+              <p>
+                <label for="">Read Timeout: </label>
+                <input type="number" name="read-timeout" id="" /> ms
+              </p>
+              <p>
+                <label for="">Detect Delay Time: </label>
+                <input type="number" name="detect-delay-time" id="" /> ms
+              </p>
+            </div>
+          </div>
+          <div id="id-card">
+            <p>
+              <input type="checkbox" name="enable-idcard" id="" />
+              <label for="">Enable ID Card</label>
+            </p>
+          </div>
+          <div id="barcode">
+            <p>
+              <input type="checkbox" name="enable-barcode" id="" />
+              <label for="">Enable Barcode</label>
+            </p>
+            <p>
+              <input type="checkbox" name="barcode-config" id="" />
+              <label for="">Barcode Config</label>
+            </p>
+          </div>
+          <div id="e-passport-properties">
+            <p>
+              <input type="checkbox" name="enable-dg" id="" />
+              <label for="">Enable DG</label>
+            </p>
+            <p>
+              <input type="checkbox" name="enable-auth" id="" />
+              <label for="">Enable Auth</label>
+            </p>
+            <p>
+              <label for="">RF Read Size:</label>
+              <input type="number" name="rf-read-size" id="" />
+            </p>
+            <p>
+              <input type="checkbox" name="rf-use-sfi" id="" />
+              <label for="">RF Use SFI</label>
+            </p>
+            <p>
+              <input type="checkbox" name="e-passport-auth-bypadd" id="" />
+              <label for="">E Passport Authentication Bypass</label>
+            </p>
+            <p>
+              <input type="checkbox" name="security-check" id="" />
+              <label for="">Security Check</label>
+            </p>
+          </div>
+          <div id="image-control">
+            <div id="batch-mode">
+              <p>
+                <input type="checkbox" name="batch-mode-ir" id="" />
+                <label for="">Batch Mode-IR</label>
+              </p>
+              <p>
+                <input type="checkbox" name="batch-mode-uv" id="" />
+                <label for="">Batch Mode-UV</label>
+              </p>
+              <p>
+                <input type="checkbox" name="batch-mode-wh" id="" />
+                <label for="">Batch Mode-WH</label>
+              </p>
+            </div>
+            <p>
+              <input type="checkbox" name="anti-glair" id="" />
+              <label for="">Anti-Glare</label>
+            </p>
+            <p>
+              <input type="checkbox" name="anti-glair-ir" id="" />
+              <label for="">Anti-Glare IR</label>
+            </p>
+            <p>
+              <input type="checkbox" name="anti-glair-ir-half" id="" />
+              <label for="">Anti-Glare IRHALF</label>
+            </p>
+            <p>
+              <input type="checkbox" name="enhance-ir" id="" />
+              <label for="">Enhance IR</label>
+            </p>
+            <p>
+              <input type="checkbox" name="enhance-uv" id="" />
+              <label for="">Enhance UV</label>
+            </p>
+            <p>
+              <input type="checkbox" name="enhance-wh" id="" />
+              <label for="">Enhance WH</label>
+            </p>
+            <p>
+              <input type="checkbox" name="strength-ir" id="" />
+              <label for="">Strength IR</label>
+            </p>
+            <p>
+              <input type="checkbox" name="strength-uv" id="" />
+              <label for="">Strength UV</label>
+            </p>
+            <p>
+              <input type="checkbox" name="strength-wh" id="" />
+              <label for="">Strength WH</label>
+            </p>
+            <p>
+              <input type="checkbox" name="enable-uv-subtract" id="" />
+              <label for="">Enable UV Subtract</label>
+            </p>
+            <p>
+              <input type="checkbox" name="change-sc" id="" />
+              <label for="">Change SC</label>
+            </p>
+            <p>
+              <input type="checkbox" name="crop" id="" />
+              <label for="">Crop</label>
+            </p>
+          </div>
+        </div>
+      </form>
     </div>
+
+    <fieldset th:fragment="dgCheckboxGroup(dgs)"
+      class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2"
+    >
+      <legend>DGS</legend>
+      <div th:replace="~{:: checkBox(${dgs.dg1}, 'DG01')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg2}, 'DG02')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg3}, 'DG03')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg4}, 'DG04')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg5}, 'DG05')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg6}, 'DG06')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg7}, 'DG07')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg8}, 'DG08')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg9}, 'DG09')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg10}, 'DG10')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg11}, 'DG11')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg12}, 'DG12')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg13}, 'DG13')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg14}, 'DG14')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg15}, 'DG15')}"></div>
+      <div th:replace="~{:: checkBox(${dgs.dg16}, 'DG16')}"></div>
+    </fieldset>
+
+    <fieldset th:fragment="authOptions(auths)"
+      class="grid grid-cols-1 rounded-sm border border-gray-300 p-2"
+    >
+      <legend>Authentication Options</legend>
+      <div th:replace="~{:: checkBox(${auths.pa}, 'PA')}"></div>
+      <div th:replace="~{:: checkBox(${auths.aa}, 'AA')}"></div>
+      <div th:replace="~{:: checkBox(${auths.ca}, 'CA')}"></div>
+      <div th:replace="~{:: checkBox(${auths.ta}, 'TA')}"></div>
+      <div th:replace="~{:: checkBox(${auths.sac}, 'SAC')}"></div>
+    </fieldset>
+
+    <fieldset th:fragment="batchMode(lightTypes)"
+      class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
+    >
+      <legend>Batch Mode</legend>
+      <div th:replace="~{:: checkBox(${lightTypes.ir}, 'IR')}"></div>
+      <div th:replace="~{:: checkBox(${lightTypes.uv}, 'UV')}"></div>
+      <div th:replace="~{:: checkBox(${lightTypes.wh}, 'WH')}"></div>
+    </fieldset>
+
+    <fieldset th:fragment="antiGlare(values)"
+      class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
+    >
+      <legend>Anti-Glair</legend>
+      <div th:replace="~{:: checkBox(${values.antiGlare}, 'Anti-Glare')}"></div>
+      <div th:replace="~{:: checkBox(${values.antiGlareIR}, 'Anti-Glare IR')}"></div>
+      <div th:replace="~{:: checkBox(${values.antiGlareIRHalf}, 'Anti-Glare IRHALF')}"></div>        
+    </fieldset>
+
+    <div th:fragment="checkBox(value, label)" class="flex">
+      <input
+        type="checkbox"
+        class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+        id="hs-checkbox-dg01"
+        th:value="${value}?: 'null'"
+      />
+      <label
+        for="hs-checkbox-dg01"
+        class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+        th:text="${#strings.toUpperCase(label)}">DG01</label
+      >
+    </div>
+  </body>
 </html>

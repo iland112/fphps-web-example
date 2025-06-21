@@ -1,0 +1,86 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <body>
+    <div
+      th:fragment="ePassportSettingForm"
+      class="m-2"
+    >
+      <h1 class="mb-2 bg-gray-100 p-4 font-mono text-2xl font-semibold">
+        EPassport Settings
+      </h1>
+      <form
+        id="sform"
+        class="flex flex-col gap-1"
+        action="#"
+        th:action="@{/fphps/passport/manual-read}"
+        th:method="post"
+        th:object="${formData}"
+      >
+        <!-- E-Passport Options -->
+        <div
+          class="flex flex-col rounded-xl border border-gray-200 bg-white shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-neutral-700/70"
+        >
+          <div class="p-4 md:p-5">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+              E-Passport Properties
+            </h3>
+            <div class="flex flex-col justify-around gap-5 text-sm">
+              <div class="flex justify-baseline gap-10">
+                <fieldset
+                  th:replace="~{fragments/device_properties :: dgCheckboxGroup(${formData})}"
+                ></fieldset>
+                <fieldset
+                  th:replace="~{fragments/device_properties :: authOptions(${formData})}"
+                ></fieldset>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Image Controls -->
+        <div
+          class="flex flex-col rounded-xl border border-gray-200 bg-white shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-neutral-700/70"
+        >
+          <div class="p-4 md:p-5">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+              Image Control Properties
+            </h3>
+            <div class="flex flex-col gap-5 text-sm">
+              <fieldset
+                th:replace="~{fragments/device_properties :: batchMode(${formData})}"
+              ></fieldset>
+              <fieldset
+                th:replace="~{fragments/device_properties :: antiGlare(${formData})}"
+              ></fieldset>
+              <fieldset
+                class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
+              >
+                <legend>Etc.</legend>
+                <div class="flex">
+                  <input
+                    type="checkbox"
+                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
+                    id="hs-checkbox-crop"
+                    th:field="*{crop}"
+                  />
+                  <label
+                    for="hs-checkbox-crop"
+                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
+                    >Crop</label
+                  >
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+        <!-- Submit button -->
+        <div>
+          <button
+            type="submit"
+            class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+          >
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

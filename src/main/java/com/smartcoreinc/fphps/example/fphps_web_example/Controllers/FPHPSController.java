@@ -7,6 +7,8 @@ import com.smartcoreinc.fphps.dto.DocumentReadResponse;
 import com.smartcoreinc.fphps.dto.FPHPSImage;
 import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FPHPSService;
+import com.smartcoreinc.fphps.example.fphps_web_example.forms.DevSettingsForm;
+import com.smartcoreinc.fphps.example.fphps_web_example.forms.EPassportSettingForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.ScanForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.SettingsForm;
 
@@ -17,6 +19,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @Slf4j
@@ -74,9 +78,14 @@ public class FPHPSController {
         return "redirect:/fphps";
     }
 
+    // @GetMapping("/passport/manual-read")
+    // public String manualRead(Model model) {
+    //     model.addAttribute("formData", new EPassportSettingForm());
+    //     return "fragments/forms";
+    // }
 
     @GetMapping("/passport/manual-read")
-    public String manualRead(Model model) {
+    public String manualReadPost(@ModelAttribute EPassportSettingForm formData, Model model) {
         try {
             DocumentReadResponse response = fphpsService.read("PASSPORT", false);
             // Logger.debug("photo base64: {}", responseDto.getPhotoImage());
@@ -100,9 +109,6 @@ public class FPHPSController {
             fphpsService.read("PASSPORT", true);
         } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
             log.error(e.getMessage());
-        } finally {
-            fphpsService.closeDevice();
-            log.debug("Device was closed");
         }
         log.debug("autoRead() Ended!!");
     }
@@ -170,4 +176,12 @@ public class FPHPSController {
         }
         log.debug("barcodeAutoRead() Ended!!");
     }
+
+    @GetMapping("/test")
+    public String deviceSetting(Model model) {
+        model.addAttribute("settingsForm", new DevSettingsForm());
+        return "device_setting_form";
+    }
+    
+
 }
