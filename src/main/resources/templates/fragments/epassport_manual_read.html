@@ -34,29 +34,13 @@
         />
       </svg>
     </div>
-    <div class="flex flex-wrap">
-      <div>
+    <div class="flex flex-wrap border-t border-gray-100">
+      <div class="flex flex-col">
         <!-- MRZ(OCR) information -->
-        <div id="mrz-info" class="flex space-x-4 border-t border-gray-100 p-2">
+        <div id="mrz-info" class="flex space-x-4 p-2">
           <div id="photo" class="flex flex-row gap-2">
-            <div class="flex flex-col items-center space-y-1">
-              <img
-                class="w-36 h-44 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
-                id="viz-photo"
-                th:src="@{'data:image/ png;base64, '+${response.vizPhotoImage.imageData}}"
-                alt="document-photp"
-              />
-              <h3 class="text-md font-semibold">Document</h3>
-            </div>
-            <div class="flex flex-col items-center space-y-1">
-              <img
-                class="w-36 h-44 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
-                id="epass-photo"
-                th:src="@{'data:image/png;base64, '+${response.ePassPhotoImage.imageData}}"
-                alt="chip-photo"
-              />
-              <h3 class="text-md font-semibold">Chip</h3>
-            </div>
+            <div id="viz-photo" th:replace="~{fragments/images :: photo(title = 'Document', imageData=${response.vizPhotoImage.imageData})}"></div>
+            <div id="viz-photo" th:replace="~{fragments/images :: photo(title = 'Chip', imageData=${response.ePassPhotoImage.imageData})}"></div>
           </div>
           <div id="mrz-info" class="p-2" th:object="${response.mrzInfo}">
             <dl class="grid grid-cols-3">
@@ -147,10 +131,13 @@
             </dl>
           </div>
         </div>
+        <div id="mrz-image-ocr" class="mt-1 p-2">
+          <fieldset id="mrz-image" th:replace="~{fragments/images :: mrzImage(data=${response})}"></fieldset>
+        </div>
         <!-- EPASSPORT Result -->
         <div
           id="e-pass-result"
-          class="p-4 flex justify-baseline gap-10"
+          class="p-2 flex justify-baseline gap-3"
         >
           <fieldset
             class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2 font-mono"
@@ -458,34 +445,11 @@
           </fieldset>
         </div>
       </div>
-      <div class="flex flex-col justify-between">
-        <div id="mrz-image-ocr" class="mt-1 flex flex-col gap-2 p-2">
-          <fieldset id="mrz-image">
-            <legend class="font-mono text-sm/6 font-semibold text-gray-900">MRZ Image</legend>
-            <img class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover" id="mrz-photo" th:src="@{'data:image/png;base64, '+${response.mrzImage.imageData}}" alt="mrz-photo" />
-          </fieldset>
-          <div id="mrz-ocr" class="flex flex-col gap-2" th:object="${response.mrzLines}">
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">Line 1</dt>
-            <dd class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0" th:text="*{line1}">LINE 1</dd>
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">Line 2</dt>
-            <dd class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0" th:text="*{line2}">LINE 2</dd>
-          </div>
-        </div> 
+      <div class="flex flex-col gap-4 justify-start">
+        <fieldset th:replace="~{fragments/images :: vizPageImage(title='WH Image', imageData=${response.whImage.imageData})}"></fieldset>
+        <fieldset th:replace="~{fragments/images :: vizPageImage(title='IR Image', imageData=${response.irImage.imageData})}"></fieldset>
+        <fieldset th:replace="~{fragments/images :: vizPageImage(title='UV Image', imageData=${response.uvImage.imageData})}"></fieldset>
       </div>
-    </div>
-    <div class="flex gap-2 justify-around">
-      <fieldset>
-          <legend class="font-mono text-sm/6 font-semibold text-gray-900">IR Image</legend>
-          <img class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover" id="ir-image" th:src="@{'data:image/png;base64, '+${response.irImage.imageData}}" alt="ir-image" />
-        </fieldset>
-        <fieldset>
-          <legend class="font-mono text-sm/6 font-semibold text-gray-900">UV Image</legend>
-          <img class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover" id="uv-image" th:src="@{'data:image/png;base64, '+${response.uvImage.imageData}}" alt="uv-image" />
-        </fieldset>
-        <fieldset>
-          <legend class="font-mono text-sm/6 font-semibold text-gray-900">WH Image</dt>
-          <img class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover" id="wh-image" th:src="@{'data:image/png;base64, '+${response.whImage.imageData}}" alt="wh-image" />
-        </fieldset>
     </div>
   </div>
 </html>
