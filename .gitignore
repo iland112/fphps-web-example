@@ -35,4 +35,5 @@ out/
 ### VS Code ###
 .vscode/
 
+### Front end node_modules
 src/main/frontend/node_modules
