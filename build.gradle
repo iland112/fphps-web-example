@@ -32,7 +32,7 @@ dependencies {
 	implementation 'net.java.dev.jna:jna-platform:5.17.0'
 	implementation 'org.javatuples:javatuples:1.2'
 	implementation 'com.google.code.gson:gson:2.10.1'
-	implementation files("D:\\Workspaces\\java\\FPHPS\\lib\\build\\local-repository\\com\\smartcoreinc\\fphps\\1.0.0\\fphps-1.0.0.jar")
+	implementation files("D:\\Workspaces\\java\\smartcore\\FPHPS\\lib\\build\\local-repository\\com\\smartcoreinc\\fphps\\1.0.0\\fphps-1.0.0.jar")
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
