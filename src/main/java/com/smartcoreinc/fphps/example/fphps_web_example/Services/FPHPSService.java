@@ -2,23 +2,21 @@ package com.smartcoreinc.fphps.example.fphps_web_example.Services;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import com.smartcoreinc.fphps.dto.DeviceInfo;
 import com.smartcoreinc.fphps.dto.DocumentReadResponse;
 import com.smartcoreinc.fphps.dto.FPHPSImage;
 import com.smartcoreinc.fphps.dto.properties.BatchModeProperties;
-import com.smartcoreinc.fphps.dto.properties.EPassportAuthProperties;
-import com.smartcoreinc.fphps.dto.properties.EPassportDGProperties;
 import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
 import com.smartcoreinc.fphps.example.fphps_web_example.config.handler.FastPassWebSocketHandler;
-import com.smartcoreinc.fphps.infrastructure.FPHPSLibrary.FPHPS_READ_TYPES;
 import com.smartcoreinc.fphps.manager.FPHPSDevice;
 import com.smartcoreinc.fphps.manager.FPHPSDeviceManager;
-import com.smartcoreinc.fphps.readers.AbstractReader;
-import com.smartcoreinc.fphps.readers.BarcodeReader;
-import com.smartcoreinc.fphps.readers.EPassportReader;
-import com.smartcoreinc.fphps.readers.IDCardReader;
 import com.smartcoreinc.fphps.readers.PageScanner;
-import com.smartcoreinc.fphps.readers.PassportReader;
+import com.smartcoreinc.fphps.example.fphps_web_example.strategies.DocumentReadStrategy;
+import com.smartcoreinc.fphps.example.fphps_web_example.exceptions.DeviceOperationException;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -27,18 +25,22 @@ public final class FPHPSService {
 
     private final FPHPSDeviceManager deviceManager;
     private final FastPassWebSocketHandler fastPassWebSocketHandler;
-
-    private FPHPSDeviceProperties deviceProperties;
+    private final List<DocumentReadStrategy> strategies;
     
     private FPHPSDevice device;
 
-    public FPHPSService(FastPassWebSocketHandler fastPassWebSocketHandler) {
+    public FPHPSService(FastPassWebSocketHandler fastPassWebSocketHandler, List<DocumentReadStrategy> strategies) {
         this.fastPassWebSocketHandler = fastPassWebSocketHandler;
+        this.strategies = strategies;
         this.deviceManager = FPHPSDeviceManager.getInstance();
         try {
             initDevices();
+        } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
+            log.error("Failed to initialize FPHPS devices: {}", e.getMessage(), e);
+            throw new DeviceOperationException("Failed to initialize FPHPS devices: " + e.getMessage(), e);
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("An unexpected error during device initialization: {}", e.getMessage(), e);
+            throw new DeviceOperationException("An unexpected error occurred during device initialization: " + e.getMessage(), e);
         }
     }
 
@@ -51,13 +53,50 @@ public final class FPHPSService {
         return device.getDeviceInfo();
     }
 
-    public FPHPSDeviceProperties getCurrentDeviceProperties() {
-        if (!this.device.isDeviceOpened()) {
-            this.device.openDevice();
+    private <R> R executeWithDevice(Function<FPHPSDevice, R> action) {
+        try {
+            device.openDevice();
+            try {
+                return action.apply(device);
+            } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
+                log.error("FPHPS device operation failed: {}", e.getMessage(), e);
+                throw new DeviceOperationException("FPHPS device error: " + e.getMessage(), e);
+            } catch (Exception e) {
+                log.error("An unexpected error during device operation: {}", e.getMessage(), e);
+                throw new DeviceOperationException("An unexpected error occurred during device operation: " + e.getMessage(), e);
+            }
+        } finally {
+            // 성공, 실패 여부와 관계없이 항상 장치를 닫습니다.
+            if (device.isDeviceOpened()) {
+                device.closeDevice();
+            }
         }
-        FPHPSDeviceProperties deviceProperties = this.device.getDeviceProperties();
-        this.device.closeDevice();
-        return deviceProperties;
+    }
+
+    // 반환 값이 없는 동작을 위한 메소드도 추가할 수 있습니다.
+    private void executeWithDevice(Consumer<FPHPSDevice> action) {
+        try {
+            device.openDevice();
+            try {
+                action.accept(device);
+            } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
+                log.error("FPHPS device operation failed: {}", e.getMessage(), e);
+                throw new DeviceOperationException("FPHPS device error: " + e.getMessage(), e);
+            } catch (Exception e) {
+                log.error("An unexpected error during device operation: {}", e.getMessage(), e);
+                throw new DeviceOperationException("An unexpected error occurred during device operation: " + e.getMessage(), e);
+            }
+        } finally {
+            if (device.isDeviceOpened()) {
+                device.closeDevice();
+            }
+        }
+    }
+
+    public FPHPSDeviceProperties getCurrentDeviceProperties() {
+        return executeWithDevice(openedDevice -> {
+            return openedDevice.getDeviceProperties();
+        });
     }
 
     public void setDeviceProperties(FPHPSDeviceProperties deviceProperties) {
@@ -65,127 +104,15 @@ public final class FPHPSService {
     }
 
     public DocumentReadResponse read(String docType, boolean isAuto) {
-        DocumentReadResponse response = null;
-        try {
-            if (!device.isDeviceOpened()) {
-                device.openDevice();
+        return executeWithDevice(openedDevice -> {
+            for (DocumentReadStrategy strategy : strategies) {
+                if (strategy.supports(docType)) {
+                    return strategy.read(openedDevice, fastPassWebSocketHandler, isAuto);
+                }
             }
-            int readType = 1;   // Default Passport
-
-            FPHPSDeviceProperties deviceProperties = this.device.getDeviceProperties();
-            deviceProperties.setCrop(1);
-            deviceProperties.setCheckRemove(1);
-
-            AbstractReader reader;
-            
-            switch (docType) {
-                case "PASSPORT":
-                    readType = FPHPS_READ_TYPES.FPHPS_RT_PASSPORT;
-                    reader = new EPassportReader(device, fastPassWebSocketHandler);
-                    deviceProperties.setEnableRF(1);
-                    deviceProperties.setBatchModeProperties(
-                        BatchModeProperties.builder()
-                            .ir(1)
-                            .uv(1)
-                            .wh(1)
-                            .build()  
-                    );
-                    deviceProperties.setEPassportAuthProperties(
-                        EPassportAuthProperties.builder()
-                            .pa(1)
-                            .aa(1)
-                            .ca(0)
-                            .ta(0)
-                            .sac(0)
-                            .build()    
-                    );
-                    deviceProperties.setEPassportDGProperties(
-                        EPassportDGProperties.builder()
-                            .dg1(1)
-                            .dg2(1)
-                            .dg3(1)
-                            .dg4(1)
-                            .dg5(1)
-                            .dg6(1)
-                            .dg7(1)
-                            .dg8(1)
-                            .dg9(1)
-                            .dg10(1)
-                            .dg11(1)
-                            .dg12(1)
-                            .dg13(1)
-                            .dg14(1)
-                            .dg15(1)
-                            .dg16(1)
-                            .build()
-                    );
-                    break;
-                case "IDCARD":
-                    readType = FPHPS_READ_TYPES.FPHPS_RT_PASSPORT;
-                    reader = new IDCardReader(device, fastPassWebSocketHandler);
-                    deviceProperties.setEnableIDCard(1);
-                    deviceProperties.setEnableRF(1);
-                    deviceProperties.setBatchModeProperties(
-                        BatchModeProperties.builder()
-                            .ir(1)
-                            .uv(1)
-                            .wh(1)
-                            .build()  
-                    );
-                    deviceProperties.setEPassportAuthProperties(
-                        EPassportAuthProperties.builder()
-                            .pa(1)
-                            .aa(1)
-                            .ca(0)
-                            .ta(0)
-                            .sac(0)
-                            .build()    
-                    );
-                    deviceProperties.setEPassportDGProperties(
-                        EPassportDGProperties.builder()
-                            .dg1(1)
-                            .dg2(1)
-                            .dg3(1)
-                            .dg4(1)
-                            .dg5(1)
-                            .dg6(1)
-                            .dg7(1)
-                            .dg8(1)
-                            .dg9(1)
-                            .dg10(1)
-                            .dg11(1)
-                            .dg12(1)
-                            .dg13(1)
-                            .dg14(1)
-                            .dg15(1)
-                            .dg16(1)
-                            .build()
-                    );
-                    break;
-                case "BARCODE":
-                    readType = FPHPS_READ_TYPES.FPHPS_RT_BARCODE;
-                    reader = new BarcodeReader(device, fastPassWebSocketHandler); 
-                    deviceProperties.setEnableBarcode(1);
-                    deviceProperties.setBatchModeProperties(
-                        BatchModeProperties.builder()
-                            .ir(0)
-                            .uv(0)
-                            .wh(1)
-                            .build()  
-                    );
-                    break;
-                default:
-                    reader = new PassportReader(device, fastPassWebSocketHandler);
-                    break;
-            }
-            device.getDeviceSetting().setDeviceProperties(deviceProperties);
-
-            response = reader.read(readType, isAuto);
-            return response;
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
-        return response;
+            log.warn("No strategy found for document type: {}", docType);
+            return null; // Or throw an exception
+        });
     }
 
     public void closeDevice() {
@@ -193,26 +120,21 @@ public final class FPHPSService {
     }
 
     public FPHPSImage scanPage(int lightType) {
-        if (!device.isDeviceOpened()) {
-            device.openDevice();
-        }
-        FPHPSDeviceProperties deviceProperties = device.getDeviceProperties();
-        deviceProperties.setCrop(1);
-        deviceProperties.setCheckRemove(1);
-        deviceProperties.setBatchModeProperties(
-            BatchModeProperties.builder()
-            .ir(1)
-            .uv(1)
-            .wh(1)
-            .build()  
-        );
-        device.getDeviceSetting().setDeviceProperties(deviceProperties);
+        return executeWithDevice(openedDevice -> {
+            FPHPSDeviceProperties deviceProperties = openedDevice.getDeviceProperties();
+            deviceProperties.setCrop(1);
+            deviceProperties.setCheckRemove(1);
+            deviceProperties.setBatchModeProperties(
+                    BatchModeProperties.builder()
+                            .ir(1)
+                            .uv(1)
+                            .wh(1)
+                            .build());
+            openedDevice.getDeviceSetting().setDeviceProperties(deviceProperties);
 
-        PageScanner scanner = new PageScanner(device);
-        // FPHPSImage image = scanner.scan(lightType, FPHPS_IMAGE_FORMAT.FPHPS_IF_JPG, 1, false);
-        FPHPSImage image = scanner.scan(lightType);
-        device.closeDevice();
-        return image;
+            PageScanner scanner = new PageScanner(openedDevice);
+            return scanner.scan(lightType);
+        });
     }
 
 }
