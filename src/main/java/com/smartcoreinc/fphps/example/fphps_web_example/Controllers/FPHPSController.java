@@ -84,14 +84,8 @@ public class FPHPSController {
 
     @GetMapping("/passport/manual-read")
     public String manualReadPost(@ModelAttribute EPassportSettingForm formData, Model model) {
-        try {
-            DocumentReadResponse response = fphpsService.read("PASSPORT", false);
-            // Logger.debug("photo base64: {}", responseDto.getPhotoImage());
-            // log.debug(response.getEPassResults().toString());
-            model.addAttribute("response", response);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+        DocumentReadResponse response = fphpsService.read("PASSPORT", false);
+        model.addAttribute("response", response);
         return "fragments/epassport_manual_read";
     }
 
@@ -100,27 +94,17 @@ public class FPHPSController {
         return "fragments/epassport_auto_read";
     }
 
-    @GetMapping("/passport/run-auto-read")
+    @PostMapping("/passport/run-auto-read")
     public void autoRead() {
         log.debug("autoRead() Started!!");
-        try {
-            fphpsService.read("PASSPORT", true);
-        } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
-            log.error(e.getMessage());
-        }
+        fphpsService.read("PASSPORT", true);
         log.debug("autoRead() Ended!!");
     }
 
     @GetMapping("/idcard/manual-read")
     public String idCardManualRead(Model model) {
-        try {
-            DocumentReadResponse response = fphpsService.read("IDCARD", false);
-            // Logger.debug("photo base64: {}", responseDto.getPhotoImage());
-            // log.debug(response.getEPassResults().toString());
-            model.addAttribute("response", response);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+        DocumentReadResponse response = fphpsService.read("IDCARD", false);
+        model.addAttribute("response", response);
         return "fragments/idcard_manual_read";
     }
 
@@ -129,30 +113,17 @@ public class FPHPSController {
         return "fragments/idcard_auto_read";
     }
 
-    @GetMapping("/idcard/run-auto-read")
+    @PostMapping("/idcard/run-auto-read")
     public void idCardAutoRead() {
         log.debug("idCardAutoRead() Started!!");
-        try {
-            fphpsService.read("IDCARD", true);
-        } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
-            log.error(e.getMessage());
-        } finally {
-            fphpsService.closeDevice();
-            log.debug("Device was closed");
-        }
+        fphpsService.read("IDCARD", true);
         log.debug("idCardAutoRead() Ended!!");
     }
 
     @GetMapping("/barcode/manual-read")
     public String barcodeManualRead(Model model) {
-        try {
-            DocumentReadResponse response = fphpsService.read("BARCODE", false);
-            // log.debug(response.getBarCode().toString());
-            // log.debug(response.getWhCropImage().getImageData());
-            model.addAttribute("response", response);
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+        DocumentReadResponse response = fphpsService.read("BARCODE", false);
+        model.addAttribute("response", response);
         return "fragments/barcode_manual_read";
     }
 
@@ -161,17 +132,10 @@ public class FPHPSController {
         return "fragments/barcode_auto_read";
     }
 
-    @GetMapping("/barcode/run-auto-read")
+    @PostMapping("/barcode/run-auto-read")
     public void barcodeAutoRead() {
         log.debug("barcodeAutoRead() Started!!");
-        try {
-            fphpsService.read("BARCODE", true);
-        } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
-            log.error(e.getMessage());
-        } finally {
-            fphpsService.closeDevice();
-            log.debug("Device was closed");
-        }
+        fphpsService.read("BARCODE", true);
         log.debug("barcodeAutoRead() Ended!!");
     }
 
