@@ -40,3 +40,4 @@ src/main/frontend/node_modules
 docs/
 log/
 output.txt
+*.bin
