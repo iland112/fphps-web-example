@@ -22,19 +22,7 @@
         </div>
       </header>
       <section>
-        <div id="response">
-          <div class="flex sm:flex-col justify-start space-y-0.5 h-max">
-            <h1
-              class="px-1.5 text-2xl font-bold text-gray-900"
-              th:text="${device.deviceSerial}"
-            >
-              Device Serial
-            </h1>
-            <p class="px-1.5 text-lg font-medium text-green-900">
-              was connected on your desktop computer!!
-            </p>
-          </div>
-        </div>
+        <div th:replace="~{fragments/home_content :: #response}"></div>
       </section>
     </div>
     <!-- End Content -->
