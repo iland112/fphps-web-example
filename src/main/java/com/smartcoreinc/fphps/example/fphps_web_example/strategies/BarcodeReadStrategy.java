@@ -1,8 +1,8 @@
 package com.smartcoreinc.fphps.example.fphps_web_example.strategies;
 
 import com.smartcoreinc.fphps.dto.DocumentReadResponse;
-import com.smartcoreinc.fphps.dto.properties.BatchModeProperties;
 import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
+import com.smartcoreinc.fphps.example.fphps_web_example.Services.DevicePropertiesService;
 import com.smartcoreinc.fphps.example.fphps_web_example.config.handler.FastPassWebSocketHandler;
 import com.smartcoreinc.fphps.infrastructure.FPHPSLibrary.FPHPS_READ_TYPES;
 import com.smartcoreinc.fphps.manager.FPHPSDevice;
@@ -12,6 +12,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class BarcodeReadStrategy implements DocumentReadStrategy {
 
+    private final DevicePropertiesService devicePropertiesService;
+
+    public BarcodeReadStrategy(DevicePropertiesService devicePropertiesService) {
+        this.devicePropertiesService = devicePropertiesService;
+    }
+
     @Override
     public boolean supports(String docType) {
         return "BARCODE".equalsIgnoreCase(docType);
@@ -19,19 +25,14 @@ public class BarcodeReadStrategy implements DocumentReadStrategy {
 
     @Override
     public DocumentReadResponse read(FPHPSDevice device, FastPassWebSocketHandler fastPassWebSocketHandler, boolean isAuto) {
-        FPHPSDeviceProperties deviceProperties = device.getDeviceProperties();
-        deviceProperties.setCrop(1);
-        deviceProperties.setCheckRemove(1);
+        FPHPSDeviceProperties properties = devicePropertiesService.getProperties();
 
-        deviceProperties.setEnableBarcode(1);
-        deviceProperties.setBatchModeProperties(
-            BatchModeProperties.builder()
-                .ir(0)
-                .uv(0)
-                .wh(1)
-                .build()  
-        );
-        device.getDeviceSetting().setDeviceProperties(deviceProperties);
+        // Ensure properties are set for Barcode reading
+        properties.setEnableBarcode(1);
+        properties.setEnableRF(0); // Explicitly disable RF
+        properties.setEnableIDCard(0); // Explicitly disable ID Card reading
+
+        device.getDeviceSetting().setDeviceProperties(properties);
 
         BarcodeReader reader = new BarcodeReader(device, fastPassWebSocketHandler);
         return reader.read(FPHPS_READ_TYPES.FPHPS_RT_BARCODE, isAuto);

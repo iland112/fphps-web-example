@@ -1,16 +1,17 @@
 package com.smartcoreinc.fphps.example.fphps_web_example.Controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import com.smartcoreinc.fphps.dto.DeviceInfo;
 import com.smartcoreinc.fphps.dto.DocumentReadResponse;
 import com.smartcoreinc.fphps.dto.FPHPSImage;
 import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
+import com.smartcoreinc.fphps.example.fphps_web_example.Services.DevicePropertiesService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FPHPSService;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.DevSettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.EPassportSettingForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.ScanForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.SettingsForm;
+
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,16 +28,38 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class FPHPSController {
 
     private final FPHPSService fphpsService;
+    private final DevicePropertiesService devicePropertiesService;
 
-    public FPHPSController(FPHPSService fphpsService) {
+    public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService) {
         this.fphpsService = fphpsService;
+        this.devicePropertiesService = devicePropertiesService;
     }
 
-    @GetMapping("")  
+    @ModelAttribute("deviceProperties")
+    public FPHPSDeviceProperties deviceProperties() {
+        return devicePropertiesService.getProperties();
+    }
+
+    @GetMapping({"", "/"})  
     public String index(Model model) {
         DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
         model.addAttribute("device", deviceInfo);
+        
+        FPHPSDeviceProperties deviceProperties = devicePropertiesService.getProperties();
+        log.debug("Rendering index with properties: RF={}, IDCard={}, Barcode={}", 
+                  deviceProperties.getEnableRF(), 
+                  deviceProperties.getEnableIDCard(), 
+                  deviceProperties.getEnableBarcode());
+        model.addAttribute("deviceProperties", deviceProperties);
+        
         return "index";
+    }
+
+    @GetMapping("/home")
+    public String getHomeContent(Model model) {
+        DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
+        model.addAttribute("device", deviceInfo);
+        return "fragments/home_content";
     }
 
     @GetMapping("/device")
@@ -61,7 +84,7 @@ public class FPHPSController {
 
     @GetMapping("/device-setting")
     public String getDeviceSetting(Model model) {
-        FPHPSDeviceProperties deviceProperties = fphpsService.getCurrentDeviceProperties();
+        FPHPSDeviceProperties deviceProperties = devicePropertiesService.getProperties();
         SettingsForm settingsForm = SettingsForm.from(deviceProperties);
         model.addAttribute("settingsForm", settingsForm);
         return "settings_form";
@@ -69,18 +92,15 @@ public class FPHPSController {
 
     @PostMapping("/device-setting")
     public String setDeviceSetting(@ModelAttribute SettingsForm settingsForm) {
-        
-        FPHPSDeviceProperties deviceProperties = SettingsForm.to(settingsForm);
-        fphpsService.setDeviceProperties(deviceProperties);
-
+        log.debug("Received settings from form: RF={}, IDCard={}, Barcode={}", 
+                  settingsForm.isEnableRF(), 
+                  settingsForm.isEnableIDCard(), 
+                  settingsForm.isEnableBarcode());
+        FPHPSDeviceProperties currentProperties = devicePropertiesService.getProperties();
+        FPHPSDeviceProperties newProperties = SettingsForm.to(settingsForm, currentProperties);
+        devicePropertiesService.setProperties(newProperties);
         return "redirect:/fphps";
     }
-
-    // @GetMapping("/passport/manual-read")
-    // public String manualRead(Model model) {
-    //     model.addAttribute("formData", new EPassportSettingForm());
-    //     return "fragments/forms";
-    // }
 
     @GetMapping("/passport/manual-read")
     public String manualReadPost(@ModelAttribute EPassportSettingForm formData, Model model) {
@@ -144,6 +164,6 @@ public class FPHPSController {
         model.addAttribute("settingsForm", new DevSettingsForm());
         return "device_setting_form";
     }
-    
+
 
 }

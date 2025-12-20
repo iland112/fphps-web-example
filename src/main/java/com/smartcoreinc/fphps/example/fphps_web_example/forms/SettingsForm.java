@@ -184,8 +184,7 @@ public class SettingsForm implements Serializable {
             .build();
     }
 
-    public static FPHPSDeviceProperties to(SettingsForm settingsForm) {
-        FPHPSDeviceProperties deviceProperties = new FPHPSDeviceProperties();
+    public static FPHPSDeviceProperties to(SettingsForm settingsForm, FPHPSDeviceProperties deviceProperties) {
         // deviceProperties.setReadMethod(settingsForm.getReadMethod());
         deviceProperties.setCheckRemove(settingsForm.isCheckRemove() ? 1 : 0);
         deviceProperties.setEnableRF(settingsForm.isEnableRF() ? 1 : 0);
