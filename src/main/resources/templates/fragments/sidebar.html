@@ -38,7 +38,7 @@
               <a
                 class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
                 href="#"
-                hx-get="/"
+                hx-get="/fphps/home"
                 hx-target="#response"
                 hx-swap="outerHTML"
               >
@@ -61,7 +61,7 @@
               </a>
             </li>
             <!-- EPassport -->
-            <li class="hs-accordion" id="epassport-accordion">
+            <li class="hs-accordion" id="epassport-accordion" th:classappend="${deviceProperties.getEnableRF() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
                 class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
@@ -153,7 +153,7 @@
               </div>
             </li>
             <!-- ID Card -->
-            <li class="hs-accordion" id="idcard-accordion">
+            <li class="hs-accordion" id="idcard-accordion" th:classappend="${deviceProperties.getEnableIDCard() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
                 class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
@@ -243,7 +243,7 @@
               </div>
             </li>
             <!-- Barcode -->
-            <li class="hs-accordion" id="barcode-accordion">
+            <li class="hs-accordion" id="barcode-accordion" th:classappend="${deviceProperties.getEnableBarcode() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
                 class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
