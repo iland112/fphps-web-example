@@ -1,0 +1,67 @@
+<div id="response" xmlns:th="http://www.thymeleaf.org" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <!-- Welcome Header -->
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 dark:bg-neutral-900 dark:border-neutral-800">
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-neutral-200">
+            Welcome to the FastPass JAVA SDK Demo!
+        </h1>
+        <p class="mt-2 text-gray-600 dark:text-neutral-400">
+            This application demonstrates the capabilities of the FastPass e-Passport Reader SDK in a web environment.
+        </p>
+        <div class="mt-4 p-2 rounded-lg bg-slate-100 dark:bg-neutral-800">
+            <p class="text-sm text-gray-800 dark:text-neutral-300">
+                <span class="font-semibold">Connected Device:</span>
+                <span class="font-mono bg-slate-200 dark:bg-neutral-700 rounded-md px-2 py-1" th:text="${device.deviceSerial}">DEVICE-SERIAL-NOT-FOUND</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- How to Use Section -->
+    <div class="space-y-4">
+        <h2 class="text-xl font-semibold text-gray-700 dark:text-neutral-300">How to Use This Application</h2>
+
+        <!-- Grid for Cards -->
+        <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Passport Card -->
+            <div class="flex flex-col bg-white border border-gray-200 rounded-xl p-4 dark:bg-neutral-900 dark:border-neutral-800">
+                <h3 class="font-semibold text-gray-800 dark:text-neutral-200">Passport (e-Passport)</h3>
+                <p class="mt-2 text-sm text-gray-600 dark:text-neutral-400">
+                    Reads ICAO-9303 compliant electronic passports. <br>
+                    - **Manual:** Place the passport and click to read immediately. <br>
+                    - **Auto:** Automatically detects and reads the passport when placed on the device.
+                </p>
+            </div>
+
+            <!-- ID Card Card -->
+            <div class="flex flex-col bg-white border border-gray-200 rounded-xl p-4 dark:bg-neutral-900 dark:border-neutral-800">
+                <h3 class="font-semibold text-gray-800 dark:text-neutral-200">ID Card</h3>
+                <p class="mt-2 text-sm text-gray-600 dark:text-neutral-400">
+                    Reads various national electronic ID cards. The operation is similar to passport reading.
+                </p>
+            </div>
+
+            <!-- Barcode Card -->
+            <div class="flex flex-col bg-white border border-gray-200 rounded-xl p-4 dark:bg-neutral-900 dark:border-neutral-800">
+                <h3 class="font-semibold text-gray-800 dark:text-neutral-200">Barcode</h3>
+                <p class="mt-2 text-sm text-gray-600 dark:text-neutral-400">
+                    Reads 1D and 2D barcodes, such as those found on boarding passes or visas.
+                </p>
+            </div>
+
+            <!-- Scan Page Card -->
+            <div class="flex flex-col bg-white border border-gray-200 rounded-xl p-4 dark:bg-neutral-900 dark:border-neutral-800">
+                <h3 class="font-semibold text-gray-800 dark:text-neutral-200">Scan Page</h3>
+                <p class="mt-2 text-sm text-gray-600 dark:text-neutral-400">
+                    Captures raw, full-page images from the scanner under different light sources (White Light, Infrared, Ultraviolet).
+                </p>
+            </div>
+
+            <!-- Device Settings Card -->
+            <div class="flex flex-col bg-white border border-gray-200 rounded-xl p-4 dark:bg-neutral-900 dark:border-neutral-800">
+                <h3 class="font-semibold text-gray-800 dark:text-neutral-200">Device Settings</h3>
+                <p class="mt-2 text-sm text-gray-600 dark:text-neutral-400">
+                    Allows you to configure the device's operational parameters, such as which features are enabled (e-Passport, ID Card, Barcode) and other advanced options.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
