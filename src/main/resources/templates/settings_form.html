@@ -1,5 +1,5 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div class="m-2" th:fragment="settings">
+  <div id="response" class="m-2" th:fragment="settings">
     <h1 class="mb-2 bg-gray-100 p-4 font-mono text-2xl font-semibold">
       Device Settings
     </h1>
@@ -702,7 +702,7 @@
       </div>
     </form>
     <script>
-      let formData = new FormData(document.getElementById("sform"));
+      let formData = new FormData(document.getElementById("settings-form"));
       formData.forEach(function(value, key){
         console.log(key, value);
       });
