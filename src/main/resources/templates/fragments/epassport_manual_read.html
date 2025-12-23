@@ -472,6 +472,12 @@
           ></fieldset>
         </div>
       </div>
+
+      <!-- SOD (Security Object Document) 정보 섹션 -->
+      <div
+        id="sod-information-section"
+        th:replace="~{fragments/sod_information :: sodInformation(${parsedSODInfo})}"
+      ></div>
     </th:block>
     <div th:if="${response == null or response.mrzInfo == null}">
       <p>No passport data available.</p>

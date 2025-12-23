@@ -530,11 +530,26 @@
         </fieldset>
       </div>
     </div>
+
+    <!-- SOD Information Section -->
+    <div class="mt-4 px-4">
+      <div id="sod-info-container">
+        <!-- SOD 정보가 WebSocket을 통해 자동으로 로드됩니다 -->
+      </div>
+    </div>
   </div>
   <script>
     const socket = new WebSocket("ws://localhost:8080/fastpass");
     socket.onmessage = function (event) {
       const message = JSON.parse(event.data);
+
+      // 모든 이벤트에서 parsedSOD 확인
+      if (message.parsedSOD) {
+        console.log("ParsedSOD found in event:", message.eventCodeString);
+        console.log("ParsedSOD data:", message.parsedSOD);
+        renderSODInformation(message.parsedSOD);
+      }
+
       // console.log("event code: ", message.eventId);
       switch (message.eventCodeString) {
         case "FPHPS_EVENTS.FPHPS_EV_VIZ_PHOTO_CAPTURED":
@@ -587,6 +602,7 @@
           break;
         case "FPHPS_EVENTS.FPHPS_EV_PAGE_CAPTURED":
           console.log("ePassResults: ", message.ePassResults);
+          console.log("parsedSOD: ", message.parsedSOD);
           var checkBoxDg1 = document.querySelector("#hs-checkbox-dg1");
           checkBoxDg1.checked = message.ePassResults.dgs[0];
           var checkBoxDg2 = document.querySelector("#hs-checkbox-dg2");
@@ -648,39 +664,41 @@
         case "FPHPS_EVENTS.FPHPS_EV_DOC_FRAME_FOUND":
           // console.log("line1: ", message.mrzLines.line1);
           var el = document.getElementById("mrz-line-1");
-          var line1 = message.mrzLines.line1.replace(/</g, "&lt");
-          // console.log("replaced line1: ", line1);
-          el.innerHTML = line1;
+          if (el) {
+            var line1 = message.mrzLines.line1.replace(/</g, "&lt");
+            // console.log("replaced line1: ", line1);
+            el.innerHTML = line1;
+          }
           el = document.getElementById("mrz-line-2");
-          el.innerHTML = message.mrzLines.line2;
+          if (el) el.innerHTML = message.mrzLines.line2;
           el = document.getElementById("mrz-line-3");
-          el.innerHTML = message.mrzLines.line3 ? message.mrzLines.line3 : "";
+          if (el) el.innerHTML = message.mrzLines.line3 ? message.mrzLines.line3 : "";
 
           var mrzInfo = message.mrzInfo;
           // console.log("MRZ INFO", mrzInfo);
           el = document.querySelector("#country-flag");
-          el.setAttribute("src", mrzInfo.countryFlagUrl);
+          if (el) el.setAttribute("src", mrzInfo.countryFlagUrl);
           el = document.getElementById("span-passport-number");
-          el.innerHTML = mrzInfo.passportNumber;
+          if (el) el.innerHTML = mrzInfo.passportNumber;
           el = document.getElementById("span-name");
-          el.innerHTML = mrzInfo.name;
+          if (el) el.innerHTML = mrzInfo.name;
 
           el = document.getElementById("doc-type");
-          el.innerHTML = mrzInfo.docType;
+          if (el) el.innerHTML = mrzInfo.docType;
           el = document.getElementById("issuing-state");
-          el.innerHTML = mrzInfo.issuingState;
+          if (el) el.innerHTML = mrzInfo.issuingState;
           el = document.getElementById("name");
-          el.innerHTML = mrzInfo.name;
+          if (el) el.innerHTML = mrzInfo.name;
           el = document.getElementById("passport-number");
-          el.innerHTML = mrzInfo.passportNumber;
+          if (el) el.innerHTML = mrzInfo.passportNumber;
           el = document.getElementById("nationality");
-          el.innerHTML = mrzInfo.nationality;
+          if (el) el.innerHTML = mrzInfo.nationality;
           el = document.getElementById("birth");
-          el.innerHTML = mrzInfo.birth;
+          if (el) el.innerHTML = mrzInfo.birth;
           el = document.getElementById("sex");
-          el.innerHTML = mrzInfo.sex;
+          if (el) el.innerHTML = mrzInfo.sex;
           el = document.getElementById("expiry-date");
-          el.innerHTML = mrzInfo.expiryDate;
+          if (el) el.innerHTML = mrzInfo.expiryDate;
           break;
         case "FPHPS_EVENTS.FPHPS_EV_EPASS_READ_MRZ":
           console.log("FPHPS_EVENTS.FPHPS_EV_EPASS_READ_MRZ");
@@ -699,5 +717,95 @@
         message.eventCodeString + " :: " + message.lParam + "\n";
       document.getElementById("notifications").append(messgetText);
     };
+
+    // SOD 정보를 HTML로 렌더링하는 함수
+    function renderSODInformation(parsedSOD) {
+      const container = document.getElementById("sod-info-container");
+      if (!container) {
+        console.error("SOD container not found");
+        return;
+      }
+
+      // ParsedSOD 데이터 구조: { dscCertificate, dgHashes, digestAlgorithmOid, signerInformation }
+      let html = '<div id="sod-section" class="mt-6 space-y-4">';
+      html += '<h3 class="text-xl font-semibold text-gray-800 dark:text-white">SOD (Security Object Document) Information</h3>';
+
+      // Digest Algorithm
+      html += '<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">';
+      html += '<h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Digest Algorithm</h4>';
+      html += '<p class="text-sm text-gray-600 dark:text-gray-400">OID: ' + (parsedSOD.digestAlgorithmOid || 'N/A') + '</p>';
+      html += '</div>';
+
+      // Data Group Hashes
+      if (parsedSOD.dgHashes && parsedSOD.dgHashes.length > 0) {
+        html += '<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">';
+        html += '<h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Data Group Hashes</h4>';
+        html += '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">';
+        html += '<thead><tr><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">DG</th>';
+        html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Hash (Base64)</th></tr></thead>';
+        html += '<tbody class="divide-y divide-gray-200 dark:divide-gray-700">';
+
+        parsedSOD.dgHashes.forEach(function(dg) {
+          html += '<tr><td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">DG' +
+                  (dg.dgNumber < 10 ? '0' + dg.dgNumber : dg.dgNumber) + '</td>';
+          html += '<td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 font-mono break-all">' +
+                  (dg.hash || 'N/A') + '</td></tr>';
+        });
+
+        html += '</tbody></table></div></div>';
+      }
+
+      // DSC Certificate
+      if (parsedSOD.dscCertificate) {
+        const cert = parsedSOD.dscCertificate;
+        html += '<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">';
+        html += '<h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-3">Document Signer Certificate (DSC)</h4>';
+
+        // Subject & Issuer
+        html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">';
+        html += '<div><p class="text-xs font-medium text-gray-500 uppercase mb-1">Subject</p>';
+        html += '<p class="text-sm text-gray-900 dark:text-white break-all">' + (cert.subject || 'N/A') + '</p></div>';
+        html += '<div><p class="text-xs font-medium text-gray-500 uppercase mb-1">Issuer</p>';
+        html += '<p class="text-sm text-gray-900 dark:text-white break-all">' + (cert.issuer || 'N/A') + '</p></div>';
+        html += '</div>';
+
+        // Validity
+        html += '<div class="mb-4"><p class="text-xs font-medium text-gray-500 uppercase mb-1">Validity Period</p>';
+        html += '<p class="text-sm text-gray-600 dark:text-gray-400">From: ' + (cert.notBefore || 'N/A') + '</p>';
+        html += '<p class="text-sm text-gray-600 dark:text-gray-400">To: ' + (cert.notAfter || 'N/A') + '</p>';
+        html += '<p class="text-sm font-medium ' + (cert.valid ? 'text-green-600' : 'text-red-600') + '">' +
+                (cert.valid ? '✓ Valid' : '✗ Expired') + '</p></div>';
+
+        // Public Key
+        html += '<div class="mb-4"><p class="text-xs font-medium text-gray-500 uppercase mb-1">Public Key</p>';
+        html += '<p class="text-sm text-gray-600 dark:text-gray-400">Algorithm: ' + (cert.publicKeyAlgorithm || 'N/A') + '</p>';
+        html += '<p class="text-sm text-gray-600 dark:text-gray-400">Size: ' + (cert.publicKeySize || 'N/A') + ' bits</p></div>';
+
+        // Fingerprints
+        html += '<div class="mb-4"><p class="text-xs font-medium text-gray-500 uppercase mb-1">Fingerprints</p>';
+        html += '<p class="text-xs text-gray-600 dark:text-gray-400 font-mono break-all">SHA-1: ' +
+                (cert.sha1Fingerprint || 'N/A') + '</p>';
+        html += '<p class="text-xs text-gray-600 dark:text-gray-400 font-mono break-all">SHA-256: ' +
+                (cert.sha256Fingerprint || 'N/A') + '</p></div>';
+
+        html += '</div>';
+      }
+
+      // Signer Information
+      if (parsedSOD.signerInfo) {
+        const signer = parsedSOD.signerInfo;
+        html += '<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">';
+        html += '<h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Signer Information</h4>';
+        html += '<p class="text-sm text-gray-600 dark:text-gray-400">Digest Algorithm: ' +
+                (signer.digestAlgorithmName || signer.digestAlgorithmOid || 'N/A') + '</p>';
+        html += '<p class="text-sm text-gray-600 dark:text-gray-400">Signature Algorithm: ' +
+                (signer.signatureAlgorithmName || signer.signatureAlgorithmOid || 'N/A') + '</p>';
+        html += '</div>';
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+      console.log("SOD information rendered successfully");
+    }
   </script>
 </html>

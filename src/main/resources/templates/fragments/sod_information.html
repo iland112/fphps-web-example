@@ -1,0 +1,463 @@
+<html xmlns:th="http://www.thymeleaf.org">
+  <!-- SOD (Security Object Document) 정보 표시 프래그먼트 -->
+  <div id="sod-section" th:fragment="sodInformation(sodInfo)">
+    <th:block th:if="${sodInfo != null}">
+      <!-- SOD 헤더 -->
+      <div class="border-t border-gray-100 px-4 py-4 sm:px-0">
+        <h3 class="text-2xl font-semibold text-gray-900">
+          Security Object Document (SOD)
+        </h3>
+        <p class="mt-1 text-lg text-gray-500">
+          E-Passport chip security and integrity information
+        </p>
+      </div>
+
+      <!-- 다이제스트 알고리즘 정보 -->
+      <div class="border-t border-gray-100 px-4 py-3">
+        <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <h4 class="text-lg font-semibold text-blue-900">
+            Digest Algorithm
+          </h4>
+          <dl class="mt-2 grid grid-cols-2 gap-4">
+            <div>
+              <dt class="font-mono text-sm font-medium text-gray-700">
+                Algorithm Name
+              </dt>
+              <dd
+                class="mt-1 text-sm font-semibold text-gray-900"
+                th:text="${sodInfo.digestAlgorithmName}"
+              >
+                SHA-256
+              </dd>
+            </div>
+            <div>
+              <dt class="font-mono text-sm font-medium text-gray-700">OID</dt>
+              <dd
+                class="mt-1 font-mono text-sm text-gray-900"
+                th:text="${sodInfo.digestAlgorithmOid}"
+              >
+                2.16.840.1.101.3.4.2.1
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <!-- Data Group Hashes -->
+      <div class="border-t border-gray-100 px-4 py-3">
+        <div class="rounded-lg border border-gray-300 bg-white p-4">
+          <h4 class="text-lg font-semibold text-gray-900">
+            Data Group Hashes
+          </h4>
+          <p class="text-sm text-gray-600">
+            Hash values for each Data Group stored in the chip
+          </p>
+
+          <div class="mt-3 grid grid-cols-1 gap-2">
+            <th:block
+              th:each="dgHash : ${sodInfo.dataGroupHashes}"
+              th:object="${dgHash}"
+            >
+              <div
+                class="flex items-center rounded border border-gray-200 bg-gray-50 p-2"
+              >
+                <div class="w-20">
+                  <span
+                    class="rounded bg-indigo-100 px-2 py-1 font-mono text-sm font-bold text-indigo-800"
+                    th:text="*{dgName}"
+                  >
+                    DG01
+                  </span>
+                </div>
+                <div class="flex-1">
+                  <code
+                    class="break-all font-mono text-xs text-gray-700"
+                    th:text="*{hashValue}"
+                  >
+                    A1B2C3D4E5F6...
+                  </code>
+                </div>
+              </div>
+            </th:block>
+          </div>
+        </div>
+      </div>
+
+      <!-- DSC Certificate 정보 -->
+      <div
+        class="border-t border-gray-100 px-4 py-3"
+        th:if="${sodInfo.dscCertificate != null}"
+        th:object="${sodInfo.dscCertificate}"
+      >
+        <div class="rounded-lg border border-gray-300 bg-white p-4">
+          <h4 class="text-lg font-semibold text-gray-900">
+            Document Signing Certificate (DSC)
+          </h4>
+
+          <!-- 인증서 기본 정보 -->
+          <div class="mt-3 space-y-3">
+            <!-- Subject -->
+            <div class="rounded border border-gray-200 bg-gray-50 p-3">
+              <dt class="font-mono text-sm font-bold text-gray-900">
+                Subject
+              </dt>
+              <dd
+                class="mt-1 break-all font-mono text-xs text-gray-700"
+                th:text="*{subject}"
+              >
+                CN=Country Signing CA, O=Government, C=XX
+              </dd>
+            </div>
+
+            <!-- Issuer -->
+            <div class="rounded border border-gray-200 bg-gray-50 p-3">
+              <dt class="font-mono text-sm font-bold text-gray-900">Issuer</dt>
+              <dd
+                class="mt-1 break-all font-mono text-xs text-gray-700"
+                th:text="*{issuer}"
+              >
+                CN=Country Root CA, O=Government, C=XX
+              </dd>
+            </div>
+
+            <!-- 유효기간 -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Valid From
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-sm text-gray-700"
+                  th:text="*{notBefore}"
+                >
+                  2024-01-01 00:00:00
+                </dd>
+              </div>
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Valid Until
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-sm text-gray-700"
+                  th:text="*{notAfter}"
+                >
+                  2034-01-01 00:00:00
+                </dd>
+              </div>
+            </div>
+
+            <!-- 유효성 상태 -->
+            <div class="rounded border p-3" th:classappend="${sodInfo.dscCertificate.valid} ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'">
+              <dt class="font-mono text-sm font-bold" th:classappend="${sodInfo.dscCertificate.valid} ? 'text-green-900' : 'text-red-900'">
+                Validity Status
+              </dt>
+              <dd class="mt-1 flex items-center text-sm font-semibold" th:classappend="${sodInfo.dscCertificate.valid} ? 'text-green-700' : 'text-red-700'">
+                <svg
+                  th:if="${sodInfo.dscCertificate.valid}"
+                  class="mr-2 h-5 w-5 text-green-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <svg
+                  th:unless="${sodInfo.dscCertificate.valid}"
+                  class="mr-2 h-5 w-5 text-red-600"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                <span th:text="${sodInfo.dscCertificate.valid} ? 'Valid' : 'Expired or Not Yet Valid'">
+                  Valid
+                </span>
+              </dd>
+            </div>
+
+            <!-- Serial Number -->
+            <div class="rounded border border-gray-200 bg-gray-50 p-3">
+              <dt class="font-mono text-sm font-bold text-gray-900">
+                Serial Number
+              </dt>
+              <dd
+                class="mt-1 break-all font-mono text-xs text-gray-700"
+                th:text="*{serialNumber}"
+              >
+                1A2B3C4D5E6F
+              </dd>
+            </div>
+
+            <!-- 공개키 정보 -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Public Key Algorithm
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-sm text-gray-700"
+                  th:text="*{publicKeyAlgorithm}"
+                >
+                  RSA
+                </dd>
+              </div>
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Key Size
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-sm text-gray-700"
+                  th:text="*{publicKeySize} + ' bits'"
+                >
+                  2048 bits
+                </dd>
+              </div>
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Key Format
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-sm text-gray-700"
+                  th:text="*{publicKeyFormat}"
+                >
+                  X.509
+                </dd>
+              </div>
+            </div>
+
+            <!-- 서명 알고리즘 -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Signature Algorithm
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-sm text-gray-700"
+                  th:text="*{signatureAlgorithm}"
+                >
+                  SHA256withRSA
+                </dd>
+              </div>
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Signature OID
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-xs text-gray-700"
+                  th:text="*{signatureAlgorithmOID}"
+                >
+                  1.2.840.113549.1.1.11
+                </dd>
+              </div>
+            </div>
+
+            <!-- 지문 (Fingerprints) -->
+            <div class="space-y-2">
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  SHA-1 Fingerprint
+                </dt>
+                <dd
+                  class="mt-1 break-all font-mono text-xs text-gray-700"
+                  th:text="*{sha1Fingerprint}"
+                >
+                  A1:B2:C3:D4:E5:F6:...
+                </dd>
+              </div>
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  SHA-256 Fingerprint
+                </dt>
+                <dd
+                  class="mt-1 break-all font-mono text-xs text-gray-700"
+                  th:text="*{sha256Fingerprint}"
+                >
+                  A1:B2:C3:D4:E5:F6:...
+                </dd>
+              </div>
+            </div>
+
+            <!-- 인증서 버전 및 타입 -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Version
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-sm text-gray-700"
+                  th:text="'v' + *{version}"
+                >
+                  v3
+                </dd>
+              </div>
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">Type</dt>
+                <dd
+                  class="mt-1 font-mono text-sm text-gray-700"
+                  th:text="*{type}"
+                >
+                  X.509
+                </dd>
+              </div>
+            </div>
+
+            <!-- X.509 확장 필드 -->
+            <div
+              th:if="${sodInfo.dscCertificate.extensions != null and !sodInfo.dscCertificate.extensions.isEmpty()}"
+            >
+              <details class="rounded border border-gray-300 bg-white">
+                <summary
+                  class="cursor-pointer bg-gray-100 p-3 font-mono text-sm font-bold text-gray-900 hover:bg-gray-200"
+                >
+                  X.509 Extensions
+                  <span
+                    class="ml-2 rounded bg-gray-300 px-2 py-1 text-xs"
+                    th:text="${sodInfo.dscCertificate.extensions.size()} + ' extensions'"
+                  >
+                    5 extensions
+                  </span>
+                </summary>
+                <div class="space-y-2 p-3">
+                  <th:block th:each="ext : ${sodInfo.dscCertificate.extensions}">
+                    <div
+                      class="rounded border p-2"
+                      th:classappend="${ext.critical} ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'"
+                    >
+                      <div class="flex items-center justify-between">
+                        <span
+                          class="font-mono text-sm font-bold"
+                          th:classappend="${ext.critical} ? 'text-red-900' : 'text-gray-900'"
+                          th:text="${ext.name}"
+                        >
+                          Key Usage
+                        </span>
+                        <span
+                          th:if="${ext.critical}"
+                          class="rounded bg-red-200 px-2 py-1 text-xs font-bold text-red-800"
+                        >
+                          CRITICAL
+                        </span>
+                      </div>
+                      <div class="mt-1 font-mono text-xs text-gray-600">
+                        OID: <span th:text="${ext.oid}">2.5.29.15</span>
+                      </div>
+                      <details class="mt-2">
+                        <summary
+                          class="cursor-pointer font-mono text-xs text-gray-500 hover:text-gray-700"
+                        >
+                          View raw value
+                        </summary>
+                        <code
+                          class="mt-1 block break-all rounded bg-gray-100 p-2 font-mono text-xs text-gray-700"
+                          th:text="${ext.value}"
+                        >
+                          04 02 01 86
+                        </code>
+                      </details>
+                    </div>
+                  </th:block>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signer Information -->
+      <div
+        class="border-t border-gray-100 px-4 py-3"
+        th:if="${sodInfo.signerInfo != null}"
+        th:object="${sodInfo.signerInfo}"
+      >
+        <div class="rounded-lg border border-gray-300 bg-white p-4">
+          <h4 class="text-lg font-semibold text-gray-900">
+            Signer Information
+          </h4>
+
+          <div class="mt-3 space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Digest Algorithm OID
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-xs text-gray-700"
+                  th:text="*{digestAlgorithm}"
+                >
+                  2.16.840.1.101.3.4.2.1
+                </dd>
+              </div>
+              <div class="rounded border border-gray-200 bg-gray-50 p-3">
+                <dt class="font-mono text-sm font-bold text-gray-900">
+                  Encryption Algorithm OID
+                </dt>
+                <dd
+                  class="mt-1 font-mono text-xs text-gray-700"
+                  th:text="*{encryptionAlgorithm}"
+                >
+                  1.2.840.113549.1.1.1
+                </dd>
+              </div>
+            </div>
+
+            <div class="rounded border border-gray-200 bg-gray-50 p-3">
+              <dt class="font-mono text-sm font-bold text-gray-900">
+                Digital Signature
+              </dt>
+              <details class="mt-2">
+                <summary
+                  class="cursor-pointer font-mono text-xs text-gray-500 hover:text-gray-700"
+                >
+                  Show signature (click to expand)
+                </summary>
+                <code
+                  class="mt-2 block break-all rounded bg-gray-100 p-2 font-mono text-xs text-gray-700"
+                  th:text="*{signature}"
+                >
+                  A1B2C3D4E5F6...
+                </code>
+              </details>
+            </div>
+          </div>
+        </div>
+      </div>
+    </th:block>
+
+    <!-- SOD 데이터가 없을 때 -->
+    <th:block th:if="${sodInfo == null}">
+      <div class="border-t border-gray-100 px-4 py-4">
+        <div
+          class="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-center"
+        >
+          <svg
+            class="mx-auto h-12 w-12 text-yellow-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <h3 class="mt-2 text-lg font-semibold text-yellow-900">
+            No SOD Data Available
+          </h3>
+          <p class="mt-1 text-sm text-yellow-700">
+            Security Object Document information is not available for this
+            passport.
+          </p>
+        </div>
+      </div>
+    </th:block>
+  </div>
+</html>
