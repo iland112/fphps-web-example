@@ -7,11 +7,13 @@ import com.smartcoreinc.fphps.dto.FPHPSImage;
 import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.DevicePropertiesService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FPHPSService;
+import com.smartcoreinc.fphps.example.fphps_web_example.Services.PassiveAuthenticationService;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.DevSettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.EPassportSettingForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.ScanForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.SettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.ParsedSODInfo;
+import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResponse;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,10 +33,12 @@ public class FPHPSController {
 
     private final FPHPSService fphpsService;
     private final DevicePropertiesService devicePropertiesService;
+    private final PassiveAuthenticationService paService;
 
-    public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService) {
+    public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService, PassiveAuthenticationService paService) {
         this.fphpsService = fphpsService;
         this.devicePropertiesService = devicePropertiesService;
+        this.paService = paService;
     }
 
     @ModelAttribute("deviceProperties")
@@ -148,6 +152,35 @@ public class FPHPSController {
         }
 
         return "fragments/sod_information :: sodInformation";
+    }
+
+    /**
+     * Manual Read의 PA 검증 수행
+     * 마지막 읽기 결과를 사용하여 PA API 호출
+     */
+    @PostMapping("/passport/verify-pa")
+    @ResponseBody
+    public PaVerificationResponse verifyPassportPA() {
+        log.debug("PA verification requested for manual read");
+
+        DocumentReadResponse lastResponse = fphpsService.getLastReadResponse();
+        if (lastResponse == null) {
+            throw new PassiveAuthenticationService.PaVerificationException(
+                "No passport data available. Please read passport first.");
+        }
+
+        return paService.verifyFromDocumentResponse(lastResponse);
+    }
+
+    /**
+     * PA 검증 결과를 Thymeleaf 프래그먼트로 렌더링
+     */
+    @GetMapping("/passport/pa-result")
+    public String getPAVerificationResult(Model model) {
+        // 이 엔드포인트는 HTMX 요청을 통해 호출되며,
+        // 프론트엔드에서 JavaScript로 PA 검증 후 결과를 전달받아 사용합니다.
+        // 현재는 프래그먼트만 반환하고, 실제 데이터는 HTMX 요청 시 함께 전달됩니다.
+        return "fragments/pa_verification_result :: paResult";
     }
 
     @GetMapping("/idcard/manual-read")
