@@ -42,6 +42,8 @@ dependencies {
 	
 	implementation 'org.javatuples:javatuples:1.2'
 	implementation 'com.google.code.gson:gson:2.10.1'
+	// Apache HttpClient 5 for stable HTTP connections
+	implementation 'org.apache.httpcomponents.client5:httpclient5'
 	// Bouncy Castle
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78'
     implementation 'org.bouncycastle:bcpkix-jdk18on:1.78'

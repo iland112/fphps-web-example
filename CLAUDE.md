@@ -23,6 +23,7 @@
 | └ spring-boot-starter-websocket | | 실시간 양방향 통신 |
 | └ spring-boot-devtools | | 개발 편의 도구 |
 | **JNA** | 5.17.0 | Java-네이티브 라이브러리 브리지 |
+| **Apache HttpClient 5** | 5.4.4 | 안정적인 HTTP 통신 (PA API 연동) |
 | **Bouncy Castle** | 1.78 | PKI 암호화 및 전자여권 인증 |
 | **Gson** | 2.10.1 | JSON 직렬화/역직렬화 |
 | **JavaTuples** | 1.2 | 불변 튜플 데이터 구조 |
@@ -59,7 +60,8 @@ FPHPS_WEB_Example/
 │   │
 │   ├── Services/
 │   │   ├── FPHPSService.java                   # 핵심 디바이스 관리 서비스
-│   │   └── DevicePropertiesService.java        # 디바이스 속성 상태 관리
+│   │   ├── DevicePropertiesService.java        # 디바이스 속성 상태 관리
+│   │   └── PassiveAuthenticationService.java   # PA 검증 서비스 (외부 API 연동)
 │   │
 │   ├── strategies/                             # 전략 패턴 구현
 │   │   ├── DocumentReadStrategy.java           # 전략 인터페이스
@@ -70,8 +72,16 @@ FPHPS_WEB_Example/
 │   ├── config/                                 # 설정 클래스
 │   │   ├── WebSocketConfig.java                # Raw WebSocket 설정
 │   │   ├── WebSocketStompBrokerConfig.java     # STOMP 메시징 설정
+│   │   ├── PaApiClientConfig.java              # PA API HTTP 클라이언트 설정
 │   │   └── handler/
 │   │       └── FastPassWebSocketHandler.java   # WebSocket 메시지 핸들러
+│   │
+│   ├── dto/                                    # DTO 클래스
+│   │   ├── pa/                                 # PA API DTO
+│   │   │   ├── PaVerificationRequest.java      # PA 검증 요청
+│   │   │   └── PaVerificationResponse.java     # PA 검증 응답
+│   │   ├── CertificateInfo.java                # X509 인증서 정보
+│   │   └── ParsedSODInfo.java                  # SOD 파싱 정보
 │   │
 │   ├── exceptions/
 │   │   └── DeviceOperationException.java       # 커스텀 예외
@@ -414,6 +424,112 @@ cd ../../..
 
 ## 작업 이력
 
+### 2025-12-23: Passive Authentication 검증 기능 통합
+
+**구현 내용**:
+- ICAO Local PKD 외부 API를 통한 전자여권 Passive Authentication 검증 기능 구현
+- WSL2 환경에서 실행되는 PA API 서버와 Windows Spring Boot 앱 간 HTTP 통신 구현
+- Apache HttpClient 5 기반 안정적인 HTTP 클라이언트 구성
+
+**주요 변경사항**:
+
+1. **DTO 계층 추가** (`dto/pa/`):
+   - `PaVerificationRequest.java`: PA 검증 요청 DTO
+     - SOD 및 Data Groups Base64 인코딩
+     - Null DG 처리 로직 (NullPointerException 방지)
+     - 발급 국가, 여권 번호, Client ID 포함
+   - `PaVerificationResponse.java`: PA 검증 응답 DTO
+     - 검증 상태 (SUCCESS/FAILURE)
+     - 인증서 체인 검증 결과
+     - SOD 서명 검증 결과
+     - DG 해시 검증 결과
+
+2. **서비스 계층 구현** (`PassiveAuthenticationService.java`):
+   - `verify()`: PA API 호출 및 응답 처리
+   - `verifyFromDocumentResponse()`: DocumentReadResponse에서 데이터 추출 후 검증
+   - SOD/DG 데이터 추출 및 Base64 인코딩
+   - MRZ에서 발급 국가 및 여권 번호 파싱
+   - 상세 로깅 (SOD 헤더, 크기, Base64 길이 검증)
+   - 커스텀 예외 처리 (`PaVerificationException`)
+
+3. **HTTP 클라이언트 설정** (`PaApiClientConfig.java`):
+   - **Apache HttpClient 5** 사용으로 전환
+     - SimpleClientHttpRequestFactory → HttpComponentsClientHttpRequestFactory
+     - Connection Pool 설정 (최대 10개 연결, 라우트당 5개)
+     - 타임아웃: 연결 30초, 소켓 60초, 응답 60초
+   - `Connection: close` 헤더 추가 (WSL2 포트 포워딩 안정성 향상)
+   - Base URL 자동 적용 (`DefaultUriBuilderFactory`)
+
+4. **컨트롤러 업데이트** (`FPHPSController.java`):
+   - `POST /fphps/passport/verify-pa`: PA 검증 엔드포인트 추가
+   - Manual/Auto Read 모두에서 PA 검증 지원
+   - 검증 결과 UI 표시
+
+5. **UI 구현**:
+   - `epassport_manual_read.html`: "Verify PA" 버튼 추가
+     - 버튼 색상: cyan-500 (시인성 향상)
+     - HTMX 기반 비동기 요청
+   - `pa_verification_result.html`: PA 검증 결과 표시 프래그먼트
+     - 전체 검증 상태 배지
+     - 인증서 체인 검증 결과
+     - SOD 서명 검증 결과
+     - Data Group 해시 검증 결과 (개별 DG별 상세 정보)
+     - 처리 시간 표시
+
+6. **설정 파일** (`application.properties`):
+   - PA API 서버 URL 설정
+   - WSL2 IP 직접 사용: `http://172.24.1.6:8081`
+
+**기술적 해결 과제**:
+
+1. **WSL2 Port Forwarding 불안정성**:
+   - **문제**: `netsh portproxy`를 통한 대용량 POST 요청 시 Connection Reset 발생
+   - **원인**: WSL2 NAT 네트워킹의 알려진 제한사항
+   - **시도한 해결책**:
+     - Apache HttpClient 5로 전환
+     - Connection Pool 설정
+     - `Connection: close` 헤더 추가
+   - **최종 해결**: 서버측 협의를 통한 네트워크 구성 변경
+
+2. **Podman Rootless 네트워킹**:
+   - **문제**: Podman rootless 컨테이너가 자체 네트워크 네임스페이스 사용으로 외부 접근 차단
+   - **해결**: Podman `network_mode: host` 적용으로 WSL2 호스트 네트워크 직접 사용
+
+3. **WSL2 UFW 방화벽**:
+   - **문제**: UFW 기본 정책 DROP으로 8081 포트 차단
+   - **해결**: `sudo ufw allow 8081/tcp` 규칙 추가
+
+4. **NullPointerException in Base64 Encoding**:
+   - **문제**: 일부 DG (DG3, DG14 등)가 null일 때 인코딩 실패
+   - **해결**: `PaVerificationRequest.of()` 메서드에서 null/empty 체크 추가
+
+**네트워크 구성**:
+
+```
+Windows (Spring Boot App)
+    ↓ HTTP POST
+    ↓ 172.24.1.6:8081
+    ↓
+WSL2 Ubuntu 20.04
+    ├─ UFW: port 8081/tcp allow
+    └─ Podman (network_mode: host)
+        └─ Local PKD Container
+            └─ PA API Server
+```
+
+**의존성 추가**:
+- `org.apache.httpcomponents.client5:httpclient5` (5.4.4)
+
+**테스트 결과**:
+- ✅ Manual Read 후 PA 검증 성공
+- ✅ Auto Read 후 PA 검증 성공
+- ✅ SOD 및 DG 데이터 Base64 인코딩 정상
+- ✅ PA API 연동 정상 (인증서 체인, SOD 서명, DG 해시 검증)
+- ✅ WSL2 환경에서 안정적인 HTTP 통신
+- ✅ 검증 결과 UI 표시 정상
+
+---
+
 ### 2025-12-23: ParsedSOD 데이터 시각화 구현
 
 **구현 내용**:
@@ -562,5 +678,6 @@ cd ../../..
 ---
 
 **문서 작성일**: 2025-12-20
+**최종 업데이트**: 2025-12-23
 **분석 도구**: Claude Code (Anthropic)
-**현재 브랜치**: `with-gemini-assist`
+**현재 브랜치**: `feature/pa-integration`
