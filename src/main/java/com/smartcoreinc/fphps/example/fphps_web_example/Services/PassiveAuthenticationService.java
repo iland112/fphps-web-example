@@ -5,6 +5,8 @@ import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationReq
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -53,6 +55,20 @@ public class PassiveAuthenticationService {
             log.info("Sending PA verification request for country={}, docNumber={}, SOD size={} bytes, DG count={}",
                 country, documentNumber, sodBytes.length, dataGroups.size());
 
+            // SOD 헤더 로그 (첫 16바이트를 hex로 출력하여 형식 확인)
+            if (sodBytes.length >= 16) {
+                StringBuilder hexHeader = new StringBuilder();
+                for (int i = 0; i < 16; i++) {
+                    hexHeader.append(String.format("%02X ", sodBytes[i]));
+                }
+                log.info("SOD header (first 16 bytes): {}", hexHeader.toString().trim());
+            }
+
+            // Base64 인코딩된 SOD 확인
+            log.info("SOD Base64 length: {} chars, first 50 chars: {}",
+                request.sod().length(),
+                request.sod().substring(0, Math.min(50, request.sod().length())));
+
             // Data Groups 크기 로그
             dataGroups.forEach((key, value) -> {
                 if (value != null) {
@@ -60,9 +76,14 @@ public class PassiveAuthenticationService {
                 }
             });
 
+            // Connection: close 헤더 추가로 Connection Reset 방지
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Connection", "close");
+            HttpEntity<PaVerificationRequest> requestEntity = new HttpEntity<>(request, headers);
+
             ResponseEntity<PaVerificationResponse> response = paApiRestTemplate.postForEntity(
                 "/api/pa/verify",
-                request,
+                requestEntity,
                 PaVerificationResponse.class
             );
 
