@@ -28,6 +28,9 @@ public final class FPHPSService {
     private final DevicePropertiesService devicePropertiesService;
     private FPHPSDevice device;
 
+    // Auto-read의 마지막 읽기 결과 저장
+    private volatile DocumentReadResponse lastReadResponse;
+
     public FPHPSService(FastPassWebSocketHandler fastPassWebSocketHandler, List<DocumentReadStrategy> strategies, DevicePropertiesService devicePropertiesService) {
         this.fastPassWebSocketHandler = fastPassWebSocketHandler;
         this.strategies = strategies;
@@ -103,7 +106,7 @@ public final class FPHPSService {
     }
 
     public DocumentReadResponse read(String docType, boolean isAuto) {
-        return executeWithDevice(openedDevice -> {
+        DocumentReadResponse response = executeWithDevice(openedDevice -> {
             for (DocumentReadStrategy strategy : strategies) {
                 if (strategy.supports(docType)) {
                     return strategy.read(openedDevice, fastPassWebSocketHandler, isAuto);
@@ -112,6 +115,31 @@ public final class FPHPSService {
             log.warn("No strategy found for document type: {}", docType);
             return null;
         });
+
+        // Auto-read의 경우 마지막 결과 저장
+        if (isAuto && response != null) {
+            this.lastReadResponse = response;
+            log.debug("Saved last read response for auto-read with parsedSOD: {}",
+                     response.getParsedSOD() != null ? "Available" : "Not Available");
+        }
+
+        return response;
+    }
+
+    /**
+     * Auto-read의 마지막 읽기 결과 반환
+     * @return 마지막 DocumentReadResponse 또는 null
+     */
+    public DocumentReadResponse getLastReadResponse() {
+        return lastReadResponse;
+    }
+
+    /**
+     * 저장된 마지막 읽기 결과 초기화
+     */
+    public void clearLastReadResponse() {
+        this.lastReadResponse = null;
+        log.debug("Cleared last read response");
     }
 
     public void closeDevice() {

@@ -11,6 +11,7 @@ import com.smartcoreinc.fphps.example.fphps_web_example.forms.DevSettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.EPassportSettingForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.ScanForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.SettingsForm;
+import com.smartcoreinc.fphps.example.fphps_web_example.dto.ParsedSODInfo;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 
 @Slf4j
@@ -106,6 +108,16 @@ public class FPHPSController {
     public String manualReadPost(@ModelAttribute EPassportSettingForm formData, Model model) {
         DocumentReadResponse response = fphpsService.read("PASSPORT", false);
         model.addAttribute("response", response);
+
+        // ParsedSOD 정보 추출 및 모델에 추가
+        if (response != null && response.getParsedSOD() != null) {
+            ParsedSODInfo sodInfo = ParsedSODInfo.from(response.getParsedSOD());
+            model.addAttribute("parsedSODInfo", sodInfo);
+            log.debug("ParsedSOD information added to model: {}", sodInfo);
+        } else {
+            log.debug("No ParsedSOD data available in response");
+        }
+
         return "fragments/epassport_manual_read";
     }
 
@@ -115,10 +127,27 @@ public class FPHPSController {
     }
 
     @PostMapping("/passport/run-auto-read")
+    @ResponseBody
     public void autoRead() {
         log.debug("autoRead() Started!!");
         fphpsService.read("PASSPORT", true);
         log.debug("autoRead() Ended!!");
+    }
+
+    @GetMapping("/passport/get-sod-info")
+    public String getAutoReadSODInfo(Model model) {
+        DocumentReadResponse lastResponse = fphpsService.getLastReadResponse();
+
+        if (lastResponse != null && lastResponse.getParsedSOD() != null) {
+            ParsedSODInfo sodInfo = ParsedSODInfo.from(lastResponse.getParsedSOD());
+            model.addAttribute("parsedSODInfo", sodInfo);
+            log.debug("Retrieved SOD info from last auto-read: {}", sodInfo);
+        } else {
+            log.debug("No SOD data available from last auto-read");
+            model.addAttribute("parsedSODInfo", null);
+        }
+
+        return "fragments/sod_information :: sodInformation";
     }
 
     @GetMapping("/idcard/manual-read")
@@ -134,6 +163,7 @@ public class FPHPSController {
     }
 
     @PostMapping("/idcard/run-auto-read")
+    @ResponseBody
     public void idCardAutoRead() {
         log.debug("idCardAutoRead() Started!!");
         fphpsService.read("IDCARD", true);
@@ -153,6 +183,7 @@ public class FPHPSController {
     }
 
     @PostMapping("/barcode/run-auto-read")
+    @ResponseBody
     public void barcodeAutoRead() {
         log.debug("barcodeAutoRead() Started!!");
         fphpsService.read("BARCODE", true);
