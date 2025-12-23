@@ -50,8 +50,15 @@ public class PassiveAuthenticationService {
         );
 
         try {
-            log.info("Sending PA verification request for country={}, docNumber={}",
-                country, documentNumber);
+            log.info("Sending PA verification request for country={}, docNumber={}, SOD size={} bytes, DG count={}",
+                country, documentNumber, sodBytes.length, dataGroups.size());
+
+            // Data Groups 크기 로그
+            dataGroups.forEach((key, value) -> {
+                if (value != null) {
+                    log.debug("  {} size: {} bytes", key, value.length);
+                }
+            });
 
             ResponseEntity<PaVerificationResponse> response = paApiRestTemplate.postForEntity(
                 "/api/pa/verify",
