@@ -35,9 +35,11 @@ public record PaVerificationRequest(
         String sodBase64 = Base64.getEncoder().encodeToString(sodBytes);
 
         Map<String, String> dgBase64 = new HashMap<>();
-        dataGroupBytes.forEach((key, value) ->
-            dgBase64.put(key, Base64.getEncoder().encodeToString(value))
-        );
+        dataGroupBytes.forEach((key, value) -> {
+            if (value != null && value.length > 0) {
+                dgBase64.put(key, Base64.getEncoder().encodeToString(value));
+            }
+        });
 
         return new PaVerificationRequest(
             country, docNumber, sodBase64, dgBase64, requestedBy
