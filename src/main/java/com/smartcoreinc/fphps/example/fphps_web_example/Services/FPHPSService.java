@@ -116,10 +116,11 @@ public final class FPHPSService {
             return null;
         });
 
-        // Auto-read의 경우 마지막 결과 저장
-        if (isAuto && response != null) {
+        // 읽기 결과 저장 (Manual/Auto 모두)
+        if (response != null) {
             this.lastReadResponse = response;
-            log.debug("Saved last read response for auto-read with parsedSOD: {}",
+            log.debug("Saved last read response (isAuto={}) with parsedSOD: {}",
+                     isAuto,
                      response.getParsedSOD() != null ? "Available" : "Not Available");
         }
 
