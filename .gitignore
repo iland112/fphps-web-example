@@ -44,3 +44,4 @@ log/
 .gemini/
 output.txt
 *.bin
+setup-wsl-portforward.ps1
