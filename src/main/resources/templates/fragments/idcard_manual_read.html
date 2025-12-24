@@ -1,466 +1,225 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div id="response" th:fragment="id-card-information">
-    <div id="header" class="px-4 sm:px-0">
-      <h3 class="text-4xl font-semibold text-gray-900">ID Card Information</h3>
-      <p class="mt-1 max-w-2xl text-lg text-gray-500">
-        Data details after reading the ID Card
-      </p>
-    </div>
-    <div id="mrz-info" class="flex space-x-4 border-t border-gray-100 p-2">
-      <div id="photo" class="flex flex-row gap-2">
-        <div class="flex flex-col items-center space-y-1">
-          <img
-            class="w-36 h-44 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
-            id="epass-photo"
-            th:src="@{'data:image/png;base64, '+${response.ePassPhotoImage.imageData}}"
-            alt="chip-photo"
-          />
-          <h3 class="text-md font-semibold">Chip</h3>
+  <div id="response" th:fragment="id-card-information" class="p-4 space-y-6 min-h-screen pb-8">
+    <!-- Header Section -->
+    <div class="px-4 sm:px-0 mb-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-2xl font-semibold text-gray-900">ID Card Information</h3>
+          <p class="mt-1 text-sm text-gray-500">
+            Data details after reading the ID Card
+          </p>
         </div>
-      </div>
-        <div
-            id="mrz-ocr"
-            class="flex flex-col gap-2"
-            th:object="${response.mrzLines}"
-          >
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              Line 1
-            </dt>
-            <dd
-              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-              th:text="*{line1}"
-            >
-              LINE 1
-            </dd>
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              Line 2
-            </dt>
-            <dd
-              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-              th:text="*{line2}"
-            >
-              LINE 2
-            </dd>
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              Line 3
-            </dt>
-            <dd
-              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-              th:text="*{line3}"
-            >
-              LINE 3
-            </dd>
-        </div>
-    </div>
-    <div
-      id="e-pass-result"
-      class="p-4 flex justify-baseline gap-10"
-    >
-      <fieldset
-        class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2 font-mono"
-        th:object="${response.ePassResults}"
-      >
-        <legend>DG Read Results</legend>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg01"
-            th:field="*{dgs[0]}"
-          />
-          <label
-            for="hs-checkbox-dg01"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG01</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg02"
-            th:field="*{dgs[1]}"
-          />
-          <label
-            for="hs-checkbox-dg02"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG02</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg03"
-            th:field="*{dgs[2]}"
-          />
-          <label
-            for="hs-checkbox-dg03"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG03</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg04"
-            th:field="*{dgs[3]}"
-          />
-          <label
-            for="hs-checkbox-dg04"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG04</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg05"
-            th:field="*{dgs[4]}"
-          />
-          <label
-            for="hs-checkbox-dg05"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG05</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg06"
-            th:field="*{dgs[5]}"
-          />
-          <label
-            for="hs-checkbox-dg06"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG06</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg07"
-            th:field="*{dgs[6]}"
-          />
-          <label
-            for="hs-checkbox-dg07"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG07</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg08"
-            th:field="*{dgs[7]}"
-          />
-          <label
-            for="hs-checkbox-dg08"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG08</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg09"
-            th:field="*{dgs[8]}"
-          />
-          <label
-            for="hs-checkbox-dg09"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG09</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg10"
-            th:field="*{dgs[9]}"
-          />
-          <label
-            for="hs-checkbox-dg10"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG10</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg11"
-            th:field="*{dgs[10]}"
-          />
-          <label
-            for="hs-checkbox-dg11"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG11</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg12"
-            th:field="*{dgs[11]}"
-          />
-          <label
-            for="hs-checkbox-dg12"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG12</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg13"
-            th:field="*{dgs[12]}"
-          />
-          <label
-            for="hs-checkbox-dg13"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG13</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg14"
-            th:field="*{dgs[13]}"
-          />
-          <label
-            for="hs-checkbox-dg14"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG14</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg15"
-            th:field="*{dgs[14]}"
-          />
-          <label
-            for="hs-checkbox-dg15"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG15</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-dg16"
-            th:field="*{dgs[15]}"
-          />
-          <label
-            for="hs-checkbox-dg16"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            >DG16</label
-          >
-        </div>
-      </fieldset>
-      <fieldset
-        class="grid grid-cols-1 rounded-sm border border-gray-300 p-2 font-mono"
-        th:object="${response.ePassResults}"
-      >
-        <legend>Authentication Results</legend>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-auth-pa"
-            th:field="*{bac}"
-          />
-          <label
-            for="hs-checkbox-auth-pa"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            th:text="'BAC : ' + *{bacResultDesc}"
-            >BAC</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-auth-pa"
-            th:field="*{pa}"
-          />
-          <label
-            for="hs-checkbox-auth-pa"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            th:text="'PA : ' + *{paResultDesc}"
-            >PA</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-auth-aa"
-            th:field="*{aa}"
-          />
-          <label
-            for="hs-checkbox-auth-aa"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            th:text="'AA : ' + *{aaResultDesc}"
-            >AA</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-auth-ca"
-            th:field="*{ca}"
-          />
-          <label
-            for="hs-checkbox-auth-ca"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            th:text="'CA : ' + *{caResultDesc}"
-            >CA</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-auth-ta"
-            th:field="*{ta}"
-          />
-          <label
-            for="hs-checkbox-auth-ta"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            th:text="'TA : ' + *{taResultDesc}"
-            >TA</label
-          >
-        </div>
-        <div class="flex">
-          <input
-            type="checkbox"
-            class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-            id="hs-checkbox-auth-sac"
-            th:field="*{sac}"
-          />
-          <label
-            for="hs-checkbox-auth-sac"
-            class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-            th:text="'SAC : ' + *{sacResultDesc}"
-            >SAC</label
-          >
-        </div>
-      </fieldset>
-    </div>
-    <!-- name of each tab group should be unique -->
-    <div class="tabs-border tabs">
-      <!-- <input
-        type="radio"
-        name="my_tabs_2"
-        class="tab"
-        aria-label="MRZ Image"
-        checked="checked"
-      />
-      <div class="tab-content border-base-300 bg-base-100 p-10">
-        <div id="mrz-image-ocr" class="mt-1 grid grid-cols-2 gap-4 p-2">
-          <div id="mrz-image" class="flex flex-col items-center gap-2">
-            <img
-              class="aspect-auto object-cover flex-none rounded-sm bg-gray-50"
-              id="mrz-photo"
-              th:src="@{'data:image/png;base64, '+${response.mrzImage.imageData}}"
-              alt="mrz-photo"
-            />
-            <dt class="font-mono text-sm/6 font-semibold text-gray-900">
-              MRZ Image
-            </dt>
-          </div>
-          <div
-            id="mrz-ocr"
-            class="flex flex-col gap-2"
-            th:object="${response.mrzLines}"
-          >
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              Line 1
-            </dt>
-            <dd
-              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-              th:text="*{line1}"
-            >
-              LINE 1
-            </dd>
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              Line 2
-            </dt>
-            <dd
-              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-              th:text="*{line2}"
-            >
-              LINE 2
-            </dd>
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              Line 3
-            </dt>
-            <dd
-              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-              th:text="*{line3}"
-            >
-              LINE 3
-            </dd>
+        <!-- Status Badge -->
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <div class="flex items-center gap-2">
+            <svg class="size-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm font-semibold text-green-800">Read Success</span>
           </div>
         </div>
-      </div> -->
+      </div>
+    </div>
 
-      <input type="radio" name="my_tabs_2" class="tab" aria-label="IR" />
-      <div class="tab-content border-base-300 bg-base-100 p-10">
-        <div id="ir-image" class="flex flex-col items-center gap-2">
-          <img
-            class="aspect-auto h-44 w-36 flex-none rounded-sm bg-gray-50 object-cover"
-            id="ir-image"
-            th:src="@{'data:image/png;base64, '+${response.irImage.imageData}}"
-            alt="ir-image"
-          />
-          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
-            IR Image
-          </dt>
+    <!-- ID Card Header with Gradient -->
+    <div class="bg-gradient-to-r from-green-600 via-green-700 to-emerald-800 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+      <div class="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+      <div class="relative flex items-center gap-4">
+        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+          <svg class="size-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+          </svg>
+        </div>
+        <div class="text-white">
+          <p class="text-2xl font-bold tracking-wide">Electronic ID Card</p>
+          <p class="text-lg text-green-100">RFID Chip Data Extracted</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Chip Photo Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-fit">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-bl-full"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="flex size-8 items-center justify-center rounded-lg bg-green-100 group-hover:bg-green-200 transition-colors">
+              <svg class="size-4 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+            </div>
+            <h4 class="text-sm font-semibold text-gray-900">Chip Photo</h4>
+          </div>
+          <div class="flex justify-center">
+            <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-2">
+              <img
+                class="w-36 h-44 aspect-auto object-cover flex-none rounded-lg bg-white shadow-sm"
+                id="epass-photo"
+                th:src="@{'data:image/png;base64, '+${response.ePassPhotoImage.imageData}}"
+                alt="chip-photo"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      <input type="radio" name="my_tabs_2" class="tab" aria-label="UV" />
-      <div class="tab-content border-base-300 bg-base-100 p-10">
-        <div id="ir-image" class="flex flex-col items-center gap-2">
-          <img
-            class="aspect-auto flex-none rounded-sm bg-gray-50 object-cover"
-            id="uv-image"
-            th:src="@{'data:image/png;base64, '+${response.uvImage.imageData}}"
-            alt="uv-image"
-          />
-          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
-            UV Image
-          </dt>
+      <!-- MRZ Data Card -->
+      <div class="lg:col-span-2 group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-bl-full"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="flex size-8 items-center justify-center rounded-lg bg-amber-100 group-hover:bg-amber-200 transition-colors">
+              <svg class="size-4 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
+              </svg>
+            </div>
+            <h4 class="text-sm font-semibold text-gray-900">MRZ Data</h4>
+          </div>
+          <div class="space-y-3" th:object="${response.mrzLines}">
+            <div class="bg-gray-50 rounded-xl p-3">
+              <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Line 1</dt>
+              <dd class="text-xs font-mono font-semibold text-gray-900 break-all bg-white rounded-lg p-2 border border-gray-200" th:text="*{line1}">LINE 1</dd>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-3">
+              <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Line 2</dt>
+              <dd class="text-xs font-mono font-semibold text-gray-900 break-all bg-white rounded-lg p-2 border border-gray-200" th:text="*{line2}">LINE 2</dd>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-3">
+              <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Line 3</dt>
+              <dd class="text-xs font-mono font-semibold text-gray-900 break-all bg-white rounded-lg p-2 border border-gray-200" th:text="*{line3}">LINE 3</dd>
+            </div>
+          </div>
         </div>
       </div>
 
-      <input type="radio" name="my_tabs_2" class="tab" aria-label="WH" />
-      <div class="tab-content border-base-300 bg-base-100 p-10">
-        <div id="wh-image" class="flex flex-col items-center gap-2">
-          <img
-            class="aspect-auto h-44 w-36 flex-none rounded-sm bg-gray-50 object-cover"
-            id="wh-image"
-            th:src="@{'data:image/png;base64, '+${response.whImage.imageData}}"
-            alt="wh-image"
-          />
-          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
-            WH Image
-          </dt>
+      <!-- Data Group Results Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-fit">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-bl-full"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="flex size-8 items-center justify-center rounded-lg bg-purple-100 group-hover:bg-purple-200 transition-colors">
+              <svg class="size-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+              </svg>
+            </div>
+            <h4 class="text-sm font-semibold text-gray-900">Data Group Results</h4>
+          </div>
+          <fieldset class="grid grid-cols-4 gap-x-2 gap-y-2" th:object="${response.ePassResults}" disabled>
+            <div th:each="i : ${#numbers.sequence(0, 15)}" class="flex items-center">
+              <input type="checkbox"
+                     class="shrink-0 size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                     th:field="*{dgs[__${i}__]}" />
+              <label class="ms-1.5 text-xs font-medium text-gray-600"
+                     th:text="${'DG' + ((i + 1) < 10 ? '0' + (i + 1) : (i + 1))}">DG01</label>
+            </div>
+          </fieldset>
+        </div>
+      </div>
+
+      <!-- Authentication Results Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-fit">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/10 to-teal-500/10 rounded-bl-full"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="flex size-8 items-center justify-center rounded-lg bg-cyan-100 group-hover:bg-cyan-200 transition-colors">
+              <svg class="size-4 text-cyan-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+              </svg>
+            </div>
+            <h4 class="text-sm font-semibold text-gray-900">Authentication Results</h4>
+          </div>
+          <div class="space-y-2" th:object="${response.ePassResults}">
+            <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" th:field="*{bac}" class="shrink-0 size-4 rounded border-gray-300 text-cyan-600" disabled />
+                <span class="text-sm font-medium text-gray-700">BAC</span>
+              </div>
+              <span class="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded-lg" th:text="*{bacResultDesc}">N/A</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" th:field="*{pa}" class="shrink-0 size-4 rounded border-gray-300 text-cyan-600" disabled />
+                <span class="text-sm font-medium text-gray-700">PA</span>
+              </div>
+              <span class="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded-lg" th:text="*{paResultDesc}">N/A</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" th:field="*{aa}" class="shrink-0 size-4 rounded border-gray-300 text-cyan-600" disabled />
+                <span class="text-sm font-medium text-gray-700">AA</span>
+              </div>
+              <span class="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded-lg" th:text="*{aaResultDesc}">N/A</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" th:field="*{ca}" class="shrink-0 size-4 rounded border-gray-300 text-cyan-600" disabled />
+                <span class="text-sm font-medium text-gray-700">CA</span>
+              </div>
+              <span class="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded-lg" th:text="*{caResultDesc}">N/A</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" th:field="*{ta}" class="shrink-0 size-4 rounded border-gray-300 text-cyan-600" disabled />
+                <span class="text-sm font-medium text-gray-700">TA</span>
+              </div>
+              <span class="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded-lg" th:text="*{taResultDesc}">N/A</span>
+            </div>
+            <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+              <div class="flex items-center gap-2">
+                <input type="checkbox" th:field="*{sac}" class="shrink-0 size-4 rounded border-gray-300 text-cyan-600" disabled />
+                <span class="text-sm font-medium text-gray-700">SAC</span>
+              </div>
+              <span class="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded-lg" th:text="*{sacResultDesc}">N/A</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Images Card -->
+      <div class="lg:col-span-3 group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-500/10 to-violet-500/10 rounded-bl-full"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="flex size-8 items-center justify-center rounded-lg bg-indigo-100 group-hover:bg-indigo-200 transition-colors">
+              <svg class="size-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+            </div>
+            <h4 class="text-sm font-semibold text-gray-900">Document Images</h4>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-3">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-amber-50 text-xs font-medium text-amber-700">White Light</span>
+              </div>
+              <img
+                class="w-full h-auto aspect-auto rounded-lg bg-white object-contain shadow-sm"
+                th:src="@{'data:image/png;base64, '+${response.whImage.imageData}}"
+                alt="wh-image"
+              />
+            </div>
+            <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-3">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-red-50 text-xs font-medium text-red-700">Infrared</span>
+              </div>
+              <img
+                class="w-full h-auto aspect-auto rounded-lg bg-white object-contain shadow-sm"
+                th:src="@{'data:image/png;base64, '+${response.irImage.imageData}}"
+                alt="ir-image"
+              />
+            </div>
+            <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-3">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-lg bg-violet-50 text-xs font-medium text-violet-700">Ultraviolet</span>
+              </div>
+              <img
+                class="w-full h-auto aspect-auto rounded-lg bg-white object-contain shadow-sm"
+                th:src="@{'data:image/png;base64, '+${response.uvImage.imageData}}"
+                alt="uv-image"
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

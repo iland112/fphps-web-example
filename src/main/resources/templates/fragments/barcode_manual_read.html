@@ -1,49 +1,73 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div id="response" th:fragment="barcode-information">
-    <!-- <p th:text="${response.mrzDto.line1}">mrz</p> -->
-    <div id="header" class="px-4 sm:px-0">
-      <h3 class="text-4xl font-semibold text-gray-900">Barcode Information</h3>
-      <p class="mt-1 max-w-2xl text-lg text-gray-500">
-        Data details after reading the Barcode
-      </p>
-    </div>
-    <div id="barcode-data" class="flex space-x-4 border-t border-gray-100 p-2">
-      <div id="div-barcode-image" class="flex flex-row gap-2">
-        <div class="flex flex-col items-center space-y-1">
-          <img
-            class="w-md h-md aspect-auto object-cover flex-none rounded-sm bg-gray-50"
-            id="barcode-image"
-            th:src="@{'data:image/ png;base64, '+${response.whImage.imageData}}"
-            alt="document-photo"
-          />
-          <h3 class="text-md font-semibold">Barcode</h3>
+  <div id="response" th:fragment="barcode-information" class="min-h-screen pb-8">
+    <!-- Gradient Header Section with Icon -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-600 via-amber-700 to-orange-800 p-6 mb-6 shadow-lg">
+      <div class="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <!-- Barcode/QR Code Icon -->
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+            <svg class="size-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-wide">Barcode Information</h1>
+            <p class="text-lg text-amber-100">Data details after reading the Barcode</p>
+          </div>
         </div>
       </div>
-      <div id="barcode-data-info" class="p-2" th:object="${response.barCode}">
-        <dl class="flex flex-col">
-          <div class="flex flex-col px-2 py-2">
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              BARCODE TYPE
-            </dt>
-            <dd
-              class="mt-1 ms-3 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-              th:text="*{typeString}"
-            >
-              QR CODE
-            </dd>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Barcode Image Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-bl-full"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="flex size-8 items-center justify-center rounded-lg bg-amber-100 group-hover:bg-amber-200 transition-colors">
+              <svg class="size-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <h4 class="text-sm font-semibold text-gray-900">Barcode Image</h4>
           </div>
-          <div class="flex flex-col px-2 py-2">
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              DATA
-            </dt>
-            <dd
-              class="mt-1 ms-3 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-              th:text="*{data}"
-            >
-              DATA
-            </dd>
+          <div class="flex justify-center">
+            <img
+              class="max-w-full h-auto aspect-auto object-contain rounded-lg bg-gray-50 border border-gray-100"
+              id="barcode-image"
+              th:src="@{'data:image/png;base64, '+${response.whImage.imageData}}"
+              alt="barcode-image"
+            />
           </div>
-        </dl>
+        </div>
+      </div>
+
+      <!-- Barcode Data Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5" th:object="${response.barCode}">
+        <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-bl-full"></div>
+        <div class="relative">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="flex size-8 items-center justify-center rounded-lg bg-orange-100 group-hover:bg-orange-200 transition-colors">
+              <svg class="size-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h4 class="text-sm font-semibold text-gray-900">Barcode Data</h4>
+          </div>
+          <dl class="space-y-4">
+            <div class="p-3 bg-gray-50 rounded-lg">
+              <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Barcode Type</dt>
+              <dd class="text-base font-semibold text-gray-900" th:text="*{typeString}">QR CODE</dd>
+            </div>
+            <div class="p-3 bg-gray-50 rounded-lg">
+              <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Data Content</dt>
+              <dd class="text-sm font-mono text-gray-900 break-all" th:text="*{data}">DATA</dd>
+            </div>
+          </dl>
+        </div>
       </div>
     </div>
   </div>

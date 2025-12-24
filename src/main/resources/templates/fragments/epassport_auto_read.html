@@ -1,688 +1,396 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div id="response" th:fragment="e-passport-auto-read">
-    <!-- title section -->
-    <div
-      id="header"
-      class="mt-3 px-4 sm:px-0 lg:flex lg:items-baseline lg:gap-2"
-    >
-      <h3 class="text-2xl font-semibold text-gray-900">Passport Information</h3>
-      <p class="mt-1 max-w-2xl text-lg text-gray-500">
-        Data details after reading the passport/e-passport
-      </p>
-      <button
-        type="button"
-        class="ms-80 inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-        hx-post="/fphps/passport/run-auto-read"
-      >
-        Auto Read Run
-      </button>
-    </div>
-    <div id="title" class="mt-2 grid grid-cols-2 items-baseline px-4 sm:px-0">
-      <div class="flex flex-row space-x-3 p-3">
-        <img
-          id="country-flag"
-          class="max-w-2xl place-self-center"
-          width="60"
-          th:src="@{/image/flags/kr.svg}"
-          alt="Country Flag"
-        />
-        <p
-          class="max-w-2xl justify-self-stretch text-2xl font-bold text-gray-500"
-        >
-          <span id="span-passport-number">BC765432</span>
-          / <span id="span-name">JOHN DOE</span>
-        </p>
-      </div>
-      <svg
-        class="max-w-2xl justify-self-end fill-amber-600"
-        xmlns="http://www.w3.org/2000/svg"
-        width="80"
-        height="20"
-        viewBox="0 0 210 297"
-      >
-        <path
-          d="M-111.5625 24.75V136.125H23.539306A82.5 82.5 0 0 1 105 66 82.5 82.5 0 0 1 186.5 136.125H321.5625V24.75ZM105 90.75A57.75 57.75 0 0 0 47.25 148.5 57.75 57.75 0 0 0 105 206.25 57.75 57.75 0 0 0 162.75 148.5 57.75 57.75 0 0 0 105 90.75Zm-216.5625 70.125V272.25h433.125V160.875H186.46068A82.5 82.5 0 0 1 105 231 82.5 82.5 0 0 1 23.5 160.875Z"
-          stroke-width="81.90428162"
-        />
-      </svg>
-    </div>
-    <div class="flex flex-wrap border-t border-gray-100">
-      <div class="flex flex-col">
-        <div id="mrz-info" class="flex space-x-4 border-t border-gray-100 p-2">
-          <div id="photo" class="flex flex-row gap-2">
-            <div class="flex flex-col items-center space-y-1">
-              <img
-                class="w-32 h-36 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
-                id="viz-photo"
-                th:src="@{/image/image-photo.jpg}"
-                alt="document-photo"
-              />
-              <h3 class="text-md font-semibold">Document</h3>
-            </div>
-            <div class="flex flex-col items-center space-y-1">
-              <img
-                class="w-32 h-36 aspect-auto object-cover flex-none rounded-sm bg-gray-50"
-                id="epass-photo"
-                th:src="@{/image/image-photo.jpg}"
-                alt="chip-photo"
-              />
-              <h3 class="text-md font-semibold">Chip</h3>
-            </div>
+  <div id="response" th:fragment="e-passport-auto-read" class="min-h-screen pb-8">
+    <!-- Gradient Header Section with Icon -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 p-6 mb-6 shadow-lg">
+      <div class="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <!-- Passport Icon -->
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+            <svg class="size-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
+            </svg>
           </div>
-          <div id="mrz-info" class="p-2">
-            <dl class="grid grid-cols-3">
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  DOCUMENT TYPE
-                </dt>
-                <dd
-                  id="doc-type"
-                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                >
-                  P
-                </dd>
-              </div>
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  ISSUING STATE
-                </dt>
-                <dd
-                  id="issuing-state"
-                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                >
-                  UTO
-                </dd>
-              </div>
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  DOCUMENT NUMBER
-                </dt>
-                <dd
-                  id="passport-number"
-                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                >
-                  BC765432
-                </dd>
-              </div>
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  NAME
-                </dt>
-                <dd
-                  id="name"
-                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                >
-                  JOHN DOE
-                </dd>
-              </div>
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  NATIONALITY
-                </dt>
-                <dd
-                  id="nationality"
-                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                >
-                  UTOPIA
-                </dd>
-              </div>
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  DATE OF BIRTH
-                </dt>
-                <dd
-                  id="birth"
-                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                >
-                  07/02/1980
-                </dd>
-              </div>
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  SEX
-                </dt>
-                <dd
-                  id="sex"
-                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                >
-                  M
-                </dd>
-              </div>
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  DATE OF EXPIRY
-                </dt>
-                <dd
-                  id="expiry-date"
-                  class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                >
-                  07/02/2023
-                </dd>
-              </div>
-            </dl>
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-wide">E-Passport Auto Read</h1>
+            <p class="text-lg text-blue-100">Automatic passport scanning and chip data extraction</p>
           </div>
         </div>
-        <fieldset
-          id="mrz-image"
-          class="p-2 flex border rounded-md border-gray-100"
-        >
-          <legend class="font-mono text-sm/6 font-semibold text-gray-900">
-            MRZ Image
-          </legend>
-          <img
-            class="aspect-auto h-auto w-96 flex-none rounded-sm bg-gray-50 object-cover"
-            id="mrz-photo"
-            th:src="@{/image/image-batch.jpg}"
-            alt="mrz-photo"
-          />
-          <div id="mrz-ocr" class="p-2 flex flex-col gap-4">
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              Line 1
-            </dt>
-            <dd
-              id="mrz-line-1"
-              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-            >
-              LINE 1
-            </dd>
-            <dt class="font-mono text-sm/6 font-medium text-gray-900">
-              Line 2
-            </dt>
-            <dd
-              id="mrz-line-2"
-              class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-            >
-              LINE 2
-            </dd>
+        <div class="flex items-center gap-3">
+          <!-- WebSocket Connection Status -->
+          <div class="flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20">
+            <span class="flex size-3 relative">
+              <span id="connection-pulse" class="hidden animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span id="connection-dot" class="relative inline-flex rounded-full size-3 bg-gray-400"></span>
+            </span>
+            <span id="connection-status-text" class="text-sm text-white">Not Connected</span>
           </div>
-        </fieldset>
-        <div id="e-pass-result" class="grid grid-cols-2 gap-10">
-          <fieldset
-            class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2 font-mono"
-            disabled
+          <button
+            id="auto-read-button"
+            type="button"
+            class="inline-flex items-center gap-x-2 rounded-xl bg-white/20 backdrop-blur-sm px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/30 transition-all duration-200 border border-white/30"
+            onclick="startAutoRead()"
           >
-            <legend>DG Read Results</legend>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg1"
-              />
-              <label
-                for="hs-checkbox-dg1"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG01</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg2"
-              />
-              <label
-                for="hs-checkbox-dg2"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG02</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg3"
-              />
-              <label
-                for="hs-checkbox-dg3"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG03</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg4"
-              />
-              <label
-                for="hs-checkbox-d04"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG04</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg5"
-              />
-              <label
-                for="hs-checkbox-dg5"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG05</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg6"
-              />
-              <label
-                for="hs-checkbox-dg6"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG06</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg7"
-              />
-              <label
-                for="hs-checkbox-dg7"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG07</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg8"
-              />
-              <label
-                for="hs-checkbox-dg8"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG08</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg9"
-              />
-              <label
-                for="hs-checkbox-dg9"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG09</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg10"
-              />
-              <label
-                for="hs-checkbox-dg10"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG10</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg11"
-              />
-              <label
-                for="hs-checkbox-dg11"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG11</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg12"
-              />
-              <label
-                for="hs-checkbox-dg12"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG12</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg13"
-              />
-              <label
-                for="hs-checkbox-dg13"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG13</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg14"
-              />
-              <label
-                for="hs-checkbox-dg14"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG14</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg15"
-              />
-              <label
-                for="hs-checkbox-dg15"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG15</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-dg16"
-              />
-              <label
-                for="hs-checkbox-dg16"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >DG16</label
-              >
-            </div>
-          </fieldset>
-          <fieldset
-            class="grid grid-cols-1 rounded-sm border border-gray-300 p-2 font-mono"
-            disabled
-          >
-            <legend>Authentication Results</legend>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-auth-bac"
-              />
-              <label
-                for="hs-checkbox-auth-bac"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                id="hs-label-auth-bac"
-                >BAC</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-auth-pa"
-              />
-              <label
-                for="hs-checkbox-auth-pa"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                id="hs-label-auth-pa"
-                >PA</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-auth-aa"
-              />
-              <label
-                for="hs-checkbox-auth-aa"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                id="hs-label-auth-aa"
-                >AA</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-auth-ca"
-              />
-              <label
-                for="hs-checkbox-auth-ca"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                id="hs-label-auth-ca"
-                >CA</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-auth-ta"
-              />
-              <label
-                id="hs-label-auth-ta"
-                for="hs-checkbox-auth-ta"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >TA</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-auth-sac"
-              />
-              <label
-                for="hs-checkbox-auth-sac"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                id="hs-label-auth-sac"
-                >SAC</label
-              >
-            </div>
-          </fieldset>
+            <svg class="hidden animate-spin size-4" id="auto-read-spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span id="auto-read-button-text">RUN AUTO READ</span>
+          </button>
         </div>
       </div>
-      <div class="flex gap-4 justify-between">
-        <div class="flex flex-col">
-          <fieldset class="p-2 border rounded-md border-gray-100">
-            <legend class="font-mono text-sm/6 font-semibold text-gray-900">
-              WH Image
-            </legend>
-            <img
-              class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
-              id="wh-image"
-              th:src="@{/image/image-batch.jpg}"
-              alt="wh-image"
-            />
-          </fieldset>
-          <fieldset class="p-2 border rounded-md border-gray-100">
-            <legend class="font-mono text-sm/6 font-semibold text-gray-900">
-              IR Image
-            </legend>
-            <img
-              class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
-              id="ir-image"
-              th:src="@{/image/image-batch.jpg}"
-              alt="ir-image"
-            />
-          </fieldset>
-          <fieldset class="p-2 border rounded-md border-gray-100">
-            <legend class="font-mono text-sm/6 font-semibold text-gray-900">
-              UV Image
-            </legend>
-            <img
-              class="aspect-auto h-40 w-72 flex-none rounded-sm bg-gray-50 object-cover"
-              id="uv-image"
-              th:src="@{/image/image-batch.jpg}"
-              alt="uv-image"
-            />
-          </fieldset>
+      <!-- Progress Indicator (Hidden by default) -->
+      <div id="read-progress-container" class="hidden mt-4">
+        <div class="flex justify-between items-center mb-1">
+          <span id="read-progress-text" class="text-xs font-medium text-white">Reading...</span>
+          <span id="read-progress-percent" class="text-xs font-medium text-white">0%</span>
         </div>
-
-        <!-- log message section -->
-        <fieldset class="fieldset p-2 flex border rounded-md border-gray-100">
-          <legend class="font-mono text-sm/6 font-semibold text-gray-900">Log Messages</legend>
-          <textarea
-            id="notifications"
-            class="textarea textarea-sm w-full"
-            rows="20"
-            disabled
-          ></textarea>
-        </fieldset>
+        <div class="flex w-full h-2 bg-white/20 rounded-full overflow-hidden">
+          <div id="read-progress-bar" class="flex flex-col justify-center rounded-full overflow-hidden bg-white text-xs text-blue-600 text-center whitespace-nowrap transition-all duration-500" style="width: 0%"></div>
+        </div>
       </div>
     </div>
 
-    <!-- SOD Information Section -->
-    <div class="mt-4 px-4">
-      <div id="sod-info-container">
-        <!-- SOD 정보가 WebSocket을 통해 자동으로 로드됩니다 -->
+    <!-- Passport Header -->
+    <div class="px-4 sm:px-0 mb-2">
+      <div th:replace="~{fragments/passport_cards :: passportHeader(
+        mrzInfo=${null},
+        countryFlagId='country-flag',
+        passportNumberSpanId='span-passport-number',
+        nameSpanId='span-name'
+      )}"></div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="px-4 sm:px-0 mb-2">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            onclick="switchTabAuto('emrtd')"
+            id="tab-emrtd"
+            class="tab-button-auto border-blue-500 text-blue-600 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            E-MRTD Data
+          </button>
+          <button
+            onclick="switchTabAuto('sod')"
+            id="tab-sod"
+            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            SOD Information
+          </button>
+          <button
+            onclick="switchTabAuto('pa')"
+            id="tab-pa"
+            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            Passive Authentication
+          </button>
+          <button
+            onclick="switchTabAuto('log')"
+            id="tab-log"
+            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            Event Log
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Tab Content Container -->
+    <div class="px-4 sm:px-0">
+      <!-- E-MRTD Data Tab Content (default visible) -->
+      <div id="content-emrtd" class="tab-content-auto">
+        <!-- Main Grid: 3 rows × 3 columns -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- Row 1, Col 1: Photo Comparison -->
+          <div th:replace="~{fragments/passport_cards :: photoComparison(
+            vizPhotoData=${null},
+            epassPhotoData=${null},
+            vizPhotoId='viz-photo',
+            epassPhotoId='epass-photo'
+          )}"></div>
+
+          <!-- Row 1, Col 2: Personal Information -->
+          <div th:replace="~{fragments/passport_cards :: personalInfo(
+            mrzInfo=${null},
+            docTypeId='doc-type',
+            issuingStateId='issuing-state',
+            passportNumberId='passport-number',
+            nameId='name',
+            nationalityId='nationality',
+            birthId='birth',
+            sexId='sex',
+            expiryDateId='expiry-date'
+          )}"></div>
+
+          <!-- Row 1, Col 3: Data Group Read Results -->
+          <div th:replace="~{fragments/passport_cards :: dgResults(
+            ePassResults=${null},
+            idPrefix='auto'
+          )}"></div>
+
+          <!-- Row 2, Col 1-2: MRZ Image (spans 2 columns) -->
+          <div th:replace="~{fragments/passport_cards :: mrzImageCard(
+            mrzImageData=${null},
+            mrzLines=${null},
+            mrzPhotoId='mrz-photo',
+            mrzLine1Id='mrz-line-1',
+            mrzLine2Id='mrz-line-2'
+          )}"></div>
+
+          <!-- Row 2, Col 3: Authentication Results -->
+          <div th:replace="~{fragments/passport_cards :: authResults(
+            ePassResults=${null},
+            idPrefix='auto'
+          )}"></div>
+
+          <!-- Row 3, Col 1-3: Document Images (spans all 3 columns) -->
+          <div th:replace="~{fragments/passport_cards :: documentImages(
+            whImageData=${null},
+            irImageData=${null},
+            uvImageData=${null},
+            whImageId='wh-image',
+            irImageId='ir-image',
+            uvImageId='uv-image'
+          )}"></div>
+        </div>
+      </div>
+
+      <!-- SOD Information Tab Content -->
+      <div id="content-sod" class="tab-content-auto hidden">
+        <div th:replace="~{fragments/sod_tab_content :: sodTabContent(
+          containerId='auto-sod-info-container',
+          emptyStateId='auto-sod-empty-state'
+        )}"></div>
+      </div>
+
+      <!-- PA Tab Content -->
+      <div id="content-pa" class="tab-content-auto hidden">
+        <div th:replace="~{fragments/pa_tab_content :: paTabContent(
+          btnId='auto-verify-pa-btn',
+          containerId='auto-pa-result-container',
+          emptyStateId='auto-pa-empty-state',
+          prefix='auto'
+        )}"></div>
+      </div>
+
+      <!-- Event Log Tab Content -->
+      <div id="content-log" class="tab-content-auto hidden">
+        <!-- Log Messages Section -->
+        <div class="border rounded-lg border-gray-200 bg-white shadow-sm">
+          <!-- Log Header with Clear Button -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+              <svg class="size-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+              </svg>
+              Event Log
+            </h4>
+            <div class="flex gap-2">
+              <button
+                id="log-auto-scroll-toggle"
+                type="button"
+                class="inline-flex items-center gap-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
+                title="Toggle auto-scroll"
+              >
+                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                </svg>
+                <span id="auto-scroll-status">Auto-scroll: ON</span>
+              </button>
+              <button
+                id="clear-log-button"
+                type="button"
+                class="inline-flex items-center gap-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+                onclick="clearLog()"
+              >
+                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Log Content with Auto-scroll -->
+          <div id="log-scroll-container" class="overflow-y-auto bg-gray-50" style="max-height: 400px;">
+            <div id="notifications" class="p-3 font-mono text-xs text-gray-700 space-y-1">
+              <div class="text-gray-400 italic">Waiting for events...</div>
+            </div>
+          </div>
+
+          <!-- Log Footer with Stats -->
+          <div class="px-4 py-2 border-t border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between text-xs text-gray-500">
+              <span>Total events: <span id="log-event-count" class="font-semibold text-gray-700">0</span></span>
+              <span id="log-last-update">No events yet</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- Shared Passport Tabs JavaScript -->
+  <script th:src="@{/js/passport-tabs.js}"></script>
+
   <script>
+    // Global state management
+    let autoScrollEnabled = true;
+    let eventCount = 0;
+    let readProgress = 0;
+    const progressSteps = {
+      'FPHPS_EV_VIZ_PHOTO_CAPTURED': 15,
+      'FPHPS_EV_EPASS_READ_FACE': 30,
+      'FPHPS_EV_IR_MRZ_IMAGE_CAPTURED': 45,
+      'FPHPS_EV_DOC_FRAME_FOUND': 60,
+      'FPHPS_EV_WH_IMAGE_CAPTURED': 70,
+      'FPHPS_EV_IR_IMAGE_CAPTURED': 80,
+      'FPHPS_EV_UV_IMAGE_CAPTURED': 90,
+      'FPHPS_EV_EPASS_READ_DONE': 100
+    };
+
+    // Tab switching function
+    function switchTabAuto(tabName) {
+      // Hide all tab contents
+      const tabContents = document.querySelectorAll('.tab-content-auto');
+      tabContents.forEach(content => content.classList.add('hidden'));
+
+      // Remove active styling from all tabs
+      const tabButtons = document.querySelectorAll('.tab-button-auto');
+      tabButtons.forEach(button => {
+        button.classList.remove('border-blue-500', 'text-blue-600');
+        button.classList.add('border-transparent', 'text-gray-500');
+      });
+
+      // Show selected tab content
+      const selectedContent = document.getElementById(`content-${tabName}`);
+      if (selectedContent) {
+        selectedContent.classList.remove('hidden');
+      }
+
+      // Add active styling to selected tab
+      const selectedTab = document.getElementById(`tab-${tabName}`);
+      if (selectedTab) {
+        selectedTab.classList.remove('border-transparent', 'text-gray-500');
+        selectedTab.classList.add('border-blue-500', 'text-blue-600');
+      }
+    }
+
+    // WebSocket connection setup
     const socket = new WebSocket("ws://localhost:8080/fastpass");
+
+    // Connection opened
+    socket.onopen = function(event) {
+      console.log("WebSocket connected");
+      updateConnectionStatus(true);
+      addLogEntry("System", "WebSocket connected successfully");
+    };
+
+    // Connection closed
+    socket.onclose = function(event) {
+      console.log("WebSocket disconnected");
+      updateConnectionStatus(false);
+      addLogEntry("System", "WebSocket disconnected", "error");
+    };
+
+    // Connection error
+    socket.onerror = function(error) {
+      console.error("WebSocket error:", error);
+      updateConnectionStatus(false);
+      addLogEntry("System", "WebSocket connection error", "error");
+    };
+
+    // Message received
     socket.onmessage = function (event) {
       const message = JSON.parse(event.data);
 
-      // 모든 이벤트에서 parsedSOD 확인
+      // 모든 이벤트에서 parsedSOD 확인 - 공유 함수 사용
       if (message.parsedSOD) {
         console.log("ParsedSOD found in event:", message.eventCodeString);
         console.log("ParsedSOD data:", message.parsedSOD);
-        renderSODInformation(message.parsedSOD);
+        // 공유 JavaScript의 renderSODInformation 함수 사용 (새 컨테이너 ID 전달)
+        renderSODInformation(message.parsedSOD, 'auto-sod-info-container');
       }
 
-      // console.log("event code: ", message.eventId);
+      // Add log entry for all events
+      const eventName = message.eventCodeString?.replace('FPHPS_EVENTS.FPHPS_EV_', '') || 'UNKNOWN';
+      addLogEntry(eventName, message.lParam || 'Event received');
+
+      // Update progress if applicable
+      updateProgress(eventName);
+
       switch (message.eventCodeString) {
         case "FPHPS_EVENTS.FPHPS_EV_VIZ_PHOTO_CAPTURED":
           var el = document.querySelector("#viz-photo");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET VIZ-PHOTO");
+          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
           break;
         case "FPHPS_EVENTS.FPHPS_EV_EPASS_READ_FACE":
           var el = document.querySelector("#epass-photo");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET EPASS-PHOTO");
+          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
           break;
         case "FPHPS_EVENTS.FPHPS_EV_IR_MRZ_IMAGE_CAPTURED":
           var el = document.querySelector("#mrz-photo");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET MRZ-PHOTO");
+          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
           break;
         case "FPHPS_EVENTS.FPHPS_EV_WH_IMAGE_CAPTURED":
           var el = document.querySelector("#wh-image");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET WH-IMAGE");
+          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
           break;
         case "FPHPS_EVENTS.FPHPS_EV_IR_IMAGE_CAPTURED":
           var el = document.querySelector("#ir-image");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET IR-IMAGE");
+          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
           break;
         case "FPHPS_EVENTS.FPHPS_EV_UV_IMAGE_CAPTURED":
           var el = document.querySelector("#uv-image");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET UV-IMAGE");
+          el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          break;
+        case "FPHPS_EVENTS.FPHPS_EV_EPASS_READ_DONE":
+          console.log("E-Passport read completed");
+          // Reset button state and prepare for next read
+          resetAutoReadButton();
+          addLogEntry("System", "E-Passport read completed successfully", "success");
           break;
         case "FPHPS_EVENTS.FPHPS_EV_PAGE_CAPTURED":
           console.log("ePassResults: ", message.ePassResults);
           console.log("parsedSOD: ", message.parsedSOD);
-          var checkBoxDg1 = document.querySelector("#hs-checkbox-dg1");
-          checkBoxDg1.checked = message.ePassResults.dgs[0];
-          var checkBoxDg2 = document.querySelector("#hs-checkbox-dg2");
-          checkBoxDg2.checked = message.ePassResults.dgs[1];
-          var checkBoxDg3 = document.querySelector("#hs-checkbox-dg3");
-          checkBoxDg3.checked = message.ePassResults.dgs[2];
-          var checkBoxDg4 = document.querySelector("#hs-checkbox-dg4");
-          checkBoxDg4.checked = message.ePassResults.dgs[3];
-          var checkBoxDg5 = document.querySelector("#hs-checkbox-dg5");
-          checkBoxDg5.checked = message.ePassResults.dgs[4];
-          var checkBoxDg6 = document.querySelector("#hs-checkbox-dg6");
-          checkBoxDg6.checked = message.ePassResults.dgs[5];
-          var checkBoxDg7 = document.querySelector("#hs-checkbox-dg7");
-          checkBoxDg7.checked = message.ePassResults.dgs[6];
-          var checkBoxDg8 = document.querySelector("#hs-checkbox-dg8");
-          checkBoxDg8.checked = message.ePassResults.dgs[7];
-          var checkBoxDg9 = document.querySelector("#hs-checkbox-dg9");
-          checkBoxDg9.checked = message.ePassResults.dgs[8];
-          var checkBoxDg10 = document.querySelector("#hs-checkbox-dg10");
-          checkBoxDg10.checked = message.ePassResults.dgs[9];
-          var checkBoxDg11 = document.querySelector("#hs-checkbox-dg11");
-          checkBoxDg11.checked = message.ePassResults.dgs[10];
-          var checkBoxDg12 = document.querySelector("#hs-checkbox-dg12");
-          checkBoxDg12.checked = message.ePassResults.dgs[11];
-          var checkBoxDg13 = document.querySelector("#hs-checkbox-dg13");
-          checkBoxDg13.checked = message.ePassResults.dgs[12];
-          var checkBoxDg14 = document.querySelector("#hs-checkbox-dg14");
-          checkBoxDg14.checked = message.ePassResults.dgs[13];
-          var checkBoxDg15 = document.querySelector("#hs-checkbox-dg15");
-          checkBoxDg15.checked = message.ePassResults.dgs[14];
-          var checkBoxDg16 = document.querySelector("#hs-checkbox-dg16");
-          checkBoxDg16.checked = message.ePassResults.dgs[15];
 
-          var bac = document.querySelector("#hs-checkbox-auth-bac");
-          bac.checked = message.ePassResults.bac;
-          var bacLabel = document.querySelector("#hs-label-auth-bac");
-          bacLabel.innerHTML = "BAC : " + message.ePassResults.bacResultDesc;
-          var pa = document.querySelector("#hs-checkbox-auth-pa");
-          pa.checked = message.ePassResults.pa;
-          var paLabel = document.querySelector("#hs-label-auth-pa");
-          paLabel.innerHTML = "PA : " + message.ePassResults.paResultDesc;
-          var aa = document.querySelector("#hs-checkbox-auth-aa");
-          aa.checked = message.ePassResults.aa;
-          var aaLabel = document.querySelector("#hs-label-auth-aa");
-          aaLabel.innerHTML = "AA : " + message.ePassResults.aaResultDesc;
-          var ca = document.querySelector("#hs-checkbox-auth-ca");
-          ca.checked = message.ePassResults.ca;
-          var caLabel = document.querySelector("#hs-label-auth-ca");
-          caLabel.innerHTML = "CA : " + message.ePassResults.caResultDesc;
-          var ta = document.querySelector("#hs-checkbox-auth-ta");
-          ta.checked = message.ePassResults.ta;
-          var taLabel = document.querySelector("#hs-label-auth-ta");
-          taLabel.innerHTML = "TA : " + message.ePassResults.taResultDesc;
-          var sac = document.querySelector("#hs-checkbox-auth-sac");
-          sac.checked = message.ePassResults.sac;
-          var sacLabel = document.querySelector("#hs-label-auth-sac");
-          sacLabel.innerHTML = "SAC : " + message.ePassResults.sacResultDesc;
+          // Update DG checkboxes (using new fragment ID format: auto-dg1, auto-dg2, ...)
+          for (let i = 1; i <= 16; i++) {
+            const checkbox = document.querySelector(`#auto-dg${i}`);
+            if (checkbox) checkbox.checked = message.ePassResults.dgs[i - 1];
+          }
+
+          // Update auth checkboxes and labels (using new fragment ID format)
+          const authFields = ['bac', 'pa', 'aa', 'ca', 'ta', 'sac'];
+          authFields.forEach(field => {
+            const checkbox = document.querySelector(`#auto-auth-${field}`);
+            const label = document.querySelector(`#auto-label-auth-${field}`);
+            if (checkbox) checkbox.checked = message.ePassResults[field];
+            if (label) label.innerHTML = message.ePassResults[field + 'ResultDesc'];
+          });
           break;
         case "FPHPS_EVENTS.FPHPS_EV_DOC_FRAME_FOUND":
-          // console.log("line1: ", message.mrzLines.line1);
           var el = document.getElementById("mrz-line-1");
           if (el) {
             var line1 = message.mrzLines.line1.replace(/</g, "&lt");
-            // console.log("replaced line1: ", line1);
             el.innerHTML = line1;
           }
           el = document.getElementById("mrz-line-2");
           if (el) el.innerHTML = message.mrzLines.line2;
-          el = document.getElementById("mrz-line-3");
-          if (el) el.innerHTML = message.mrzLines.line3 ? message.mrzLines.line3 : "";
 
           var mrzInfo = message.mrzInfo;
-          // console.log("MRZ INFO", mrzInfo);
           el = document.querySelector("#country-flag");
           if (el) el.setAttribute("src", mrzInfo.countryFlagUrl);
           el = document.getElementById("span-passport-number");
           if (el) el.innerHTML = mrzInfo.passportNumber;
           el = document.getElementById("span-name");
           if (el) el.innerHTML = mrzInfo.name;
-
           el = document.getElementById("doc-type");
           if (el) el.innerHTML = mrzInfo.docType;
           el = document.getElementById("issuing-state");
@@ -700,112 +408,234 @@
           el = document.getElementById("expiry-date");
           if (el) el.innerHTML = mrzInfo.expiryDate;
           break;
-        case "FPHPS_EVENTS.FPHPS_EV_EPASS_READ_MRZ":
-          console.log("FPHPS_EVENTS.FPHPS_EV_EPASS_READ_MRZ");
-          // console.log(message);
-          break;
         default:
           break;
       }
-      // add notification messages
-      // const div = document.createElement("div");
-      // div.className =
-      //   "p-2 bg-gray-100 dark:bg-gray-800 rounded shadow text-sm text-gray-800 dark:text-white";
-      // div.textContent = message.eventCodeString + " :: " + message.lParam;
-      // document.getElementById("notifications").appendChild(div);
-      var messgetText =
-        message.eventCodeString + " :: " + message.lParam + "\n";
-      document.getElementById("notifications").append(messgetText);
     };
 
-    // SOD 정보를 HTML로 렌더링하는 함수
-    function renderSODInformation(parsedSOD) {
-      const container = document.getElementById("sod-info-container");
-      if (!container) {
-        console.error("SOD container not found");
+    // ========== Utility Functions ==========
+
+    // Reset Auto Read button state after read completion
+    function resetAutoReadButton() {
+      const button = document.getElementById('auto-read-button');
+      const spinner = document.getElementById('auto-read-spinner');
+      const buttonText = document.getElementById('auto-read-button-text');
+      const progressContainer = document.getElementById('read-progress-container');
+      const progressBar = document.getElementById('read-progress-bar');
+
+      console.log('resetAutoReadButton called');
+
+      if (button) {
+        button.disabled = false;
+        // HTMX가 추가한 클래스들도 제거
+        button.classList.remove('htmx-request');
+        // HTMX 내부 상태 초기화를 위해 속성 제거
+        button.removeAttribute('data-htmx-request');
+        console.log('Button reset: disabled =', button.disabled);
+      }
+      if (spinner) {
+        spinner.classList.add('hidden');
+      }
+      if (buttonText) {
+        buttonText.textContent = 'Start Auto Read';
+      }
+
+      // Hide progress bar after a short delay
+      setTimeout(() => {
+        if (progressContainer) {
+          progressContainer.classList.add('hidden');
+        }
+        if (progressBar) {
+          progressBar.style.width = '0%';
+        }
+        readProgress = 0;
+      }, 2000);
+    }
+
+    // Update WebSocket connection status
+    function updateConnectionStatus(isConnected) {
+      const dot = document.getElementById('connection-dot');
+      const pulse = document.getElementById('connection-pulse');
+      const statusText = document.getElementById('connection-status-text');
+
+      if (isConnected) {
+        dot.classList.remove('bg-gray-400', 'bg-red-500');
+        dot.classList.add('bg-green-500');
+        pulse.classList.remove('hidden');
+        statusText.textContent = 'Connected';
+        statusText.classList.remove('text-gray-600', 'text-red-600');
+        statusText.classList.add('text-green-600');
+      } else {
+        dot.classList.remove('bg-green-500', 'bg-gray-400');
+        dot.classList.add('bg-red-500');
+        pulse.classList.add('hidden');
+        statusText.textContent = 'Disconnected';
+        statusText.classList.remove('text-green-600', 'text-gray-600');
+        statusText.classList.add('text-red-600');
+      }
+    }
+
+    // Add log entry with timestamp
+    function addLogEntry(eventName, message, type = 'info') {
+      const logContainer = document.getElementById('notifications');
+      const scrollContainer = document.getElementById('log-scroll-container');
+
+      // Remove placeholder if present
+      const placeholder = logContainer.querySelector('.text-gray-400.italic');
+      if (placeholder) {
+        logContainer.innerHTML = '';
+      }
+
+      const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+
+      const logEntry = document.createElement('div');
+      logEntry.className = 'flex gap-2 items-start py-1 border-b border-gray-100 last:border-0';
+
+      let colorClass = 'text-blue-600';
+      let icon = '●';
+      if (type === 'error') {
+        colorClass = 'text-red-600';
+        icon = '✕';
+      } else if (type === 'success') {
+        colorClass = 'text-green-600';
+        icon = '✓';
+      } else if (type === 'warning') {
+        colorClass = 'text-yellow-600';
+        icon = '⚠';
+      }
+
+      logEntry.innerHTML = `
+        <span class="${colorClass} font-bold">${icon}</span>
+        <span class="text-gray-400">[${timestamp}]</span>
+        <span class="font-semibold text-gray-700">${eventName}:</span>
+        <span class="text-gray-600">${message}</span>
+      `;
+
+      logContainer.appendChild(logEntry);
+
+      // Update event count
+      eventCount++;
+      document.getElementById('log-event-count').textContent = eventCount;
+      document.getElementById('log-last-update').textContent = `Last: ${timestamp}`;
+
+      // Auto-scroll if enabled
+      if (autoScrollEnabled) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+
+    // Clear log
+    function clearLog() {
+      const logContainer = document.getElementById('notifications');
+      logContainer.innerHTML = '<div class="text-gray-400 italic">Log cleared. Waiting for events...</div>';
+      eventCount = 0;
+      document.getElementById('log-event-count').textContent = '0';
+      document.getElementById('log-last-update').textContent = 'No events yet';
+    }
+
+    // Toggle auto-scroll
+    document.getElementById('log-auto-scroll-toggle')?.addEventListener('click', function() {
+      autoScrollEnabled = !autoScrollEnabled;
+      const statusSpan = document.getElementById('auto-scroll-status');
+      statusSpan.textContent = `Auto-scroll: ${autoScrollEnabled ? 'ON' : 'OFF'}`;
+      this.classList.toggle('bg-gray-100', autoScrollEnabled);
+    });
+
+    // Update read progress
+    function updateProgress(eventName) {
+      const progressContainer = document.getElementById('read-progress-container');
+      const progressBar = document.getElementById('read-progress-bar');
+      const progressText = document.getElementById('read-progress-text');
+      const progressPercent = document.getElementById('read-progress-percent');
+
+      // Check if this event has a progress step
+      const progress = progressSteps[eventName];
+      if (progress !== undefined) {
+        readProgress = progress;
+
+        // Show progress container
+        progressContainer.classList.remove('hidden');
+
+        // Update progress bar
+        progressBar.style.width = `${progress}%`;
+        progressPercent.textContent = `${progress}%`;
+
+        // Update progress text
+        const progressMessages = {
+          15: 'Capturing document photo...',
+          30: 'Reading e-passport chip...',
+          45: 'Extracting MRZ data...',
+          60: 'Processing document info...',
+          70: 'Capturing white light image...',
+          80: 'Capturing infrared image...',
+          90: 'Capturing UV image...',
+          100: 'Read completed!'
+        };
+        progressText.textContent = progressMessages[progress] || 'Processing...';
+
+        // If completed, hide after delay
+        if (progress === 100) {
+          setTimeout(() => {
+            progressContainer.classList.add('hidden');
+            readProgress = 0;
+            progressBar.style.width = '0%';
+          }, 3000);
+        }
+      }
+    }
+
+    // Start Auto Read function - Called directly by button onclick
+    // Using fetch API instead of HTMX for more reliable control
+    async function startAutoRead() {
+      const button = document.getElementById('auto-read-button');
+      const spinner = document.getElementById('auto-read-spinner');
+      const buttonText = document.getElementById('auto-read-button-text');
+      const progressContainer = document.getElementById('read-progress-container');
+      const progressBar = document.getElementById('read-progress-bar');
+
+      // Prevent multiple clicks
+      if (button.disabled) {
+        console.log('Button is already disabled, ignoring click');
         return;
       }
 
-      // ParsedSOD 데이터 구조: { dscCertificate, dgHashes, digestAlgorithmOid, signerInformation }
-      let html = '<div id="sod-section" class="mt-6 space-y-4">';
-      html += '<h3 class="text-xl font-semibold text-gray-800 dark:text-white">SOD (Security Object Document) Information</h3>';
+      console.log('startAutoRead() called');
 
-      // Digest Algorithm
-      html += '<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">';
-      html += '<h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Digest Algorithm</h4>';
-      html += '<p class="text-sm text-gray-600 dark:text-gray-400">OID: ' + (parsedSOD.digestAlgorithmOid || 'N/A') + '</p>';
-      html += '</div>';
+      // Update button state
+      button.disabled = true;
+      if (spinner) spinner.classList.remove('hidden');
+      if (buttonText) buttonText.textContent = 'Reading...';
 
-      // Data Group Hashes
-      if (parsedSOD.dgHashes && parsedSOD.dgHashes.length > 0) {
-        html += '<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">';
-        html += '<h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Data Group Hashes</h4>';
-        html += '<div class="overflow-x-auto"><table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">';
-        html += '<thead><tr><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">DG</th>';
-        html += '<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Hash (Base64)</th></tr></thead>';
-        html += '<tbody class="divide-y divide-gray-200 dark:divide-gray-700">';
+      // Reset and show progress
+      readProgress = 0;
+      if (progressContainer) progressContainer.classList.remove('hidden');
+      if (progressBar) progressBar.style.width = '0%';
 
-        parsedSOD.dgHashes.forEach(function(dg) {
-          html += '<tr><td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white">DG' +
-                  (dg.dgNumber < 10 ? '0' + dg.dgNumber : dg.dgNumber) + '</td>';
-          html += '<td class="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 font-mono break-all">' +
-                  (dg.hash || 'N/A') + '</td></tr>';
+      addLogEntry('System', 'Auto read started', 'info');
+
+      try {
+        const response = await fetch('/passport/run-auto-read', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
         });
 
-        html += '</tbody></table></div></div>';
+        console.log('Auto read request completed, status:', response.status);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        // Request succeeded - actual read completion will be signaled via WebSocket
+        // Do NOT reset button here, wait for FPHPS_EV_EPASS_READ_DONE event
+
+      } catch (error) {
+        console.error('Auto read request failed:', error);
+        addLogEntry('System', `Auto read request failed: ${error.message}`, 'error');
+        // Reset button on error
+        resetAutoReadButton();
       }
-
-      // DSC Certificate
-      if (parsedSOD.dscCertificate) {
-        const cert = parsedSOD.dscCertificate;
-        html += '<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">';
-        html += '<h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-3">Document Signer Certificate (DSC)</h4>';
-
-        // Subject & Issuer
-        html += '<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">';
-        html += '<div><p class="text-xs font-medium text-gray-500 uppercase mb-1">Subject</p>';
-        html += '<p class="text-sm text-gray-900 dark:text-white break-all">' + (cert.subject || 'N/A') + '</p></div>';
-        html += '<div><p class="text-xs font-medium text-gray-500 uppercase mb-1">Issuer</p>';
-        html += '<p class="text-sm text-gray-900 dark:text-white break-all">' + (cert.issuer || 'N/A') + '</p></div>';
-        html += '</div>';
-
-        // Validity
-        html += '<div class="mb-4"><p class="text-xs font-medium text-gray-500 uppercase mb-1">Validity Period</p>';
-        html += '<p class="text-sm text-gray-600 dark:text-gray-400">From: ' + (cert.notBefore || 'N/A') + '</p>';
-        html += '<p class="text-sm text-gray-600 dark:text-gray-400">To: ' + (cert.notAfter || 'N/A') + '</p>';
-        html += '<p class="text-sm font-medium ' + (cert.valid ? 'text-green-600' : 'text-red-600') + '">' +
-                (cert.valid ? '✓ Valid' : '✗ Expired') + '</p></div>';
-
-        // Public Key
-        html += '<div class="mb-4"><p class="text-xs font-medium text-gray-500 uppercase mb-1">Public Key</p>';
-        html += '<p class="text-sm text-gray-600 dark:text-gray-400">Algorithm: ' + (cert.publicKeyAlgorithm || 'N/A') + '</p>';
-        html += '<p class="text-sm text-gray-600 dark:text-gray-400">Size: ' + (cert.publicKeySize || 'N/A') + ' bits</p></div>';
-
-        // Fingerprints
-        html += '<div class="mb-4"><p class="text-xs font-medium text-gray-500 uppercase mb-1">Fingerprints</p>';
-        html += '<p class="text-xs text-gray-600 dark:text-gray-400 font-mono break-all">SHA-1: ' +
-                (cert.sha1Fingerprint || 'N/A') + '</p>';
-        html += '<p class="text-xs text-gray-600 dark:text-gray-400 font-mono break-all">SHA-256: ' +
-                (cert.sha256Fingerprint || 'N/A') + '</p></div>';
-
-        html += '</div>';
-      }
-
-      // Signer Information
-      if (parsedSOD.signerInfo) {
-        const signer = parsedSOD.signerInfo;
-        html += '<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">';
-        html += '<h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Signer Information</h4>';
-        html += '<p class="text-sm text-gray-600 dark:text-gray-400">Digest Algorithm: ' +
-                (signer.digestAlgorithmName || signer.digestAlgorithmOid || 'N/A') + '</p>';
-        html += '<p class="text-sm text-gray-600 dark:text-gray-400">Signature Algorithm: ' +
-                (signer.signatureAlgorithmName || signer.signatureAlgorithmOid || 'N/A') + '</p>';
-        html += '</div>';
-      }
-
-      html += '</div>';
-      container.innerHTML = html;
-      console.log("SOD information rendered successfully");
     }
   </script>
 </html>

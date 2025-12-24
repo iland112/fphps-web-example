@@ -5,22 +5,8 @@
   layout:decorate="~{layouts/default}"
 >
   <div layout:fragment="content">
-    <!-- Content -->
-    <div class="w-full pt-2 px-2 sm:px-6 md:px-8 lg:ps-72">
-      <header id="brand-header">
-        <div
-          class="h-16 flex justify-center items-center space-x-0.5 bg-blue-900"
-        >
-          <img
-            class="size-16 rounded-full"
-            th:src="@{/image/fastpass-p1.png}"
-            alt="FastPass-P1"
-          />
-          <h1 class="text-3xl text-white font-mono font-extrabold">
-            FastPass JAVA SDK Demo
-          </h1>
-        </div>
-      </header>
+    <!-- Content (adjusted for sticky header) -->
+    <div class="w-full min-h-screen pt-2 px-2 sm:px-6 md:px-8 lg:ps-72 mt-4 pb-8">
       <!-- HTMX Loading Indicator -->
       <div
         id="indicator"
