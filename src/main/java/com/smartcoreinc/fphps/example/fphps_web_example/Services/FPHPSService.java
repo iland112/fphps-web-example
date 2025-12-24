@@ -1,8 +1,10 @@
 package com.smartcoreinc.fphps.example.fphps_web_example.Services;
 
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -20,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public final class FPHPSService {
+public class FPHPSService {
 
     private final FPHPSDeviceManager deviceManager;
     private final FastPassWebSocketHandler fastPassWebSocketHandler;
@@ -38,12 +40,25 @@ public final class FPHPSService {
         this.deviceManager = FPHPSDeviceManager.getInstance();
         try {
             initDevices();
-            // Load initial properties from the physical device
+            // DB에 저장된 설정이 있는지 확인
+            FPHPSDeviceProperties savedProperties = this.devicePropertiesService.getProperties();
+            boolean hasSavedSettings = savedProperties != null &&
+                (savedProperties.getBatchModeProperties() != null ||
+                 savedProperties.getEPassportDGProperties() != null ||
+                 savedProperties.getEPassportAuthProperties() != null);
+
             try {
                 this.device.openDevice();
-                FPHPSDeviceProperties initialProperties = this.device.getDeviceProperties();
-                this.devicePropertiesService.setProperties(initialProperties);
-                log.info("Successfully loaded initial properties from device.");
+                if (hasSavedSettings) {
+                    // DB에 저장된 설정이 있으면 디바이스에 적용
+                    this.device.setDeviceProperties(savedProperties);
+                    log.info("Applied saved settings from database to device.");
+                } else {
+                    // DB에 저장된 설정이 없으면 디바이스에서 가져와서 저장
+                    FPHPSDeviceProperties initialProperties = this.device.getDeviceProperties();
+                    this.devicePropertiesService.setProperties(initialProperties);
+                    log.info("No saved settings found. Loaded initial properties from device and saved to database.");
+                }
             } finally {
                 if (this.device.isDeviceOpened()) {
                     this.device.closeDevice();
@@ -106,6 +121,8 @@ public final class FPHPSService {
     }
 
     public DocumentReadResponse read(String docType, boolean isAuto) {
+        log.debug("read() called: docType={}, isAuto={}", docType, isAuto);
+
         DocumentReadResponse response = executeWithDevice(openedDevice -> {
             for (DocumentReadStrategy strategy : strategies) {
                 if (strategy.supports(docType)) {
@@ -119,12 +136,27 @@ public final class FPHPSService {
         // 읽기 결과 저장 (Manual/Auto 모두)
         if (response != null) {
             this.lastReadResponse = response;
-            log.debug("Saved last read response (isAuto={}) with parsedSOD: {}",
-                     isAuto,
-                     response.getParsedSOD() != null ? "Available" : "Not Available");
         }
 
         return response;
+    }
+
+    /**
+     * 비동기 Auto Read 실행
+     * HTTP 요청은 즉시 반환하고, 실제 읽기는 별도 스레드에서 수행
+     * 결과는 WebSocket을 통해 클라이언트에 전달됨
+     */
+    @Async
+    public CompletableFuture<DocumentReadResponse> readAsync(String docType) {
+        log.debug("readAsync() started: docType={}", docType);
+        try {
+            DocumentReadResponse response = read(docType, true);
+            log.debug("readAsync() completed");
+            return CompletableFuture.completedFuture(response);
+        } catch (Exception e) {
+            log.error("readAsync() failed: {}", e.getMessage(), e);
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     /**
