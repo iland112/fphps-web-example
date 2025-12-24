@@ -2,7 +2,7 @@
   <div
     th:fragment="sidebar"
     id="hs-application-sidebar"
-    class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform w-65 h-full hidden fixed inset-y-0 start-0 z-60 bg-gray-900 lg:block lg:translate-x-0 lg:end-auto lg:bottom-0 dark:bg-neutral-800 dark:border-neutral-700"
+    class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform w-65 hidden fixed top-16 bottom-0 start-0 z-40 bg-gray-900 lg:block lg:translate-x-0 lg:end-auto dark:bg-neutral-800 dark:border-neutral-700"
     role="dialog"
     tabindex="-1"
     aria-label="Sidebar"
@@ -38,7 +38,7 @@
               <a
                 class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
                 href="#"
-                hx-get="/fphps/home"
+                hx-get="/home"
                 hx-target="#response"
                 hx-swap="outerHTML"
               >
@@ -61,7 +61,7 @@
               </a>
             </li>
             <!-- EPassport -->
-            <li class="hs-accordion" id="epassport-accordion" th:classappend="${deviceProperties.getEnableRF() == 0 ? 'opacity-50 pointer-events-none' : ''}">
+            <li class="hs-accordion" id="epassport-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableRF() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
                 class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
@@ -130,7 +130,7 @@
                     <a
                       class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
                       href="#"
-                      hx-get="/fphps/passport/manual-read"
+                      hx-get="/passport/manual-read"
                       hx-indicator="#indicator"
                       hx-target="#response"
                       hx-swap="outerHTML"
@@ -142,7 +142,7 @@
                     <a
                       class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
                       href="#"
-                      hx-get="/fphps/passport/auto-read"
+                      hx-get="/passport/auto-read"
                       hx-target="#response"
                       hx-swap="outerHTML"
                     >
@@ -153,7 +153,7 @@
               </div>
             </li>
             <!-- ID Card -->
-            <li class="hs-accordion" id="idcard-accordion" th:classappend="${deviceProperties.getEnableIDCard() == 0 ? 'opacity-50 pointer-events-none' : ''}">
+            <li class="hs-accordion" id="idcard-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableIDCard() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
                 class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
@@ -220,7 +220,7 @@
                     <a
                       class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
                       href="#"
-                      hx-get="/fphps/idcard/manual-read"
+                      hx-get="/idcard/manual-read"
                       hx-indicator="#indicator"
                       hx-target="#response"
                       hx-swap="outerHTML"
@@ -232,7 +232,7 @@
                     <a
                       class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
                       href="#"
-                      hx-get="/fphps/idcard/auto-read"
+                      hx-get="/idcard/auto-read"
                       hx-target="#response"
                       hx-swap="outerHTML"
                     >
@@ -243,7 +243,7 @@
               </div>
             </li>
             <!-- Barcode -->
-            <li class="hs-accordion" id="barcode-accordion" th:classappend="${deviceProperties.getEnableBarcode() == 0 ? 'opacity-50 pointer-events-none' : ''}">
+            <li class="hs-accordion" id="barcode-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableBarcode() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
                 class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
@@ -312,7 +312,7 @@
                     <a
                       class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
                       href="#"
-                      hx-get="/fphps/barcode/manual-read"
+                      hx-get="/barcode/manual-read"
                       hx-indicator="#indicator"
                       hx-target="#response"
                       hx-swap="outerHTML"
@@ -324,7 +324,7 @@
                     <a
                       class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
                       href="#"
-                      hx-get="/fphps/barcode/auto-read"
+                      hx-get="/barcode/auto-read"
                       hx-target="#response"
                       hx-swap="outerHTML"
                     >
@@ -339,7 +339,7 @@
               <a
                 class="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-white rounded-lg hover:bg-white/10 dark:hover:bg-neutral-700 dark:text-white"
                 href="#"
-                hx-get="/fphps/scan-page"
+                hx-get="/scan-page"
                 hx-target="#response"
                 hx-swap="outerHTML"
               >
@@ -367,7 +367,7 @@
               <a
                 class="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-white rounded-lg hover:bg-white/10 dark:hover:bg-neutral-700 dark:text-white"
                 href="#"
-                hx-get="/fphps/device-setting"
+                hx-get="/device-setting"
                 hx-target="#response"
                 hx-swap="outerHTML"
               >

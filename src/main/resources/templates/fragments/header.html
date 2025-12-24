@@ -1,5 +1,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
-    <div th:fragment="header">
-        <!-- 헤더 영역 입니다. -->
+    <!-- Sticky Header -->
+    <div th:fragment="header" class="sticky top-0 z-50 h-16 flex justify-center items-center space-x-0.5 bg-blue-900 shadow-lg">
+        <img class="size-16 rounded-full" th:src="@{/image/fastpass-p1.png}" alt="FastPass-P1">
+        <h1 class="text-3xl text-white font-mono font-extrabold">
+            FastPass JAVA SDK Demo
+        </h1>
     </div>
 </html>

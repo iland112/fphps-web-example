@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Slf4j
 @Controller
-@RequestMapping("/fphps")
+@RequestMapping("/")
 public class FPHPSController {
 
     private final FPHPSService fphpsService;
@@ -105,7 +105,7 @@ public class FPHPSController {
         FPHPSDeviceProperties currentProperties = devicePropertiesService.getProperties();
         FPHPSDeviceProperties newProperties = SettingsForm.to(settingsForm, currentProperties);
         devicePropertiesService.setProperties(newProperties);
-        return "redirect:/fphps";
+        return "redirect:/";
     }
 
     @GetMapping("/passport/manual-read")
@@ -133,9 +133,11 @@ public class FPHPSController {
     @PostMapping("/passport/run-auto-read")
     @ResponseBody
     public void autoRead() {
-        log.debug("autoRead() Started!!");
-        fphpsService.read("PASSPORT", true);
-        log.debug("autoRead() Ended!!");
+        log.debug("autoRead() Started - triggering async read");
+        // 비동기로 실행하여 HTTP 요청을 즉시 반환
+        // 실제 읽기 결과는 WebSocket을 통해 클라이언트에 전달됨
+        fphpsService.readAsync("PASSPORT");
+        log.debug("autoRead() - async read triggered, returning immediately");
     }
 
     @GetMapping("/passport/get-sod-info")

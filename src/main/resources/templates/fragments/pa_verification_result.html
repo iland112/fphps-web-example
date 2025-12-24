@@ -2,61 +2,67 @@
   <!-- PA 검증 결과 프래그먼트 -->
   <div id="pa-verification-result" th:fragment="paResult">
     <!-- 이 프래그먼트는 JavaScript에서 동적으로 렌더링됩니다 -->
-    <!-- Alpine.js 또는 JavaScript로 paVerificationResult 객체를 바인딩하여 사용 -->
-
-    <div class="mt-6 border-t border-gray-200 pt-6">
-      <div class="px-4 sm:px-0">
-        <h3 class="text-xl font-semibold text-gray-900">
+    <div class="space-y-4">
+      <!-- Header Section -->
+      <div class="bg-white border border-gray-200 rounded-lg p-4">
+        <h3 class="text-lg font-semibold text-gray-900">
           Passive Authentication Results
         </h3>
-        <p class="mt-1 text-sm text-gray-500">
+        <p class="text-sm text-gray-500 mt-1">
           ICAO 9303 standard verification results from Local PKD
         </p>
       </div>
 
-      <!-- 전체 상태 표시 영역 -->
-      <div id="pa-overall-status" class="mt-4 px-4">
+      <!-- Overall Status Section -->
+      <div id="pa-overall-status" class="bg-white border border-gray-200 rounded-lg p-4">
         <!-- JavaScript로 동적 렌더링 -->
       </div>
 
-      <!-- 인증서 체인 검증 -->
-      <div id="pa-cert-chain" class="mt-6">
-        <h4 class="text-lg font-medium text-gray-900 px-4">
-          Certificate Chain Validation
-        </h4>
-        <div class="mt-2 border-t border-gray-100">
+      <!-- Certificate Chain Validation Section -->
+      <div id="pa-cert-chain" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+          <h4 class="text-base font-semibold text-gray-900">
+            Certificate Chain Validation
+          </h4>
+        </div>
+        <div class="p-4">
           <!-- JavaScript로 동적 렌더링 -->
         </div>
       </div>
 
-      <!-- SOD 서명 검증 -->
-      <div id="pa-sod-signature" class="mt-6">
-        <h4 class="text-lg font-medium text-gray-900 px-4">
-          SOD Signature Validation
-        </h4>
-        <div class="mt-2 border-t border-gray-100">
+      <!-- SOD Signature Validation Section -->
+      <div id="pa-sod-signature" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+          <h4 class="text-base font-semibold text-gray-900">
+            SOD Signature Validation
+          </h4>
+        </div>
+        <div class="p-4">
           <!-- JavaScript로 동적 렌더링 -->
         </div>
       </div>
 
-      <!-- Data Group 해시 검증 -->
-      <div id="pa-datagroup" class="mt-6">
-        <h4 class="text-lg font-medium text-gray-900 px-4">
-          Data Group Hash Validation
-        </h4>
-        <div class="mt-2 border-t border-gray-100">
+      <!-- Data Group Hash Validation Section -->
+      <div id="pa-datagroup" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+          <h4 class="text-base font-semibold text-gray-900">
+            Data Group Hash Validation
+          </h4>
+        </div>
+        <div class="p-4">
           <!-- JavaScript로 동적 렌더링 -->
         </div>
       </div>
 
-      <!-- 에러 표시 -->
-      <div id="pa-errors" class="mt-6">
-        <!-- JavaScript로 동적 렌더링 (에러가 있을 경우만) -->
+      <!-- Error Section -->
+      <div id="pa-errors" class="bg-red-50 border border-red-200 rounded-lg p-4 hidden">
+        <!-- JavaScript로 동적 렌더링 (에러가 있을 경우만 표시) -->
       </div>
 
-      <!-- 메타데이터 -->
-      <div id="pa-metadata" class="mt-6 px-4">
-        <dl class="grid grid-cols-2 gap-4 text-sm">
+      <!-- Metadata Section -->
+      <div id="pa-metadata" class="bg-white border border-gray-200 rounded-lg p-4">
+        <h4 class="text-base font-semibold text-gray-900 mb-3">Verification Metadata</h4>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 text-sm">
           <!-- JavaScript로 동적 렌더링 -->
         </dl>
       </div>

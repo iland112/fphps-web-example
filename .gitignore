@@ -40,8 +40,14 @@ src/main/frontend/node_modules
 
 docs/
 log/
+data/
 .serena/
 .gemini/
 output.txt
 *.bin
 setup-wsl-portforward.ps1
+
+### Playwright ###
+.playwright-mcp/
+src/main/frontend/test-results/
+nul

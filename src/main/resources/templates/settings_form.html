@@ -1,711 +1,345 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div id="response" class="m-2" th:fragment="settings">
-    <h1 class="mb-2 bg-gray-100 p-4 font-mono text-2xl font-semibold">
-      Device Settings
-    </h1>
+  <div id="response" class="space-y-6" th:fragment="settings">
+    <!-- Gradient Header Section -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-700 to-gray-800 p-6 shadow-lg">
+      <div class="absolute inset-0 bg-grid-white/10"></div>
+      <div class="relative flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold text-white">Device Settings</h1>
+          <p class="mt-2 text-gray-300">Configure device properties and scanning options</p>
+        </div>
+        <div class="hidden sm:flex items-center gap-3">
+          <div class="flex size-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+            <svg class="size-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <form
       id="settings-form"
-      class="flex flex-col gap-1"
+      class="space-y-6"
       action="#"
-      th:action="@{/fphps/device-setting}"
+      th:action="@{/device-setting}"
       th:method="post"
       th:object="${settingsForm}"
     >
-      <!-- Device Option -->
-      <div
-        class="flex flex-col rounded-xl border border-gray-200 bg-white shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-neutral-700/70"
-      >
-        <div class="p-4 md:p-5">
-          <h3 class="mb-3 text-lg font-bold text-gray-800 dark:text-white">
-            Device Options
-          </h3>
-          <div class="flex flex-col gap-2 p-4 text-sm">
-            <fieldset
-              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
-            >
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  th:field="*{checkRemove}"
-                  id="hs-checkbox-check-remove"
-                />
-                <label
-                  for="hs-checkbox-check-remove"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Check Document Remove</label
-                >
+      <!-- Device Options Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-slate-500/10 to-gray-500/10 rounded-bl-full"></div>
+        <div class="relative p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex size-10 items-center justify-center rounded-xl bg-slate-100 group-hover:bg-slate-200 transition-colors">
+              <svg class="size-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Device Options</h3>
+              <p class="text-sm text-gray-500">General device control settings</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Check Remove & Enable RF -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3">Control Options</h4>
+              <div class="space-y-3">
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-slate-300 hover:bg-slate-50/50 transition-all cursor-pointer">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-slate-600 focus:ring-slate-500" th:field="*{checkRemove}" id="hs-checkbox-check-remove"/>
+                  <label for="hs-checkbox-check-remove" class="text-sm font-medium text-gray-700 cursor-pointer">Check Document Remove</label>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-slate-300 hover:bg-slate-50/50 transition-all cursor-pointer">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-slate-600 focus:ring-slate-500" th:field="*{enableRF}" id="hs-checkbox-enable-rf"/>
+                  <label for="hs-checkbox-enable-rf" class="text-sm font-medium text-gray-700 cursor-pointer">Enable RF</label>
+                </div>
               </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-enable-rf"
-                  th:field="*{enableRF}"
-                />
-                <label
-                  for="hs-checkbox-enable-rf"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Eanble RF</label
-                >
+            </div>
+            <!-- RF Read Size -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3">RF Settings</h4>
+              <div class="flex items-center gap-4 p-3 bg-white rounded-lg border border-gray-200">
+                <label class="text-sm font-medium text-gray-700">RF Read Size</label>
+                <input type="number" class="w-24 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent" th:field="*{rfReadSize}"/>
               </div>
-            </fieldset>
-            <div
-              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
-            >
-              <!-- Input Number -->
-              <div
-                class="rounded-lg border border-gray-200 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900"
-                data-hs-input-number=""
-              >
-                <div class="flex w-full items-center justify-between gap-x-3">
-                  <div>
-                    <span
-                      class="block text-sm font-medium text-gray-800 dark:text-white"
-                    >
-                      RF Read Size
-                    </span>
-                    <span
-                      class="block text-xs text-gray-500 dark:text-neutral-400"
-                    >
-                      231
-                    </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ID Card & Barcode Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-bl-full"></div>
+        <div class="relative p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex size-10 items-center justify-center rounded-xl bg-emerald-100 group-hover:bg-emerald-200 transition-colors">
+              <svg class="size-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">ID Card & Barcode</h3>
+              <p class="text-sm text-gray-500">Enable ID card and barcode reading</p>
+            </div>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+            <div class="flex flex-wrap gap-3">
+              <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-all cursor-pointer">
+                <input type="checkbox" class="size-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" th:field="*{enableIDCard}" id="hs-checkbox-idcard"/>
+                <label for="hs-checkbox-idcard" class="text-sm font-medium text-gray-700 cursor-pointer">Enable ID Card</label>
+              </div>
+              <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/50 transition-all cursor-pointer">
+                <input type="checkbox" class="size-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" th:field="*{enableBarcode}" id="hs-checkbox-barcode"/>
+                <label for="hs-checkbox-barcode" class="text-sm font-medium text-gray-700 cursor-pointer">Enable Barcode</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- E-Passport Options Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-bl-full"></div>
+        <div class="relative p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex size-10 items-center justify-center rounded-xl bg-blue-100 group-hover:bg-blue-200 transition-colors">
+              <svg class="size-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">E-Passport Properties</h3>
+              <p class="text-sm text-gray-500">Configure data groups and authentication</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Data Groups -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 px-2">Data Groups</h4>
+              <div class="grid grid-cols-4 gap-2">
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg1}" id="hs-checkbox-dg01"/>
+                  <label for="hs-checkbox-dg01" class="text-xs font-medium text-gray-700">DG01</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg2}" id="hs-checkbox-dg02"/>
+                  <label for="hs-checkbox-dg02" class="text-xs font-medium text-gray-700">DG02</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg3}" id="hs-checkbox-dg03"/>
+                  <label for="hs-checkbox-dg03" class="text-xs font-medium text-gray-700">DG03</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg4}" id="hs-checkbox-dg04"/>
+                  <label for="hs-checkbox-dg04" class="text-xs font-medium text-gray-700">DG04</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg5}" id="hs-checkbox-dg05"/>
+                  <label for="hs-checkbox-dg05" class="text-xs font-medium text-gray-700">DG05</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg6}" id="hs-checkbox-dg06"/>
+                  <label for="hs-checkbox-dg06" class="text-xs font-medium text-gray-700">DG06</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg7}" id="hs-checkbox-dg07"/>
+                  <label for="hs-checkbox-dg07" class="text-xs font-medium text-gray-700">DG07</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg8}" id="hs-checkbox-dg08"/>
+                  <label for="hs-checkbox-dg08" class="text-xs font-medium text-gray-700">DG08</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg9}" id="hs-checkbox-dg09"/>
+                  <label for="hs-checkbox-dg09" class="text-xs font-medium text-gray-700">DG09</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg10}" id="hs-checkbox-dg10"/>
+                  <label for="hs-checkbox-dg10" class="text-xs font-medium text-gray-700">DG10</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg11}" id="hs-checkbox-dg11"/>
+                  <label for="hs-checkbox-dg11" class="text-xs font-medium text-gray-700">DG11</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg12}" id="hs-checkbox-dg12"/>
+                  <label for="hs-checkbox-dg12" class="text-xs font-medium text-gray-700">DG12</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg13}" id="hs-checkbox-dg13"/>
+                  <label for="hs-checkbox-dg13" class="text-xs font-medium text-gray-700">DG13</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg14}" id="hs-checkbox-dg14"/>
+                  <label for="hs-checkbox-dg14" class="text-xs font-medium text-gray-700">DG14</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg15}" id="hs-checkbox-dg15"/>
+                  <label for="hs-checkbox-dg15" class="text-xs font-medium text-gray-700">DG15</label>
+                </div>
+                <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{dg16}" id="hs-checkbox-dg16"/>
+                  <label for="hs-checkbox-dg16" class="text-xs font-medium text-gray-700">DG16</label>
+                </div>
+              </div>
+            </div>
+            <!-- Authentication & Other Options -->
+            <div class="space-y-4">
+              <!-- Authentication -->
+              <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 px-2">Authentication</h4>
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                    <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{pa}" id="hs-checkbox-auth-pa"/>
+                    <label for="hs-checkbox-auth-pa" class="text-xs font-medium text-gray-700">PA</label>
                   </div>
-                  <div class="flex items-center gap-x-1.5">
-                    <button
-                      type="button"
-                      class="inline-flex size-6 items-center justify-center gap-x-2 rounded-md border border-gray-200 bg-white text-sm font-medium text-gray-800 shadow-2xs hover:bg-gray-50 focus:bg-gray-50 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-                      tabindex="-1"
-                      aria-label="Decrease"
-                      data-hs-input-number-decrement=""
-                    >
-                      <svg
-                        class="size-3.5 shrink-0"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path d="M5 12h14"></path>
-                      </svg>
-                    </button>
-                    <input
-                      class="w-6 border-0 bg-transparent p-0 text-center text-gray-800 focus:ring-0 dark:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      style="-moz-appearance: textfield"
-                      type="number"
-                      aria-roledescription="Number field"
-                      data-hs-input-number-input=""
-                      th:field="*{rfReadSize}"
-                    />
-                    <button
-                      type="button"
-                      class="inline-flex size-6 items-center justify-center gap-x-2 rounded-md border border-gray-200 bg-white text-sm font-medium text-gray-800 shadow-2xs hover:bg-gray-50 focus:bg-gray-50 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800 dark:focus:bg-neutral-800"
-                      tabindex="-1"
-                      aria-label="Increase"
-                      data-hs-input-number-increment=""
-                    >
-                      <svg
-                        class="size-3.5 shrink-0"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path d="M5 12h14"></path>
-                        <path d="M12 5v14"></path>
-                      </svg>
-                    </button>
+                  <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                    <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{aa}" id="hs-checkbox-auth-aa"/>
+                    <label for="hs-checkbox-auth-aa" class="text-xs font-medium text-gray-700">AA</label>
+                  </div>
+                  <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                    <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{ca}" id="hs-checkbox-auth-ca"/>
+                    <label for="hs-checkbox-auth-ca" class="text-xs font-medium text-gray-700">CA</label>
+                  </div>
+                  <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                    <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{ta}" id="hs-checkbox-auth-ta"/>
+                    <label for="hs-checkbox-auth-ta" class="text-xs font-medium text-gray-700">TA</label>
+                  </div>
+                  <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                    <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{sac}" id="hs-checkbox-auth-sac"/>
+                    <label for="hs-checkbox-auth-sac" class="text-xs font-medium text-gray-700">SAC</label>
                   </div>
                 </div>
               </div>
-              <!-- End Input Number -->
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- ID Card and Barcode -->
-      <div
-        class="flex flex-col rounded-xl border border-gray-200 bg-white shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-neutral-700/70"
-      >
-        <div class="p-4 md:p-5">
-          <h3 class="text-lg font-bold text-gray-800 dark:text-white">
-            ID Card & Barcode Read Options
-          </h3>
-          <fieldset
-            class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
-          >
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-idcard"
-                th:field="*{enableIDCard}"
-              />
-              <label
-                for="hs-checkbox-idcard"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >Enable ID Card</label
-              >
-            </div>
-            <div class="flex">
-              <input
-                type="checkbox"
-                class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                id="hs-checkbox-barcode"
-                th:field="*{enableBarcode}"
-              />
-              <label
-                for="hs-checkbox-barcode"
-                class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                >Eanble Barcode</label
-              >
-            </div>
-          </fieldset>
-        </div>
-      </div>
-      <!-- E-Passport Options -->
-      <div
-        class="flex flex-col rounded-xl border border-gray-200 bg-white shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-neutral-700/70"
-      >
-        <div class="p-4 md:p-5">
-          <h3 class="text-lg font-bold text-gray-800 dark:text-white">
-            E-Passport Properties
-          </h3>
-          <div class="flex flex-col justify-around gap-5 text-sm">
-            <div class="flex justify-baseline gap-10">
-              <fieldset
-                class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2"
-              >
-                <legend>DGS</legend>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg01"
-                    th:field="*{dg1}"
-                  />
-                  <label
-                    for="hs-checkbox-dg01"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG01</label
-                  >
+              <!-- RF Options -->
+              <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 px-2">RF Options</h4>
+                <div class="flex flex-wrap gap-2">
+                  <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                    <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{rfUseSFI}" id="hs-checkbox-rfusesfi"/>
+                    <label for="hs-checkbox-rfusesfi" class="text-xs font-medium text-gray-700">RF Use SFI</label>
+                  </div>
+                  <div class="flex items-center gap-1.5 p-2 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-all">
+                    <input type="checkbox" class="size-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" th:field="*{securityCheck}" id="hs-checkbox-security"/>
+                    <label for="hs-checkbox-security" class="text-xs font-medium text-gray-700">Security Check</label>
+                  </div>
                 </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg02"
-                    th:field="*{dg2}"
-                  />
-                  <label
-                    for="hs-checkbox-dg02"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG02</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg03"
-                    th:field="*{dg3}"
-                  />
-                  <label
-                    for="hs-checkbox-dg03"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG03</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg04"
-                    th:field="*{dg4}"
-                  />
-                  <label
-                    for="hs-checkbox-dg04"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG04</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg05"
-                    th:field="*{dg5}"
-                  />
-                  <label
-                    for="hs-checkbox-dg05"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG05</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg06"
-                    th:field="*{dg6}"
-                  />
-                  <label
-                    for="hs-checkbox-dg06"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG06</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg07"
-                    th:field="*{dg7}"
-                  />
-                  <label
-                    for="hs-checkbox-dg07"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG07</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg08"
-                    th:field="*{dg8}"
-                  />
-                  <label
-                    for="hs-checkbox-dg08"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG08</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg09"
-                    th:field="*{dg9}"
-                  />
-                  <label
-                    for="hs-checkbox-dg09"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG09</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg10"
-                    th:field="*{dg10}"
-                  />
-                  <label
-                    for="hs-checkbox-dg10"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG10</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg11"
-                    th:field="*{dg11}"
-                  />
-                  <label
-                    for="hs-checkbox-dg11"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG11</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg12"
-                    th:field="*{dg12}"
-                  />
-                  <label
-                    for="hs-checkbox-dg12"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG12</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg13"
-                    th:field="*{dg13}"
-                  />
-                  <label
-                    for="hs-checkbox-dg13"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG13</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg14"
-                    th:field="*{dg14}"
-                  />
-                  <label
-                    for="hs-checkbox-dg14"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG14</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg15"
-                    th:field="*{dg15}"
-                  />
-                  <label
-                    for="hs-checkbox-dg15"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG15</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg16"
-                    th:field="*{dg16}"
-                  />
-                  <label
-                    for="hs-checkbox-dg16"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG16</label
-                  >
-                </div>
-              </fieldset>
-              <fieldset
-                class="grid grid-cols-1 rounded-sm border border-gray-300 p-2"
-              >
-                <legend>Authentication Options</legend>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-pa"
-                    th:field="*{pa}"
-                  />
-                  <label
-                    for="hs-checkbox-auth-pa"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >PA</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-aa"
-                    th:field="*{aa}"
-                  />
-                  <label
-                    for="hs-checkbox-auth-aa"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >AA</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-ca"
-                    th:field="*{ca}"
-                  />
-                  <label
-                    for="hs-checkbox-auth-ca"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >CA</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-ta"
-                    th:field="*{ta}"
-                  />
-                  <label
-                    for="hs-checkbox-auth-ta"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >TA</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-sac"
-                    th:field="*{sac}"
-                  />
-                  <label
-                    for="hs-checkbox-auth-sac"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >SAC</label
-                  >
-                </div>
-              </fieldset>
-            </div>
-            <div class="flex justify-baseline gap-10">
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-rfusesfi"
-                  th:field="*{rfUseSFI}"
-                />
-                <label
-                  for="hs-checkbox-rfusesfi"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >RF Use SFI</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-security"
-                  th:field="*{securityCheck}"
-                />
-                <label
-                  for="hs-checkbox-auth-security"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Security Check</label
-                >
               </div>
             </div>
           </div>
         </div>
       </div>
-      <!-- Image Controls -->
-      <div
-        class="flex flex-col rounded-xl border border-gray-200 bg-white shadow-2xs dark:border-neutral-700 dark:bg-neutral-900 dark:shadow-neutral-700/70"
-      >
-        <div class="p-4 md:p-5">
-          <h3 class="text-lg font-bold text-gray-800 dark:text-white">
-            Image Control Properties
-          </h3>
-          <div class="flex flex-col gap-5 text-sm">
-            <fieldset
-              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
-            >
-              <legend>Batch Mode</legend>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-batchmode-ir"
-                  th:field="*{ir}"
-                />
-                <label
-                  for="hs-checkbox-batchmode-ir"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >IR</label
-                >
+
+      <!-- Image Controls Card -->
+      <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-bl-full"></div>
+        <div class="relative p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="flex size-10 items-center justify-center rounded-xl bg-purple-100 group-hover:bg-purple-200 transition-colors">
+              <svg class="size-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Image Control Properties</h3>
+              <p class="text-sm text-gray-500">Configure image capture and enhancement</p>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Batch Mode -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 px-2">Batch Mode</h4>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{ir}" id="hs-checkbox-batchmode-ir"/>
+                  <label for="hs-checkbox-batchmode-ir" class="text-sm font-medium text-gray-700">IR</label>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{uv}" id="hs-checkbox-batchmode-uv"/>
+                  <label for="hs-checkbox-batchmode-uv" class="text-sm font-medium text-gray-700">UV</label>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{wh}" id="hs-checkbox-batchmode-wh"/>
+                  <label for="hs-checkbox-batchmode-wh" class="text-sm font-medium text-gray-700">WH</label>
+                </div>
               </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-batchmode-uv"
-                  th:field="*{uv}"
-                />
-                <label
-                  for="hs-checkbox-batchmode-uv"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >UV</label
-                >
+            </div>
+            <!-- Anti-Glare -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 px-2">Anti-Glare</h4>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{antiGlare}" id="hs-checkbox-antiglare"/>
+                  <label for="hs-checkbox-antiglare" class="text-sm font-medium text-gray-700">Anti-Glare</label>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{antiGlareIR}" id="hs-checkbox-antiglare-ir"/>
+                  <label for="hs-checkbox-antiglare-ir" class="text-sm font-medium text-gray-700">Anti-Glare IR</label>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{antiGlareIRHalf}" id="hs-checkbox-antiglare-irhalf"/>
+                  <label for="hs-checkbox-antiglare-irhalf" class="text-sm font-medium text-gray-700">Anti-Glare IR Half</label>
+                </div>
               </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-batchmode-wh"
-                  th:field="*{wh}"
-                />
-                <label
-                  for="hs-checkbox-batchmode-wh"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >WH</label
-                >
+            </div>
+            <!-- Enhance Image -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 px-2">Enhance Image</h4>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{enableEnhanceIR}" id="hs-checkbox-enhance-ir"/>
+                  <label for="hs-checkbox-enhance-ir" class="text-sm font-medium text-gray-700">Enhance IR</label>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{enableEnhanceUV}" id="hs-checkbox-enhance-uv"/>
+                  <label for="hs-checkbox-enhance-uv" class="text-sm font-medium text-gray-700">Enhance UV</label>
+                </div>
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                  <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{enableEnhanceWH}" id="hs-checkbox-enhance-wh"/>
+                  <label for="hs-checkbox-enhance-wh" class="text-sm font-medium text-gray-700">Enhance WH</label>
+                </div>
               </div>
-            </fieldset>
-            <fieldset
-              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
-            >
-              <legend>Anti-Glair</legend>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-antiglare"
-                  th:field="*{antiGlare}"
-                />
-                <label
-                  for="hs-checkbox-antiglare"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Anti-Glair</label
-                >
+            </div>
+            <!-- Strength -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 px-2">Strength</h4>
+              <div class="space-y-3">
+                <div class="flex items-center gap-3 p-2 bg-white rounded-lg border border-gray-200">
+                  <label for="hs-number-strength-ir" class="text-sm font-medium text-gray-700 w-24">Strength IR</label>
+                  <input type="number" class="w-20 px-2 py-1 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" th:field="*{strengthIR}" id="hs-number-strength-ir"/>
+                </div>
+                <div class="flex items-center gap-3 p-2 bg-white rounded-lg border border-gray-200">
+                  <label for="hs-number-strength-wh" class="text-sm font-medium text-gray-700 w-24">Strength WH</label>
+                  <input type="number" class="w-20 px-2 py-1 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" th:field="*{strengthWH}" id="hs-number-strength-wh"/>
+                </div>
               </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-antiglare-ir"
-                  th:field="*{antiGlareIR}"
-                />
-                <label
-                  for="hs-checkbox-antiglare-ir"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Anti-Glare IR</label
-                >
+            </div>
+            <!-- Other Options -->
+            <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+              <h4 class="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-3 px-2">Other Options</h4>
+              <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-gray-200 hover:border-purple-300 transition-all">
+                <input type="checkbox" class="size-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500" th:field="*{crop}" id="hs-checkbox-crop"/>
+                <label for="hs-checkbox-crop" class="text-sm font-medium text-gray-700">Crop Image</label>
               </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-antiglare-irhalf"
-                  th:field="*{antiGlareIRHalf}"
-                />
-                <label
-                  for="hs-checkbox-antiglare-irhalf"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Anti-Glare IRHALF</label
-                >
-              </div>
-            </fieldset>
-            <fieldset
-              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
-            >
-              <legend>Enhance Image</legend>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-enhance-ir"
-                  th:field="*{enableEnhanceIR}"
-                />
-                <label
-                  for="hs-checkbox-enhance-ir"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Enhance IR</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-enhance-uv"
-                  th:field="*{enableEnhanceUV}"
-                />
-                <label
-                  for="hs-checkbox-enhance-uv"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Enhance UV</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-enhance-wh"
-                  th:field="*{enableEnhanceWH}"
-                />
-                <label
-                  for="hs-checkbox-enhance-wh"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Enhance WH</label
-                >
-              </div>
-            </fieldset>
-            <fieldset
-              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
-            >
-              <legend>Strength</legend>
-              <div class="flex">
-                <input
-                  type="number"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-number-strength-ir"
-                  th:field="*{strengthIR}"
-                />
-                <label
-                  for="hs-checkbox-strength-ir"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Strength IR</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="number"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-number-strength-wh"
-                  th:field="*{strengthWH}"
-                />
-                <label
-                  for="hs-checkbox-strength-wh"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Strength WH</label
-                >
-              </div>
-            </fieldset>
-            <fieldset
-              class="flex justify-baseline gap-10 rounded-sm border border-gray-200 p-2"
-            >
-              <legend>Etc.</legend>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-crop"
-                  th:field="*{crop}"
-                />
-                <label
-                  for="hs-checkbox-crop"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >Crop</label
-                >
-              </div>
-            </fieldset>
+            </div>
           </div>
         </div>
       </div>
-      <!-- Submit button -->
-      <div>
+
+      <!-- Submit Button -->
+      <div class="flex justify-end">
         <button
           type="submit"
-          class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+          class="inline-flex items-center gap-x-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-semibold text-white hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg"
         >
-          Update
+          <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Update Settings
         </button>
       </div>
     </form>
-    <script>
-      let formData = new FormData(document.getElementById("settings-form"));
-      formData.forEach(function(value, key){
-        console.log(key, value);
-      });
-    </script>
   </div>
 </html>
