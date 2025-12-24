@@ -1,47 +1,117 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div id="response" th:fragment="scan-page">
-    <!-- <p th:text="${response.mrzDto.line1}">mrz</p> -->
-    <div id="header" class="px-4 sm:px-0">
-      <h3 class="text-4xl font-semibold text-gray-900">Scan Page</h3>
-      <p class="mt-1 max-w-2xl text-lg text-gray-500">
-        Scan image of Document Page.
-      </p>
-    </div>
-    <div id="barcode-data" class="flex space-x-4 border-t border-gray-100 p-2">
-      <div id="div-barcode-image" class="flex flex-row gap-2">
-        <div class="skeleton h-md w-md flex flex-col items-center space-y-1">
-          <img
-            class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover"
-            id="barcode-image"
-            th:src="@{'data:image/ png;base64, '+${image.imageData}}"
-            alt="document-photo"
-          />
-          <h3 class="text-md font-semibold">Scan</h3>
+  <div id="response" th:fragment="scan-page" class="min-h-screen pb-8">
+    <!-- Gradient Header Section with Icon -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-violet-700 to-purple-800 p-6 mb-6 shadow-lg">
+      <div class="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <!-- Camera/Scanner Icon -->
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+            <svg class="size-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-wide">Page Scanner</h1>
+            <p class="text-lg text-violet-100">Capture document images with different light sources</p>
+          </div>
         </div>
-        <form action="/fphps/scan-page" method="post" class="flex gap-2">
-          <select
-            id="hs-select-light-type"
-            name="lightType"
-            class="py-3 px-4 pe-9 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-400 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
-          >
-            <option selected="">Click this to select Light-Type</option>
-            <option value="1">IR</option>
-            <option value="2">WH</option>
-            <option value="3">UV</option>
-          </select>
+      </div>
+    </div>
 
-          <button
-            type="submit"
-            class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-4 py-3 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:bg-blue-700 focus:outline-hidden focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-          >
-            <!-- <span
-              class="inline-block size-4 animate-spin rounded-full border-3 border-current border-t-transparent text-white"
-              role="status"
-              aria-label="loading"
-            ></span> -->
-            Scan
-          </button>
-        </form>
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Scan Controls Card -->
+      <div class="lg:col-span-1">
+        <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-full">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-bl-full"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-violet-100 group-hover:bg-violet-200 transition-colors">
+                <svg class="size-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900">Scan Controls</h4>
+            </div>
+            <form class="space-y-4">
+              <!-- Light Type Selection -->
+              <div>
+                <label for="light-type-select" class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Light Source</label>
+                <select
+                  id="light-type-select"
+                  name="lightType"
+                  class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                >
+                  <option value="" disabled selected>Select light type...</option>
+                  <option value="1">Infrared (IR)</option>
+                  <option value="2">White Light (WH)</option>
+                  <option value="3">Ultraviolet (UV)</option>
+                </select>
+              </div>
+
+              <!-- Light Type Info Cards -->
+              <div class="grid grid-cols-3 gap-2">
+                <div class="p-3 bg-purple-50 rounded-xl text-center">
+                  <div class="text-xs font-semibold text-purple-700">IR</div>
+                  <div class="text-[10px] text-purple-500 mt-1">Security</div>
+                </div>
+                <div class="p-3 bg-amber-50 rounded-xl text-center">
+                  <div class="text-xs font-semibold text-amber-700">WH</div>
+                  <div class="text-[10px] text-amber-500 mt-1">Standard</div>
+                </div>
+                <div class="p-3 bg-violet-50 rounded-xl text-center">
+                  <div class="text-xs font-semibold text-violet-700">UV</div>
+                  <div class="text-[10px] text-violet-500 mt-1">Fluorescence</div>
+                </div>
+              </div>
+
+              <!-- Scan Button with HTMX -->
+              <button
+                type="button"
+                hx-post="/scan-page"
+                hx-target="#response"
+                hx-swap="outerHTML"
+                hx-include="#light-type-select"
+                hx-indicator="#indicator"
+                class="w-full inline-flex items-center justify-center gap-x-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-3 text-sm font-semibold text-white hover:from-violet-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg"
+              >
+                <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Capture Image
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scanned Image Card -->
+      <div class="lg:col-span-2">
+        <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-full">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-bl-full"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-purple-100 group-hover:bg-purple-200 transition-colors">
+                <svg class="size-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900">Captured Image</h4>
+            </div>
+            <div class="flex justify-center p-4 bg-gray-50 rounded-xl min-h-[300px]">
+              <img
+                class="max-w-full h-auto max-h-[500px] object-contain rounded-lg shadow-sm"
+                id="scan-image"
+                th:src="@{'data:image/png;base64, '+${image.imageData}}"
+                alt="scanned-document"
+              />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

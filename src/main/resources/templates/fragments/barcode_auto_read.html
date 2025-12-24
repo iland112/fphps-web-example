@@ -1,108 +1,263 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div id="response" th:fragment="id-card-auto-read">
-    <div class="mt-3 flex gap-x-4">
-      <h1 class="text-2xl font-semibold dark:text-white">Auto Read</h1>
-      <button
-        type="button"
-        class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-        hx-post="/fphps/barcode/run-auto-read"
-      >
-        RUN
-      </button>
+  <div id="response" th:fragment="id-card-auto-read" class="min-h-screen pb-8">
+    <!-- Gradient Header Section with Icon -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-600 via-amber-700 to-orange-800 p-6 mb-6 shadow-lg">
+      <div class="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <!-- Barcode/QR Code Icon -->
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+            <svg class="size-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-wide">Barcode Auto Read</h1>
+            <p class="text-lg text-amber-100">Automatic barcode scanning and data extraction</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="inline-flex items-center gap-x-2 rounded-xl bg-white/20 backdrop-blur-sm px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/30 transition-all duration-200 border border-white/30"
+            hx-post="/barcode/run-auto-read"
+            hx-indicator="#indicator"
+          >
+            <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            RUN AUTO READ
+          </button>
+        </div>
+      </div>
     </div>
-    <div id="header" class="mt-2 mb-2 px-4 sm:px-0">
-      <h3 class="text-4xl font-semibold text-gray-900">Barcode Information</h3>
-      <p class="mt-1 max-w-2xl text-lg text-gray-500">
-        Data details after reading the Barcode
-      </p>
-    </div>
-    <div class="grid grid-cols-3 grid-rows-2 gap-4 justfy-items-stretch">
-      <div class="col-span-2">
-        <div class="flex space-x-4 p-2">
-          <div class="flex flex-row gap-2">
-            <div class="flex flex-col items-center space-y-1">
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Left Column: Barcode Image & Data -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Barcode Image Card -->
+        <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-bl-full"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-amber-100 group-hover:bg-amber-200 transition-colors">
+                <svg class="size-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900">Scanned Barcode</h4>
+            </div>
+            <div class="flex justify-center p-4 bg-gray-50 rounded-xl">
               <img
-                class="w-md h-md aspect-auto object-cover flex-none rounded-sm bg-gray-50"
+                class="max-w-full h-auto max-h-64 aspect-auto object-contain rounded-lg"
                 id="wh-image"
                 th:src="@{/image/image-batch.jpg}"
                 alt="barcode-image"
               />
-              <h3 class="text-md font-semibold">Barcode</h3>
             </div>
           </div>
-          <div class="p-2">
-            <dl class="flex flex-col gap-2">
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  BARCODE TYPE
-                </dt>
-                <dd
-                  class="mt-1 ms-3 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                  id="barcode-type"
-                >
-                  QR CODE
-                </dd>
+        </div>
+
+        <!-- Barcode Data Card -->
+        <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-orange-500/10 to-red-500/10 rounded-bl-full"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-orange-100 group-hover:bg-orange-200 transition-colors">
+                <svg class="size-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
               </div>
-              <div class="flex flex-col px-2 py-2">
-                <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                  DATA
-                </dt>
-                <dd
-                  class="mt-1 ms-3 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                  id="barcode-data"
-                >
-                  DATA
-                </dd>
+              <h4 class="text-sm font-semibold text-gray-900">Decoded Data</h4>
+            </div>
+            <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 bg-gray-50 rounded-xl">
+                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Barcode Type</dt>
+                <dd id="barcode-type" class="text-lg font-semibold text-gray-900">--</dd>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-xl md:col-span-1">
+                <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Data Content</dt>
+                <dd id="barcode-data" class="text-sm font-mono text-gray-900 break-all">--</dd>
               </div>
             </dl>
           </div>
         </div>
       </div>
-      <div class="col-span-1 row-span-2">
-        <fieldset class="fieldset">
-          <legend class="fieldset-legend">Log Messages</legend>
-          <textarea
-            id="notifications"
-            class="textarea textarea-sm w-md"
-            rows="15"
-            disabled
-          ></textarea>
-        </fieldset>
+
+      <!-- Right Column: Log Messages -->
+      <div class="lg:col-span-1">
+        <div class="border rounded-lg border-gray-200 bg-white shadow-sm h-full flex flex-col">
+          <!-- Log Header with Clear Button -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+              <svg class="size-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+              </svg>
+              Event Log
+            </h4>
+            <div class="flex gap-2">
+              <button
+                id="log-auto-scroll-toggle"
+                type="button"
+                class="inline-flex items-center gap-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
+                title="Toggle auto-scroll"
+              >
+                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                </svg>
+                <span id="auto-scroll-status">Auto-scroll: ON</span>
+              </button>
+              <button
+                id="clear-log-button"
+                type="button"
+                class="inline-flex items-center gap-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+                onclick="clearBarcodeLog()"
+              >
+                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Log Content with Auto-scroll -->
+          <div id="log-scroll-container" class="overflow-y-auto bg-gray-50 flex-1" style="max-height: 300px;">
+            <div id="notifications" class="p-3 font-mono text-xs text-gray-700 space-y-1">
+              <div class="text-gray-400 italic">Waiting for events...</div>
+            </div>
+          </div>
+
+          <!-- Log Footer with Stats -->
+          <div class="px-4 py-2 border-t border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between text-xs text-gray-500">
+              <span>Total events: <span id="log-event-count" class="font-semibold text-gray-700">0</span></span>
+              <span id="log-last-update">No events yet</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+
   <script>
+    // Global state management for Barcode page
+    let barcodeAutoScrollEnabled = true;
+    let barcodeEventCount = 0;
+
     const socket = new WebSocket("ws://localhost:8080/fastpass");
+
     socket.onmessage = function (event) {
       const message = JSON.parse(event.data);
       console.log("message", message);
-      switch (message.eventCodeString) {       
+
+      // Add log entry for all events
+      const eventName = message.eventCodeString?.replace('FPHPS_EVENTS.FPHPS_EV_', '') || 'UNKNOWN';
+      addBarcodeLogEntry(eventName, message.lParam || 'Event received');
+
+      switch (message.eventCodeString) {
         case "FPHPS_EVENTS.FPHPS_EV_WH_IMAGE_CAPTURED":
           var el = document.querySelector("#wh-image");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET WH-IMAGE");
+          if (el) {
+            el.setAttribute(
+              "src",
+              "data:image/png;base64, " + message.image.imageData
+            );
+          }
           break;
         case "FPHPS_EVENTS.FPHPS_EV_PAGE_CAPTURED":
           console.log("result: ", message);
           var barcodeType = document.querySelector("#barcode-type");
-          barcodeType.innerHTML = message.barCode.typeString;
+          if (barcodeType && message.barCode) {
+            barcodeType.innerHTML = message.barCode.typeString;
+          }
           var barcodeData = document.querySelector("#barcode-data");
-          barcodeData.innerHTML = message.barCode.data;
+          if (barcodeData && message.barCode) {
+            barcodeData.innerHTML = message.barCode.data;
+          }
           break;
         default:
           break;
       }
-      // add notification messages
-      // const div = document.createElement("div");
-      // div.className =
-      //   "p-2 bg-gray-100 dark:bg-gray-800 rounded shadow text-sm text-gray-800 dark:text-white";
-      // div.textContent = message.eventCodeString + " :: " + message.lParam;
-      // document.getElementById("notifications").appendChild(div);
-      var messgetText = message.eventCodeString + " :: " + message.lParam;
-      document.getElementById("notifications").append(messgetText);
     };
+
+    // Add log entry with timestamp (list style like passport page)
+    function addBarcodeLogEntry(eventName, message, type = 'info') {
+      const logContainer = document.getElementById('notifications');
+      const scrollContainer = document.getElementById('log-scroll-container');
+
+      if (!logContainer) return;
+
+      // Remove placeholder if present
+      const placeholder = logContainer.querySelector('.text-gray-400.italic');
+      if (placeholder) {
+        logContainer.innerHTML = '';
+      }
+
+      const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+
+      const logEntry = document.createElement('div');
+      logEntry.className = 'flex gap-2 items-start py-1 border-b border-gray-100 last:border-0';
+
+      let colorClass = 'text-amber-600';
+      let icon = '●';
+      if (type === 'error') {
+        colorClass = 'text-red-600';
+        icon = '✕';
+      } else if (type === 'success') {
+        colorClass = 'text-green-600';
+        icon = '✓';
+      } else if (type === 'warning') {
+        colorClass = 'text-yellow-600';
+        icon = '⚠';
+      }
+
+      logEntry.innerHTML = `
+        <span class="${colorClass} font-bold">${icon}</span>
+        <span class="text-gray-400">[${timestamp}]</span>
+        <span class="font-semibold text-gray-700">${eventName}:</span>
+        <span class="text-gray-600">${message}</span>
+      `;
+
+      logContainer.appendChild(logEntry);
+
+      // Update event count
+      barcodeEventCount++;
+      const countEl = document.getElementById('log-event-count');
+      if (countEl) countEl.textContent = barcodeEventCount;
+      const lastUpdateEl = document.getElementById('log-last-update');
+      if (lastUpdateEl) lastUpdateEl.textContent = `Last: ${timestamp}`;
+
+      // Auto-scroll if enabled
+      if (barcodeAutoScrollEnabled && scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+
+    // Clear log
+    function clearBarcodeLog() {
+      const logContainer = document.getElementById('notifications');
+      if (logContainer) {
+        logContainer.innerHTML = '<div class="text-gray-400 italic">Log cleared. Waiting for events...</div>';
+      }
+      barcodeEventCount = 0;
+      const countEl = document.getElementById('log-event-count');
+      if (countEl) countEl.textContent = '0';
+      const lastUpdateEl = document.getElementById('log-last-update');
+      if (lastUpdateEl) lastUpdateEl.textContent = 'No events yet';
+    }
+
+    // Toggle auto-scroll
+    document.getElementById('log-auto-scroll-toggle')?.addEventListener('click', function() {
+      barcodeAutoScrollEnabled = !barcodeAutoScrollEnabled;
+      const statusSpan = document.getElementById('auto-scroll-status');
+      if (statusSpan) {
+        statusSpan.textContent = `Auto-scroll: ${barcodeAutoScrollEnabled ? 'ON' : 'OFF'}`;
+      }
+      this.classList.toggle('bg-gray-100', barcodeAutoScrollEnabled);
+    });
   </script>
 </html>

@@ -7,12 +7,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title layout:title-patterns="$LAYOUT_TITLE - $CONTENT_TITLE">FastPass JAVA SDK</title>
+    <!-- Favicon -->
     <link rel="icon" th:href="@{/favicon.ico}" type="image/x-icon">
+    <link rel="shortcut icon" th:href="@{/favicon.ico}" type="image/x-icon">
+    <link rel="apple-touch-icon" th:href="@{/favicon.ico}">
     <!-- Tailwindcss-->
     <link rel="stylesheet" th:href="@{/css/main.css}">
 
     <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
     <!-- <script src="https://unpkg.com/htmx-ext-ws@2.0.2" integrity="sha384-vuKxTKv5TX/b3lLzDKP2U363sOAoRo5wSvzzc3LJsbaQRSBSS+3rKKHcOx5J8doU" crossorigin="anonymous"></script> -->
+
+    <!-- Toast Notification System -->
+    <script th:src="@{/js/toast.js}"></script>
 
     <!-- HTMX Indicator Styles -->
     <style>
@@ -31,20 +37,22 @@
     <!-- placeholder for css of each page -->
     <!-- <th:block layout:fragment="css"></th:block> -->
 </head>
-<body class="bg-stone-200">
+<body class="bg-stone-200 min-h-screen">
+    <!-- Sticky Header -->
     <div th:replace="~{fragments/header::header}"></div>
+
     <!-- ========== MAIN CONTENT ========== -->
     <!-- Breadcrumb -->
     <div th:replace="~{fragments/breadcrumb::breadcrumb}"></div>
     <!-- End Breadcrumb -->
 
-    <!-- Sidebar -->
+    <!-- Sidebar (adjusted for sticky header) -->
     <div th:replace="~{fragments/sidebar::sidebar}"></div>
     <!-- End Sidebar -->
 
     <!-- Main content -->
-    <div layout:fragment="content" class="content"></div>
-    
+    <div layout:fragment="content" class="content min-h-screen"></div>
+
     <div th:replace="~{fragments/footer::footer}"></div>
     <script th:src="@{/js/preline.js}"></script>
     <script>

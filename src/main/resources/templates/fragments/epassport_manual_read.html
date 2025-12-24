@@ -1,515 +1,129 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div id="response" th:fragment="passport-information">
-    <!-- <p th:text="${response.mrzDto.line1}">mrz</p> -->
-    <div id="header" class="px-4 sm:px-0 lg:flex lg:items-baseline lg:gap-2">
-      <h3 class="text-2xl font-semibold text-gray-900">Passport Information</h3>
-      <p class="mt-1 max-w-2xl text-lg text-gray-500">
-        Data details after reading the passport/e-passport
-      </p>
+  <div id="response" th:fragment="passport-information" class="min-h-screen pb-8">
+    <!-- Header Section -->
+    <div class="px-4 sm:px-0 mb-2">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-2xl font-semibold text-gray-900">Passport Information</h3>
+          <p class="mt-1 text-sm text-gray-500">
+            Data details after reading the passport/e-passport
+          </p>
+        </div>
+        <!-- Status Badge -->
+        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <div class="flex items-center gap-2">
+            <svg class="size-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-sm font-semibold text-green-800">Read Success</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <!-- content title -->
+    <!-- Passport Holder Info Card -->
     <th:block
       th:if="${response != null and response.mrzInfo != null and response.ePassResults != null}"
     >
-      <div
-        id="title"
-        class="mt-2 grid grid-cols-2 items-baseline border-t border-gray-100 px-4 sm:px-0"
-      >
-        <div class="flex flex-row space-x-3 p-3">
-          <div
-            th:replace="~{components/country_flag :: countryFlag(${response.mrzInfo.countryFlagUrl})}"
-          ></div>
-          <p
-            class="max-w-2xl justify-self-stretch text-2xl font-bold text-gray-700"
-          >
-            <span th:text="${response.mrzInfo.passportNumber}">BC765432</span>
-            / <span th:text="${response.mrzInfo.name}">JOHN DOE</span>
-          </p>
-        </div>
-        <svg
-          class="max-w-2xl justify-self-end fill-amber-600"
-          xmlns="http://www.w3.org/2000/svg"
-          width="80"
-          height="20"
-          viewBox="0 0 210 297"
-        >
-          <path
-            d="M-111.5625 24.75V136.125H23.539306A82.5 82.5 0 0 1 105 66 82.5 82.5 0 0 1 186.5 136.125H321.5625V24.75ZM105 90.75A57.75 57.75 0 0 0 47.25 148.5 57.75 57.75 0 0 0 105 206.25 57.75 57.75 0 0 0 162.75 148.5 57.75 57.75 0 0 0 105 90.75Zm-216.5625 70.125V272.25h433.125V160.875H186.46068A82.5 82.5 0 0 1 105 231 82.5 82.5 0 0 1 23.5 160.875Z"
-            stroke-width="81.90428162"
-          />
-        </svg>
-      </div>
-      <div class="flex flex-wrap border-t border-gray-100">
-        <div class="flex flex-col">
-          <!-- MRZ(OCR) information -->
-          <div id="mrz-info" class="flex space-x-4 p-2">
-            <div id="photo" class="flex flex-row gap-2">
-              <div
-                id="viz-photo"
-                th:replace="~{fragments/images :: photo(title = 'Document', imageData=${response.vizPhotoImage.imageData})}"
-              ></div>
-              <div
-                id="viz-photo"
-                th:replace="~{fragments/images :: photo(title = 'Chip', imageData=${response.ePassPhotoImage.imageData})}"
-              ></div>
-            </div>
-            <div id="mrz-info" class="p-2" th:object="${response.mrzInfo}">
-              <dl class="grid grid-cols-3">
-                <div class="flex flex-col px-2 py-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    DOCUMENT TYPE
-                  </dt>
-                  <dd
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                    th:text="*{docType}"
-                  >
-                    P
-                  </dd>
-                </div>
-                <div class="flex flex-col px-2 py-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    ISSUING STATE
-                  </dt>
-                  <dd
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                    th:text="*{issuingState}"
-                  >
-                    UTO
-                  </dd>
-                </div>
-                <div class="flex flex-col px-2 py-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    DOCUMENT NUMBER
-                  </dt>
-                  <dd
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                    th:text="*{passportNumber}"
-                  >
-                    BC765432
-                  </dd>
-                </div>
-                <div class="flex flex-col px-2 py-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    NAME
-                  </dt>
-                  <dd
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                    th:text="*{name}"
-                  >
-                    JOHN DOE
-                  </dd>
-                </div>
-                <div class="flex flex-col px-2 py-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    NATIONALITY
-                  </dt>
-                  <dd
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                    th:text="*{nationality}"
-                  >
-                    UTOPIA
-                  </dd>
-                </div>
-                <div class="flex flex-col px-2 py-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    DATE OF BIRTH
-                  </dt>
-                  <dd
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                    th:text="*{birth}"
-                  >
-                    07/02/1980
-                  </dd>
-                </div>
-                <div class="flex flex-col px-2 py-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    SEX
-                  </dt>
-                  <dd
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                    th:text="*{sex}"
-                  >
-                    07/02/1980
-                  </dd>
-                </div>
-                <div class="flex flex-col px-2 py-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    DATE OF EXPIRY
-                  </dt>
-                  <dd
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                    th:text="*{expiryDate}"
-                  >
-                    07/02/2023
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-          <div id="mrz-image-ocr" class="mt-1 p-2">
-            <fieldset
-              id="mrz-image"
-              th:replace="~{fragments/images :: mrzImage(data=${response})}"
-            ></fieldset>
-          </div>
-          <!-- EPASSPORT Result -->
-          <div id="e-pass-result" class="p-2 flex justify-baseline gap-3">
-            <fieldset
-              class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2 font-mono"
-              th:object="${response.ePassResults}"
-            >
-              <legend>DG Read Results</legend>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg01"
-                  th:field="*{dgs[0]}"
-                />
-                <label
-                  for="hs-checkbox-dg01"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG01</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg02"
-                  th:field="*{dgs[1]}"
-                />
-                <label
-                  for="hs-checkbox-dg02"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG02</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg03"
-                  th:field="*{dgs[2]}"
-                />
-                <label
-                  for="hs-checkbox-dg03"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG03</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg04"
-                  th:field="*{dgs[3]}"
-                />
-                <label
-                  for="hs-checkbox-dg04"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG04</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg05"
-                  th:field="*{dgs[4]}"
-                />
-                <label
-                  for="hs-checkbox-dg05"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG05</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg06"
-                  th:field="*{dgs[5]}"
-                />
-                <label
-                  for="hs-checkbox-dg06"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG06</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg07"
-                  th:field="*{dgs[6]}"
-                />
-                <label
-                  for="hs-checkbox-dg07"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG07</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg08"
-                  th:field="*{dgs[7]}"
-                />
-                <label
-                  for="hs-checkbox-dg08"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG08</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg09"
-                  th:field="*{dgs[8]}"
-                />
-                <label
-                  for="hs-checkbox-dg09"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG09</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg10"
-                  th:field="*{dgs[9]}"
-                />
-                <label
-                  for="hs-checkbox-dg10"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG10</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg11"
-                  th:field="*{dgs[10]}"
-                />
-                <label
-                  for="hs-checkbox-dg11"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG11</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg12"
-                  th:field="*{dgs[11]}"
-                />
-                <label
-                  for="hs-checkbox-dg12"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG12</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg13"
-                  th:field="*{dgs[12]}"
-                />
-                <label
-                  for="hs-checkbox-dg13"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG13</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg14"
-                  th:field="*{dgs[13]}"
-                />
-                <label
-                  for="hs-checkbox-dg14"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG14</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg15"
-                  th:field="*{dgs[14]}"
-                />
-                <label
-                  for="hs-checkbox-dg15"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG15</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-dg16"
-                  th:field="*{dgs[15]}"
-                />
-                <label
-                  for="hs-checkbox-dg16"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  >DG16</label
-                >
-              </div>
-            </fieldset>
-            <fieldset
-              class="grid grid-cols-1 rounded-sm border border-gray-300 p-2 font-mono"
-              th:object="${response.ePassResults}"
-            >
-              <legend>Authentication Results</legend>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-auth-pa"
-                  th:field="*{bac}"
-                />
-                <label
-                  for="hs-checkbox-auth-pa"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  th:text="'BAC : ' + *{bacResultDesc}"
-                  >BAC</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-auth-pa"
-                  th:field="*{pa}"
-                />
-                <label
-                  for="hs-checkbox-auth-pa"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  th:text="'PA : ' + *{paResultDesc}"
-                  >PA</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-auth-aa"
-                  th:field="*{aa}"
-                />
-                <label
-                  for="hs-checkbox-auth-aa"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  th:text="'AA : ' + *{aaResultDesc}"
-                  >AA</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-auth-ca"
-                  th:field="*{ca}"
-                />
-                <label
-                  for="hs-checkbox-auth-ca"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  th:text="'CA : ' + *{caResultDesc}"
-                  >CA</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-auth-ta"
-                  th:field="*{ta}"
-                />
-                <label
-                  for="hs-checkbox-auth-ta"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  th:text="'TA : ' + *{taResultDesc}"
-                  >TA</label
-                >
-              </div>
-              <div class="flex">
-                <input
-                  type="checkbox"
-                  class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                  id="hs-checkbox-auth-sac"
-                  th:field="*{sac}"
-                />
-                <label
-                  for="hs-checkbox-auth-sac"
-                  class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                  th:text="'SAC : ' + *{sacResultDesc}"
-                  >SAC</label
-                >
-              </div>
-            </fieldset>
-          </div>
-        </div>
-        <div class="flex flex-col gap-4 justify-start">
-          <fieldset
-            th:replace="~{fragments/images :: vizPageImage(title='WH Image', imageData=${response.whImage.imageData})}"
-          ></fieldset>
-          <fieldset
-            th:replace="~{fragments/images :: vizPageImage(title='IR Image', imageData=${response.irImage.imageData})}"
-          ></fieldset>
-          <fieldset
-            th:replace="~{fragments/images :: vizPageImage(title='UV Image', imageData=${response.uvImage.imageData})}"
-          ></fieldset>
-        </div>
+      <div class="px-4 sm:px-0 mb-2">
+        <div th:replace="~{fragments/passport_cards :: passportHeader(
+          mrzInfo=${response.mrzInfo},
+          countryFlagId='manual-country-flag',
+          passportNumberSpanId='manual-passport-number',
+          nameSpanId='manual-name'
+        )}"></div>
       </div>
 
-      <!-- SOD (Security Object Document) 정보 섹션 -->
-      <div
-        id="sod-information-section"
-        th:replace="~{fragments/sod_information :: sodInformation(${parsedSODInfo})}"
-      ></div>
+      <!-- Tabs for E-MRTD / SOD / PA -->
+      <div class="mt-4 px-4 sm:px-0">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <!-- Tab Navigation -->
+          <nav class="flex border-b border-gray-200 bg-gray-50" aria-label="Tabs">
+            <button type="button" onclick="switchTab('emrtd')" id="tab-emrtd" class="passport-tab group relative min-w-0 flex-1 overflow-hidden bg-white px-4 py-4 text-center text-sm font-medium text-gray-900 hover:bg-gray-50 focus:z-10 border-b-2 border-blue-500">
+              <span>E-MRTD Data</span>
+            </button>
+            <button type="button" onclick="switchTab('sod')" id="tab-sod" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+              <span>SOD Information</span>
+            </button>
+            <button type="button" onclick="switchTab('pa')" id="tab-pa" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+              <span>Passive Authentication</span>
+            </button>
+          </nav>
 
-      <!-- PA (Passive Authentication) 검증 섹션 -->
-      <div id="pa-verification-section" class="mt-8 border-t border-gray-200 pt-6">
-        <div class="px-4 sm:px-0 flex justify-between items-center">
-          <div>
-            <h3 class="text-xl font-semibold text-gray-900">
-              Passive Authentication Verification
-            </h3>
-            <p class="mt-1 text-sm text-gray-500">
-              Verify passport authenticity using ICAO Local PKD
-            </p>
+          <!-- Tab Content -->
+          <div class="p-6">
+            <!-- E-MRTD Tab Content -->
+            <div id="content-emrtd" class="tab-content block">
+              <!-- Main Grid: 3 rows × 3 columns -->
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- Row 1, Col 1: Photo Comparison -->
+                <div th:replace="~{fragments/passport_cards :: photoComparison(
+                  vizPhotoData=${response.vizPhotoImage.imageData},
+                  epassPhotoData=${response.ePassPhotoImage.imageData},
+                  vizPhotoId='manual-viz-photo',
+                  epassPhotoId='manual-epass-photo'
+                )}"></div>
+
+                <!-- Row 1, Col 2: Personal Information -->
+                <div th:replace="~{fragments/passport_cards :: personalInfo(
+                  mrzInfo=${response.mrzInfo},
+                  docTypeId='manual-doc-type',
+                  issuingStateId='manual-issuing-state',
+                  passportNumberId='manual-passport-number-info',
+                  nameId='manual-name-info',
+                  nationalityId='manual-nationality',
+                  birthId='manual-birth',
+                  sexId='manual-sex',
+                  expiryDateId='manual-expiry-date'
+                )}"></div>
+
+                <!-- Row 1, Col 3: Data Group Read Results -->
+                <div th:replace="~{fragments/passport_cards :: dgResults(
+                  ePassResults=${response.ePassResults},
+                  idPrefix='manual'
+                )}"></div>
+
+                <!-- Row 2, Col 1-2: MRZ Image (spans 2 columns) -->
+                <div th:replace="~{fragments/passport_cards :: mrzImageCard(
+                  mrzImageData=${response.mrzImage.imageData},
+                  mrzLines=${response.mrzLines},
+                  mrzPhotoId='manual-mrz-photo',
+                  mrzLine1Id='manual-mrz-line-1',
+                  mrzLine2Id='manual-mrz-line-2'
+                )}"></div>
+
+                <!-- Row 2, Col 3: Authentication Results -->
+                <div th:replace="~{fragments/passport_cards :: authResults(
+                  ePassResults=${response.ePassResults},
+                  idPrefix='manual'
+                )}"></div>
+
+                <!-- Row 3, Col 1-3: Document Images (spans all 3 columns) -->
+                <div th:replace="~{fragments/passport_cards :: documentImages(
+                  whImageData=${response.whImage.imageData},
+                  irImageData=${response.irImage.imageData},
+                  uvImageData=${response.uvImage.imageData},
+                  whImageId='manual-wh-image',
+                  irImageId='manual-ir-image',
+                  uvImageId='manual-uv-image'
+                )}"></div>
+              </div>
+            </div>
+
+            <!-- SOD Tab Content -->
+            <div id="content-sod" class="tab-content hidden">
+              <div th:replace="~{fragments/sod_information :: sodInformation(${parsedSODInfo})}"></div>
+            </div>
+
+            <!-- PA Tab Content -->
+            <div id="content-pa" class="tab-content hidden">
+              <div th:replace="~{fragments/pa_tab_content :: paTabContent(
+                btnId='manual-verify-pa-btn',
+                containerId='manual-pa-result-container',
+                emptyStateId='manual-pa-empty-state',
+                prefix='manual'
+              )}"></div>
+            </div>
           </div>
-          <button
-            id="verify-pa-btn"
-            type="button"
-            onclick="verifyPassportPA()"
-            class="rounded-md bg-cyan-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-500"
-          >
-            <span id="verify-pa-btn-text">Verify PA</span>
-            <span id="verify-pa-btn-spinner" class="hidden">
-              <svg class="animate-spin h-5 w-5 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Verifying...
-            </span>
-          </button>
-        </div>
-
-        <!-- PA 검증 결과 표시 영역 -->
-        <div id="pa-result-container" class="mt-4">
-          <!-- JavaScript로 동적으로 렌더링됩니다 -->
         </div>
       </div>
 
@@ -519,227 +133,31 @@
     </div>
   </div>
 
-  <!-- PA 검증 JavaScript -->
-  <script th:inline="javascript">
-    async function verifyPassportPA() {
-      const btn = document.getElementById('verify-pa-btn');
-      const btnText = document.getElementById('verify-pa-btn-text');
-      const btnSpinner = document.getElementById('verify-pa-btn-spinner');
-      const resultContainer = document.getElementById('pa-result-container');
+  <!-- Shared Passport Tabs JavaScript -->
+  <script th:src="@{/js/passport-tabs.js}"></script>
 
-      // 버튼 상태 변경
-      btn.disabled = true;
-      btnText.classList.add('hidden');
-      btnSpinner.classList.remove('hidden');
+  <!-- Tab Switching JavaScript -->
+  <script>
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.passport-tab').forEach(tab => {
+        tab.classList.remove('bg-white', 'text-gray-900', 'border-b-2', 'border-blue-500');
+        tab.classList.add('text-gray-500');
+      });
 
-      try {
-        // PA API 호출
-        const response = await fetch('/fphps/passport/verify-pa', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+      const activeTab = document.getElementById('tab-' + tabName);
+      activeTab.classList.add('bg-white', 'text-gray-900', 'border-b-2', 'border-blue-500');
+      activeTab.classList.remove('text-gray-500');
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`HTTP ${response.status}: ${errorText}`);
-        }
+      // Update content visibility
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+        content.classList.remove('block');
+      });
 
-        const paResult = await response.json();
-        console.log('PA Verification Result:', paResult);
-
-        // 결과 렌더링
-        renderPAResult(paResult, resultContainer);
-
-      } catch (error) {
-        console.error('PA verification failed:', error);
-        resultContainer.innerHTML = `
-          <div class="rounded-md bg-red-50 p-4">
-            <div class="flex">
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">PA Verification Error</h3>
-                <div class="mt-2 text-sm text-red-700">
-                  <p>${error.message}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      } finally {
-        // 버튼 상태 복원
-        btn.disabled = false;
-        btnText.classList.remove('hidden');
-        btnSpinner.classList.add('hidden');
-      }
-    }
-
-    function renderPAResult(result, container) {
-      const statusBadge = getStatusBadge(result.status);
-      const certChainHtml = renderCertificateChain(result.certificateChainValidation);
-      const sodSigHtml = renderSODSignature(result.sodSignatureValidation);
-      const dgValidationHtml = renderDataGroupValidation(result.dataGroupValidation);
-      const errorsHtml = renderErrors(result.errors);
-
-      container.innerHTML = `
-        <!-- 전체 상태 -->
-        <div class="px-4 py-3 bg-gray-50 rounded-lg">
-          ${statusBadge}
-          <div class="mt-2 grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <dt class="font-medium text-gray-500">Verification ID</dt>
-              <dd class="mt-1 text-gray-900 font-mono text-xs">${result.verificationId || 'N/A'}</dd>
-            </div>
-            <div>
-              <dt class="font-medium text-gray-500">Timestamp</dt>
-              <dd class="mt-1 text-gray-900">${new Date(result.verificationTimestamp).toLocaleString()}</dd>
-            </div>
-            <div>
-              <dt class="font-medium text-gray-500">Processing Time</dt>
-              <dd class="mt-1 text-gray-900">${result.processingDurationMs} ms</dd>
-            </div>
-          </div>
-        </div>
-
-        ${certChainHtml}
-        ${sodSigHtml}
-        ${dgValidationHtml}
-        ${errorsHtml}
-      `;
-    }
-
-    function getStatusBadge(status) {
-      const badges = {
-        'VALID': '<span class="inline-flex items-center rounded-md bg-green-50 px-3 py-2 text-base font-semibold text-green-700 ring-1 ring-inset ring-green-600/20">✓ VALID</span>',
-        'INVALID': '<span class="inline-flex items-center rounded-md bg-red-50 px-3 py-2 text-base font-semibold text-red-700 ring-1 ring-inset ring-red-600/20">✗ INVALID</span>',
-        'ERROR': '<span class="inline-flex items-center rounded-md bg-yellow-50 px-3 py-2 text-base font-semibold text-yellow-800 ring-1 ring-inset ring-yellow-600/20">⚠ ERROR</span>'
-      };
-      return badges[status] || '<span class="text-gray-500">UNKNOWN</span>';
-    }
-
-    function renderCertificateChain(cert) {
-      if (!cert) return '';
-      const icon = cert.valid ? '✓' : '✗';
-      const colorClass = cert.valid ? 'text-green-600' : 'text-red-600';
-
-      return `
-        <div class="mt-6 border-t border-gray-100 pt-4">
-          <h4 class="text-lg font-medium ${colorClass} px-4">
-            ${icon} Certificate Chain Validation
-          </h4>
-          <dl class="mt-2 divide-y divide-gray-100">
-            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500">DSC Subject</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-mono text-xs">${cert.dscSubject || 'N/A'}</dd>
-            </div>
-            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500">CSCA Subject</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0 font-mono text-xs">${cert.cscaSubject || 'N/A'}</dd>
-            </div>
-            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500">Valid Period</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                ${new Date(cert.notBefore).toLocaleDateString()} - ${new Date(cert.notAfter).toLocaleDateString()}
-              </dd>
-            </div>
-            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500">CRL Status</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-                ${cert.crlStatus || 'N/A'} ${cert.revoked ? '(REVOKED)' : ''}
-              </dd>
-            </div>
-          </dl>
-        </div>
-      `;
-    }
-
-    function renderSODSignature(sod) {
-      if (!sod) return '';
-      const icon = sod.valid ? '✓' : '✗';
-      const colorClass = sod.valid ? 'text-green-600' : 'text-red-600';
-
-      return `
-        <div class="mt-6 border-t border-gray-100 pt-4">
-          <h4 class="text-lg font-medium ${colorClass} px-4">
-            ${icon} SOD Signature Validation
-          </h4>
-          <dl class="mt-2 divide-y divide-gray-100">
-            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500">Signature Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">${sod.signatureAlgorithm || 'N/A'}</dd>
-            </div>
-            <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt class="text-sm font-medium text-gray-500">Hash Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">${sod.hashAlgorithm || 'N/A'}</dd>
-            </div>
-          </dl>
-        </div>
-      `;
-    }
-
-    function renderDataGroupValidation(dg) {
-      if (!dg) return '';
-
-      let detailsHtml = '';
-      if (dg.details) {
-        for (const [dgName, detail] of Object.entries(dg.details)) {
-          const icon = detail.valid ? '✓' : '✗';
-          const colorClass = detail.valid ? 'text-green-600' : 'text-red-600';
-          detailsHtml += `
-            <tr>
-              <td class="px-4 py-2 font-medium text-sm ${colorClass}">${icon} ${dgName}</td>
-              <td class="px-4 py-2 text-sm text-gray-500 font-mono text-xs">${detail.expectedHash?.substring(0, 20)}...</td>
-              <td class="px-4 py-2 text-sm text-gray-500 font-mono text-xs">${detail.actualHash?.substring(0, 20)}...</td>
-            </tr>
-          `;
-        }
-      }
-
-      const validColor = dg.invalidGroups === 0 ? 'text-green-600' : 'text-red-600';
-
-      return `
-        <div class="mt-6 border-t border-gray-100 pt-4">
-          <h4 class="text-lg font-medium ${validColor} px-4">
-            Data Group Hash Validation (${dg.validGroups}/${dg.totalGroups} valid)
-          </h4>
-          <div class="mt-2 px-4">
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Data Group</th>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Expected Hash</th>
-                  <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actual Hash</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200">
-                ${detailsHtml}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderErrors(errors) {
-      if (!errors || errors.length === 0) return '';
-
-      const errorsHtml = errors.map(err => `
-        <li class="py-2">
-          <span class="font-semibold">[${err.code}]</span> ${err.message}
-          <span class="text-xs text-gray-500 ml-2">(${err.severity})</span>
-        </li>
-      `).join('');
-
-      return `
-        <div class="mt-6 border-t border-gray-100 pt-4 px-4">
-          <div class="rounded-md bg-red-50 p-4">
-            <h4 class="text-sm font-medium text-red-800">Validation Errors</h4>
-            <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
-              ${errorsHtml}
-            </ul>
-          </div>
-        </div>
-      `;
+      const activeContent = document.getElementById('content-' + tabName);
+      activeContent.classList.remove('hidden');
+      activeContent.classList.add('block');
     }
   </script>
 </html>

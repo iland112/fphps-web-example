@@ -424,6 +424,88 @@ cd ../../..
 
 ## 작업 이력
 
+### 2025-12-24: UI/UX 개선 및 페이지 디자인 통일
+
+**구현 내용**:
+- 전체 페이지 타이틀 카드 디자인 통일 (그라데이션 헤더 + Hero Icon)
+- 페이지 콘텐츠 높이 최적화 (하단 여백 제거)
+- 홈 페이지 Hero 섹션에 제품 이미지 추가
+- Favicon 브라우저 호환성 개선
+
+**주요 변경사항**:
+
+1. **타이틀 카드 디자인 통일**:
+   - 모든 페이지에 일관된 그라데이션 헤더 적용
+   - 각 페이지별 테마 색상:
+     - E-Passport: `blue-600 → blue-700 → indigo-800` (여권 아이콘)
+     - ID Card: `emerald-600 → emerald-700 → teal-800` (신분증 아이콘)
+     - Barcode: `amber-600 → amber-700 → orange-800` (QR 코드 아이콘)
+     - Scan Page: `violet-600 → violet-700 → purple-800` (카메라 아이콘)
+     - Device Settings: `slate-700 → slate-800 → gray-900` (설정 아이콘)
+   - 공통 스타일 요소:
+     - Grid 패턴 오버레이: `bg-grid-white/[0.05] bg-[size:20px_20px]`
+     - 아이콘 컨테이너: `bg-white/10 backdrop-blur-sm rounded-xl p-3`
+     - 액션 버튼: `rounded-xl bg-white/20 backdrop-blur-sm border border-white/30`
+
+2. **페이지 높이 최적화**:
+   - 모든 프래그먼트에 `min-h-screen pb-8` 적용
+   - `layouts/default.html` body 및 content div에 `min-h-screen` 추가
+   - `index.html` content wrapper에 `min-h-screen pb-8` 적용
+   - 결과: 페이지 하단 흰색 여백 제거
+
+3. **Device Settings 버튼 재배치**:
+   - "Update Settings" 버튼을 타이틀 카드 오른쪽으로 이동
+   - 하단 중복 버튼 제거
+   - 다른 페이지들과 일관된 레이아웃
+
+4. **홈 페이지 Hero 섹션 개선**:
+   - FastPass P1 제품 이미지 추가 (`/image/fastpass-p1.png`)
+   - Flexbox 레이아웃으로 좌우 배치 (lg 브레이크포인트 이상)
+   - Glow 효과: `bg-white/20 blur-2xl`
+   - Hover 애니메이션: `hover:scale-105 transition-transform`
+   - 반응형: 모바일에서는 이미지 숨김 (`hidden lg:flex`)
+
+5. **Favicon 호환성 개선**:
+   - `rel="icon"` - 표준 favicon
+   - `rel="shortcut icon"` - 구형 브라우저 지원
+   - `rel="apple-touch-icon"` - iOS/Apple 기기 지원
+
+**수정된 파일**:
+- `layouts/default.html` - favicon 태그 추가, min-h-screen 적용
+- `index.html` - content wrapper 높이 설정
+- `home_content.html` - Hero 섹션 이미지 추가
+- `device_setting_form.html` - 버튼 재배치, 중복 제거
+- `epassport_auto_read.html` - 그라데이션 헤더 적용
+- `idcard_auto_read.html` - 그라데이션 헤더 적용
+- `barcode_auto_read.html` - 그라데이션 헤더 적용
+- `scan_page.html` - 그라데이션 헤더 적용
+- `barcode_manual_read.html` - 그라데이션 헤더 적용
+
+**디자인 패턴**:
+```html
+<!-- 표준 그라데이션 헤더 구조 -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-{color}-600 via-{color}-700 to-{color2}-800 p-6 mb-6 shadow-lg">
+  <div class="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+  <div class="relative flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <!-- Icon Container -->
+      <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+        <svg class="size-10 text-white"><!-- Hero Icon --></svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-white tracking-wide">Title</h1>
+        <p class="text-lg text-{color}-100">Subtitle</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Action Buttons -->
+    </div>
+  </div>
+</div>
+```
+
+---
+
 ### 2025-12-23: Passive Authentication 검증 기능 통합
 
 **구현 내용**:
@@ -678,6 +760,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2025-12-23
+**최종 업데이트**: 2025-12-24
 **분석 도구**: Claude Code (Anthropic)
 **현재 브랜치**: `feature/pa-integration`

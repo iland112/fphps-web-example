@@ -1,571 +1,519 @@
 <html xmlns:th="http://www.thymeleaf.org">
-  <div id="response" th:fragment="id-card-auto-read">
-    <div class="mt-3 flex gap-x-4">
-      <h1 class="text-2xl font-semibold dark:text-white">Auto Read</h1>
-      <button
-        type="button"
-        class="inline-flex items-center gap-x-2 rounded-lg border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:bg-blue-700 focus:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-                  hx-post="/fphps/idcard/run-auto-read"      >
-        RUN
-      </button>
-    </div>
-    <div id="header" class="mt-2 px-4 sm:px-0">
-      <h3 class="text-4xl font-semibold text-gray-900">ID Card Information</h3>
-      <p class="mt-1 max-w-2xl text-lg text-gray-500">
-        Data details after reading the ID Card
-      </p>
-    </div>
-    <!-- name of each tab group should be unique -->
-    <div class="mt-3 tabs-border tabs">
-      <input
-        type="radio"
-        name="my_tabs_2"
-        class="tab"
-        aria-label="Document Information"
-        checked="checked"
-      />
-      <div class="tab-content border-base-300 bg-base-100 p-10">
-        <div class="grid grid-cols-3 grid-rows-2 gap-4 justfy-items-stretch">
-          <div class="col-span-2">
-            <div
-              id="mrz-info"
-              class="flex space-x-4 border-t border-gray-100 p-2"
-            >
-              <div id="photo" class="flex flex-row gap-2">
-                <div class="flex flex-col items-center space-y-1">
-                  <img
-                    class="aspect-auto h-44 w-36 flex-none rounded-sm bg-gray-50 object-cover"
-                    id="epass-photo"
-                    th:src="@{/image/image-photo.jpg}"
-                    alt="chip-photo"
-                  />
-                  <h3 class="text-md font-semibold">Chip</h3>
-                </div>
-              </div>
-              <div id="mrz-info" class="p-2">
-                <div id="mrz-ocr" class="flex flex-col gap-2">
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    Line 1
-                  </dt>
-                  <dd
-                    id="mrz-line-1"
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                  >
-                    LINE 1
-                  </dd>
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    Line 2
-                  </dt>
-                  <dd
-                    id="mrz-line-2"
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                  >
-                    LINE 2
-                  </dd>
-                  <dt class="font-mono text-sm/6 font-medium text-gray-900">
-                    Line 3
-                  </dt>
-                  <dd
-                    id="mrz-line-3"
-                    class="mt-1 text-sm/6 font-semibold text-gray-900 sm:col-span-2 sm:mt-0"
-                  >
-                    LINE 3
-                  </dd>
-                </div>
-              </div>
-            </div>
+  <div id="response" th:fragment="id-card-auto-read" class="min-h-screen pb-8">
+    <!-- Gradient Header Section with Icon -->
+    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 p-6 mb-6 shadow-lg">
+      <div class="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+      <div class="relative flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <!-- ID Card Icon -->
+          <div class="bg-white/10 backdrop-blur-sm rounded-xl p-3">
+            <svg class="size-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+            </svg>
           </div>
-          <div class="col-span-1 row-span-2">
-            <fieldset class="fieldset">
-              <legend class="fieldset-legend">Log Messages</legend>
-              <textarea
-                id="notifications"
-                class="textarea textarea-sm w-md"
-                rows="15"
-                disabled
-              ></textarea>
-            </fieldset>
-            <!-- <div id="notifications">
-        </div> -->
-          </div>
-          <div class="col-span-2">
-            <div id="e-pass-result" class="grid grid-cols-2 gap-10">
-              <fieldset
-                class="grid grid-cols-4 space-x-10 rounded-sm border border-gray-300 p-2 font-mono"
-                disabled
-              >
-                <legend>DG Read Results</legend>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg1"
-                  />
-                  <label
-                    for="hs-checkbox-dg1"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG01</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg2"
-                  />
-                  <label
-                    for="hs-checkbox-dg2"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG02</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg3"
-                  />
-                  <label
-                    for="hs-checkbox-dg3"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG03</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg4"
-                  />
-                  <label
-                    for="hs-checkbox-d04"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG04</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg5"
-                  />
-                  <label
-                    for="hs-checkbox-dg5"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG05</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg6"
-                  />
-                  <label
-                    for="hs-checkbox-dg6"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG06</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg7"
-                  />
-                  <label
-                    for="hs-checkbox-dg7"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG07</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg8"
-                  />
-                  <label
-                    for="hs-checkbox-dg8"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG08</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg9"
-                  />
-                  <label
-                    for="hs-checkbox-dg9"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG09</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg10"
-                  />
-                  <label
-                    for="hs-checkbox-dg10"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG10</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg11"
-                  />
-                  <label
-                    for="hs-checkbox-dg11"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG11</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg12"
-                  />
-                  <label
-                    for="hs-checkbox-dg12"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG12</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg13"
-                  />
-                  <label
-                    for="hs-checkbox-dg13"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG13</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg14"
-                  />
-                  <label
-                    for="hs-checkbox-dg14"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG14</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg15"
-                  />
-                  <label
-                    for="hs-checkbox-dg15"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG15</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-dg16"
-                  />
-                  <label
-                    for="hs-checkbox-dg16"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >DG16</label
-                  >
-                </div>
-              </fieldset>
-              <fieldset
-                class="grid grid-cols-1 rounded-sm border border-gray-300 p-2 font-mono"
-                disabled
-              >
-                <legend>Authentication Results</legend>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-bac"
-                  />
-                  <label
-                    for="hs-checkbox-auth-bac"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    id="hs-label-auth-bac"
-                    >BAC</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-pa"
-                  />
-                  <label
-                    for="hs-checkbox-auth-pa"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    id="hs-label-auth-pa"
-                    >PA</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-aa"
-                  />
-                  <label
-                    for="hs-checkbox-auth-aa"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    id="hs-label-auth-aa"
-                    >AA</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-ca"
-                  />
-                  <label
-                    for="hs-checkbox-auth-ca"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    id="hs-label-auth-ca"
-                    >CA</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-ta"
-                  />
-                  <label
-                    id="hs-label-auth-ta"
-                    for="hs-checkbox-auth-ta"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    >TA</label
-                  >
-                </div>
-                <div class="flex">
-                  <input
-                    type="checkbox"
-                    class="mt-0.5 shrink-0 rounded-sm border-gray-200 text-blue-600 checked:border-blue-500 focus:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:checked:border-blue-500 dark:checked:bg-blue-500 dark:focus:ring-offset-gray-800"
-                    id="hs-checkbox-auth-sac"
-                  />
-                  <label
-                    for="hs-checkbox-auth-sac"
-                    class="ms-3 text-sm text-gray-500 dark:text-neutral-400"
-                    id="hs-label-auth-sac"
-                    >SAC</label
-                  >
-                </div>
-              </fieldset>
-            </div>
+          <div>
+            <h1 class="text-2xl font-bold text-white tracking-wide">ID Card Auto Read</h1>
+            <p class="text-lg text-emerald-100">Automatic ID card scanning and chip data extraction</p>
           </div>
         </div>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            class="inline-flex items-center gap-x-2 rounded-xl bg-white/20 backdrop-blur-sm px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/30 transition-all duration-200 border border-white/30"
+            hx-post="/idcard/run-auto-read"
+            hx-indicator="#indicator"
+          >
+            <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            RUN AUTO READ
+          </button>
+        </div>
       </div>
-      <!-- IR Image tab -->
-      <input type="radio" name="my_tabs_2" class="tab" aria-label="IR" />
-      <div class="tab-content border-base-300 bg-base-100 p-10">
-        <div class="flex flex-col gap-2 items-start">
-          <img
-            class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover"
-            id="ir-image"
-            th:src="@{/image/image-batch.jpg}"
-            alt="ir-image"
-          />
-          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
+    </div>
+
+    <!-- Tab Navigation (Passport Style) -->
+    <div class="mb-6">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            onclick="switchIdCardTab('document')"
+            id="tab-document"
+            class="tab-button-idcard border-emerald-500 text-emerald-600 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            Document Info
+          </button>
+          <button
+            onclick="switchIdCardTab('ir')"
+            id="tab-ir"
+            class="tab-button-idcard border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
             IR Image
-          </dt>
-        </div>
-      </div>
-      <!-- UV Image tab -->
-      <input type="radio" name="my_tabs_2" class="tab" aria-label="UV" />
-      <div class="tab-content border-base-300 bg-base-100 p-10">
-        <div class="flex flex-col gap-2 items-start">
-          <img
-            class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover"
-            id="uv-image"
-            th:src="@{/image/image-batch.jpg}"
-            alt="uv-image"
-          />
-          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
+          </button>
+          <button
+            onclick="switchIdCardTab('uv')"
+            id="tab-uv"
+            class="tab-button-idcard border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
             UV Image
-          </dt>
+          </button>
+          <button
+            onclick="switchIdCardTab('wh')"
+            id="tab-wh"
+            class="tab-button-idcard border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            WH Image
+          </button>
+          <button
+            onclick="switchIdCardTab('log')"
+            id="tab-log"
+            class="tab-button-idcard border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            Event Log
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Tab Content Container -->
+    <div>
+      <!-- Document Info Tab Content (default visible) -->
+      <div id="content-document" class="tab-content-idcard">
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Chip Photo and MRZ Card -->
+          <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 rounded-bl-full"></div>
+            <div class="relative">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="flex size-8 items-center justify-center rounded-lg bg-emerald-100 group-hover:bg-emerald-200 transition-colors">
+                  <svg class="size-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+                  </svg>
+                </div>
+                <h4 class="text-sm font-semibold text-gray-900">Chip Photo & MRZ Data</h4>
+              </div>
+              <div class="flex flex-col md:flex-row gap-6">
+                <!-- Photo -->
+                <div class="flex flex-col items-center gap-2">
+                  <div class="p-2 bg-gray-50 rounded-xl">
+                    <img
+                      class="w-32 h-40 object-cover rounded-lg"
+                      id="epass-photo"
+                      th:src="@{/image/image-photo.jpg}"
+                      alt="chip-photo"
+                    />
+                  </div>
+                  <span class="text-xs font-medium text-gray-500">Chip Photo</span>
+                </div>
+                <!-- MRZ Lines -->
+                <div class="flex-1 space-y-3">
+                  <div class="p-3 bg-gray-50 rounded-lg">
+                    <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Line 1</dt>
+                    <dd id="mrz-line-1" class="font-mono text-sm text-gray-900 break-all">--</dd>
+                  </div>
+                  <div class="p-3 bg-gray-50 rounded-lg">
+                    <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Line 2</dt>
+                    <dd id="mrz-line-2" class="font-mono text-sm text-gray-900 break-all">--</dd>
+                  </div>
+                  <div class="p-3 bg-gray-50 rounded-lg">
+                    <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Line 3</dt>
+                    <dd id="mrz-line-3" class="font-mono text-sm text-gray-900 break-all">--</dd>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Group Results Card -->
+          <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-teal-500/10 to-cyan-500/10 rounded-bl-full"></div>
+            <div class="relative">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="flex size-8 items-center justify-center rounded-lg bg-teal-100 group-hover:bg-teal-200 transition-colors">
+                  <svg class="size-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                  </svg>
+                </div>
+                <h4 class="text-sm font-semibold text-gray-900">Data Group Read Results</h4>
+              </div>
+              <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                <div th:each="i : ${#numbers.sequence(1, 16)}" class="flex items-center gap-1.5 p-2 bg-gray-50 rounded-lg">
+                  <input
+                    type="checkbox"
+                    class="size-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 disabled:opacity-50"
+                    th:id="'hs-checkbox-dg' + ${i}"
+                    disabled
+                  />
+                  <label th:for="'hs-checkbox-dg' + ${i}" class="text-xs text-gray-600" th:text="'DG' + (${i} < 10 ? '0' : '') + ${i}">DG01</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Authentication Results Card -->
+          <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5 lg:col-span-2">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-bl-full"></div>
+            <div class="relative">
+              <div class="flex items-center gap-2 mb-4">
+                <div class="flex size-8 items-center justify-center rounded-lg bg-cyan-100 group-hover:bg-cyan-200 transition-colors">
+                  <svg class="size-4 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                  </svg>
+                </div>
+                <h4 class="text-sm font-semibold text-gray-900">Authentication Results</h4>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <input type="checkbox" id="hs-checkbox-auth-bac" class="size-4 rounded border-gray-300 text-emerald-600 disabled:opacity-50" disabled />
+                  <label id="hs-label-auth-bac" class="text-xs font-medium text-gray-600">BAC</label>
+                </div>
+                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <input type="checkbox" id="hs-checkbox-auth-pa" class="size-4 rounded border-gray-300 text-emerald-600 disabled:opacity-50" disabled />
+                  <label id="hs-label-auth-pa" class="text-xs font-medium text-gray-600">PA</label>
+                </div>
+                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <input type="checkbox" id="hs-checkbox-auth-aa" class="size-4 rounded border-gray-300 text-emerald-600 disabled:opacity-50" disabled />
+                  <label id="hs-label-auth-aa" class="text-xs font-medium text-gray-600">AA</label>
+                </div>
+                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <input type="checkbox" id="hs-checkbox-auth-ca" class="size-4 rounded border-gray-300 text-emerald-600 disabled:opacity-50" disabled />
+                  <label id="hs-label-auth-ca" class="text-xs font-medium text-gray-600">CA</label>
+                </div>
+                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <input type="checkbox" id="hs-checkbox-auth-ta" class="size-4 rounded border-gray-300 text-emerald-600 disabled:opacity-50" disabled />
+                  <label id="hs-label-auth-ta" class="text-xs font-medium text-gray-600">TA</label>
+                </div>
+                <div class="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <input type="checkbox" id="hs-checkbox-auth-sac" class="size-4 rounded border-gray-300 text-emerald-600 disabled:opacity-50" disabled />
+                  <label id="hs-label-auth-sac" class="text-xs font-medium text-gray-600">SAC</label>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <!-- WH Image tab -->
-      <input type="radio" name="my_tabs_2" class="tab" aria-label="WH" />
-      <div class="tab-content border-base-300 bg-base-100 p-10">
-        <div class="flex flex-col gap-2 items-start">
-          <img
-            class="aspect-auto h-auto w-xl flex-none rounded-sm bg-gray-50 object-cover"
-            id="wh-image"
-            th:src="@{/image/image-batch.jpg}"
-            alt="wh-image"
-          />
-          <dt class="font-mono text-sm/6 font-semibold text-gray-900">
-            WH Image
-          </dt>
+
+      <!-- IR Image Tab Content -->
+      <div id="content-ir" class="tab-content-idcard hidden">
+        <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-bl-full"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-purple-100 group-hover:bg-purple-200 transition-colors">
+                <svg class="size-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900">Infrared (IR) Image</h4>
+            </div>
+            <div class="flex justify-center p-4 bg-gray-50 rounded-xl">
+              <img class="max-w-full h-auto max-h-96 object-contain rounded-lg" id="ir-image" th:src="@{/image/image-batch.jpg}" alt="ir-image" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UV Image Tab Content -->
+      <div id="content-uv" class="tab-content-idcard hidden">
+        <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-violet-500/10 to-purple-500/10 rounded-bl-full"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-violet-100 group-hover:bg-violet-200 transition-colors">
+                <svg class="size-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900">Ultraviolet (UV) Image</h4>
+            </div>
+            <div class="flex justify-center p-4 bg-gray-50 rounded-xl">
+              <img class="max-w-full h-auto max-h-96 object-contain rounded-lg" id="uv-image" th:src="@{/image/image-batch.jpg}" alt="uv-image" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WH Image Tab Content -->
+      <div id="content-wh" class="tab-content-idcard hidden">
+        <div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-500/10 to-yellow-500/10 rounded-bl-full"></div>
+          <div class="relative">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="flex size-8 items-center justify-center rounded-lg bg-amber-100 group-hover:bg-amber-200 transition-colors">
+                <svg class="size-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900">White Light (WH) Image</h4>
+            </div>
+            <div class="flex justify-center p-4 bg-gray-50 rounded-xl">
+              <img class="max-w-full h-auto max-h-96 object-contain rounded-lg" id="wh-image" th:src="@{/image/image-batch.jpg}" alt="wh-image" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Event Log Tab Content -->
+      <div id="content-log" class="tab-content-idcard hidden">
+        <div class="border rounded-lg border-gray-200 bg-white shadow-sm">
+          <!-- Log Header with Clear Button -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+              <svg class="size-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+              </svg>
+              Event Log
+            </h4>
+            <div class="flex gap-2">
+              <button
+                id="log-auto-scroll-toggle"
+                type="button"
+                class="inline-flex items-center gap-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
+                title="Toggle auto-scroll"
+              >
+                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3" />
+                </svg>
+                <span id="auto-scroll-status">Auto-scroll: ON</span>
+              </button>
+              <button
+                id="clear-log-button"
+                type="button"
+                class="inline-flex items-center gap-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-400 transition-colors"
+                onclick="clearIdCardLog()"
+              >
+                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                </svg>
+                Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Log Content with Auto-scroll -->
+          <div id="log-scroll-container" class="overflow-y-auto bg-gray-50" style="max-height: 400px;">
+            <div id="notifications" class="p-3 font-mono text-xs text-gray-700 space-y-1">
+              <div class="text-gray-400 italic">Waiting for events...</div>
+            </div>
+          </div>
+
+          <!-- Log Footer with Stats -->
+          <div class="px-4 py-2 border-t border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between text-xs text-gray-500">
+              <span>Total events: <span id="log-event-count" class="font-semibold text-gray-700">0</span></span>
+              <span id="log-last-update">No events yet</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
   <script>
+    // Global state management for ID Card page
+    let idCardAutoScrollEnabled = true;
+    let idCardEventCount = 0;
+
+    // Tab switching function (Passport style)
+    function switchIdCardTab(tabName) {
+      // Hide all tab contents
+      const tabContents = document.querySelectorAll('.tab-content-idcard');
+      tabContents.forEach(content => content.classList.add('hidden'));
+
+      // Remove active styling from all tabs
+      const tabButtons = document.querySelectorAll('.tab-button-idcard');
+      tabButtons.forEach(button => {
+        button.classList.remove('border-emerald-500', 'text-emerald-600');
+        button.classList.add('border-transparent', 'text-gray-500');
+      });
+
+      // Show selected tab content
+      const selectedContent = document.getElementById(`content-${tabName}`);
+      if (selectedContent) {
+        selectedContent.classList.remove('hidden');
+      }
+
+      // Add active styling to selected tab
+      const selectedTab = document.getElementById(`tab-${tabName}`);
+      if (selectedTab) {
+        selectedTab.classList.remove('border-transparent', 'text-gray-500');
+        selectedTab.classList.add('border-emerald-500', 'text-emerald-600');
+      }
+    }
+
     const socket = new WebSocket("ws://localhost:8080/fastpass");
+
     socket.onmessage = function (event) {
       const message = JSON.parse(event.data);
-      // console.log("event code: ", message.eventId);
+
+      // Add log entry for all events
+      const eventName = message.eventCodeString?.replace('FPHPS_EVENTS.FPHPS_EV_', '') || 'UNKNOWN';
+      addIdCardLogEntry(eventName, message.lParam || 'Event received');
+
       switch (message.eventCodeString) {
         case "FPHPS_EVENTS.FPHPS_EV_VIZ_PHOTO_CAPTURED":
-          // console.log("GET VIZ-PHOTO");
           var el = document.querySelector("#viz-photo");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
+          if (el) {
+            el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          }
           break;
         case "FPHPS_EVENTS.FPHPS_EV_EPASS_READ_FACE":
           var el = document.querySelector("#epass-photo");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET EPASS-PHOTO");
-          break;
-        case "FPHPS_EVENTS.FPHPS_EV_IR_MRZ_IMAGE_CAPTURED":
-          // var el = document.querySelector("#mrz-photo");
-          // el.setAttribute(
-          //  "src",
-          //  "data:image/png;base64, " + message.image.imageData
-          // );
-          // console.log("GET MRZ-PHOTO");
+          if (el) {
+            el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          }
           break;
         case "FPHPS_EVENTS.FPHPS_EV_WH_IMAGE_CAPTURED":
           var el = document.querySelector("#wh-image");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET WH-IMAGE");
+          if (el) {
+            el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          }
           break;
         case "FPHPS_EVENTS.FPHPS_EV_IR_IMAGE_CAPTURED":
           var el = document.querySelector("#ir-image");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET IR-IMAGE");
+          if (el) {
+            el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          }
           break;
         case "FPHPS_EVENTS.FPHPS_EV_UV_IMAGE_CAPTURED":
           var el = document.querySelector("#uv-image");
-          el.setAttribute(
-            "src",
-            "data:image/png;base64, " + message.image.imageData
-          );
-          // console.log("GET UV-IMAGE");
+          if (el) {
+            el.setAttribute("src", "data:image/png;base64, " + message.image.imageData);
+          }
           break;
         case "FPHPS_EVENTS.FPHPS_EV_PAGE_CAPTURED":
           console.log("ePassResults: ", message.ePassResults);
-          var checkBoxDg1 = document.querySelector("#hs-checkbox-dg1");
-          checkBoxDg1.checked = message.ePassResults.dgs[0];
-          var checkBoxDg2 = document.querySelector("#hs-checkbox-dg2");
-          checkBoxDg2.checked = message.ePassResults.dgs[1];
-          var checkBoxDg3 = document.querySelector("#hs-checkbox-dg3");
-          checkBoxDg3.checked = message.ePassResults.dgs[2];
-          var checkBoxDg4 = document.querySelector("#hs-checkbox-dg4");
-          checkBoxDg4.checked = message.ePassResults.dgs[3];
-          var checkBoxDg5 = document.querySelector("#hs-checkbox-dg5");
-          checkBoxDg5.checked = message.ePassResults.dgs[4];
-          var checkBoxDg6 = document.querySelector("#hs-checkbox-dg6");
-          checkBoxDg6.checked = message.ePassResults.dgs[5];
-          var checkBoxDg7 = document.querySelector("#hs-checkbox-dg7");
-          checkBoxDg7.checked = message.ePassResults.dgs[6];
-          var checkBoxDg8 = document.querySelector("#hs-checkbox-dg8");
-          checkBoxDg8.checked = message.ePassResults.dgs[7];
-          var checkBoxDg9 = document.querySelector("#hs-checkbox-dg9");
-          checkBoxDg9.checked = message.ePassResults.dgs[8];
-          var checkBoxDg10 = document.querySelector("#hs-checkbox-dg10");
-          checkBoxDg10.checked = message.ePassResults.dgs[9];
-          var checkBoxDg11 = document.querySelector("#hs-checkbox-dg11");
-          checkBoxDg11.checked = message.ePassResults.dgs[10];
-          var checkBoxDg12 = document.querySelector("#hs-checkbox-dg12");
-          checkBoxDg12.checked = message.ePassResults.dgs[11];
-          var checkBoxDg13 = document.querySelector("#hs-checkbox-dg13");
-          checkBoxDg13.checked = message.ePassResults.dgs[12];
-          var checkBoxDg14 = document.querySelector("#hs-checkbox-dg14");
-          checkBoxDg14.checked = message.ePassResults.dgs[13];
-          var checkBoxDg15 = document.querySelector("#hs-checkbox-dg15");
-          checkBoxDg15.checked = message.ePassResults.dgs[14];
-          var checkBoxDg16 = document.querySelector("#hs-checkbox-dg16");
-          checkBoxDg16.checked = message.ePassResults.dgs[15];
+          if (message.ePassResults && message.ePassResults.dgs) {
+            for (var i = 0; i < 16; i++) {
+              var checkbox = document.querySelector("#hs-checkbox-dg" + (i + 1));
+              if (checkbox) checkbox.checked = message.ePassResults.dgs[i];
+            }
+          }
+          if (message.ePassResults) {
+            // Authentication results
+            var bac = document.querySelector("#hs-checkbox-auth-bac");
+            if (bac) bac.checked = message.ePassResults.bac;
+            var bacLabel = document.querySelector("#hs-label-auth-bac");
+            if (bacLabel) bacLabel.innerHTML = "BAC: " + (message.ePassResults.bacResultDesc || "--");
 
-          var bac = document.querySelector("#hs-checkbox-auth-bac");
-          bac.checked = message.ePassResults.bac;
-          var bacLabel = document.querySelector("#hs-label-auth-bac");
-          bacLabel.innerHTML = "BAC : " + message.ePassResults.bacResultDesc;
-          var pa = document.querySelector("#hs-checkbox-auth-pa");
-          pa.checked = message.ePassResults.pa;
-          var paLabel = document.querySelector("#hs-label-auth-pa");
-          paLabel.innerHTML = "PA : " + message.ePassResults.paResultDesc;
-          var aa = document.querySelector("#hs-checkbox-auth-aa");
-          aa.checked = message.ePassResults.aa;
-          var aaLabel = document.querySelector("#hs-label-auth-aa");
-          aaLabel.innerHTML = "AA : " + message.ePassResults.aaResultDesc;
-          var ca = document.querySelector("#hs-checkbox-auth-ca");
-          ca.checked = message.ePassResults.ca;
-          var caLabel = document.querySelector("#hs-label-auth-ca");
-          caLabel.innerHTML = "CA : " + message.ePassResults.caResultDesc;
-          var ta = document.querySelector("#hs-checkbox-auth-ta");
-          ta.checked = message.ePassResults.ta;
-          var taLabel = document.querySelector("#hs-label-auth-ta");
-          taLabel.innerHTML = "TA : " + message.ePassResults.taResultDesc;
-          var sac = document.querySelector("#hs-checkbox-auth-sac");
-          sac.checked = message.ePassResults.sac;
-          var sacLabel = document.querySelector("#hs-label-auth-sac");
-          sacLabel.innerHTML = "SAC : " + message.ePassResults.sacResultDesc;
-          break;
-        case "FPHPS_EVENTS.FPHPS_EV_DOC_FRAME_FOUND":
-          console.log("FPHPS_EVENTS.FPHPS_EV_EPASS_READ_MRZ");
-          console.log("message:", message);
+            var pa = document.querySelector("#hs-checkbox-auth-pa");
+            if (pa) pa.checked = message.ePassResults.pa;
+            var paLabel = document.querySelector("#hs-label-auth-pa");
+            if (paLabel) paLabel.innerHTML = "PA: " + (message.ePassResults.paResultDesc || "--");
+
+            var aa = document.querySelector("#hs-checkbox-auth-aa");
+            if (aa) aa.checked = message.ePassResults.aa;
+            var aaLabel = document.querySelector("#hs-label-auth-aa");
+            if (aaLabel) aaLabel.innerHTML = "AA: " + (message.ePassResults.aaResultDesc || "--");
+
+            var ca = document.querySelector("#hs-checkbox-auth-ca");
+            if (ca) ca.checked = message.ePassResults.ca;
+            var caLabel = document.querySelector("#hs-label-auth-ca");
+            if (caLabel) caLabel.innerHTML = "CA: " + (message.ePassResults.caResultDesc || "--");
+
+            var ta = document.querySelector("#hs-checkbox-auth-ta");
+            if (ta) ta.checked = message.ePassResults.ta;
+            var taLabel = document.querySelector("#hs-label-auth-ta");
+            if (taLabel) taLabel.innerHTML = "TA: " + (message.ePassResults.taResultDesc || "--");
+
+            var sac = document.querySelector("#hs-checkbox-auth-sac");
+            if (sac) sac.checked = message.ePassResults.sac;
+            var sacLabel = document.querySelector("#hs-label-auth-sac");
+            if (sacLabel) sacLabel.innerHTML = "SAC: " + (message.ePassResults.sacResultDesc || "--");
+          }
           break;
         case "FPHPS_EVENTS.FPHPS_EV_EPASS_READ_MRZ":
-          console.log("FPHPS_EVENTS.FPHPS_EV_EPASS_READ_MRZ");
-          console.log("message:", message);
-          console.log("line1: ", message.mrzLines.line1);
-          var el = document.getElementById("mrz-line-1");
-          var line1 = message.mrzLines.line1.replace(/</g, "&lt");
-          // console.log("replaced line1: ", line1);
-          el.innerHTML = line1;
-          el = document.getElementById("mrz-line-2");
-          var line2 = message.mrzLines.line2.replace(/</g, "&lt");
-          el.innerHTML = line2;
-          el = document.getElementById("mrz-line-3");
-          el.innerHTML = message.mrzLines.line3 ? message.mrzLines.line3 : "";
+          console.log("MRZ Lines: ", message.mrzLines);
+          if (message.mrzLines) {
+            var line1El = document.getElementById("mrz-line-1");
+            if (line1El) line1El.innerHTML = message.mrzLines.line1 ? message.mrzLines.line1.replace(/</g, "&lt;") : "--";
+            var line2El = document.getElementById("mrz-line-2");
+            if (line2El) line2El.innerHTML = message.mrzLines.line2 ? message.mrzLines.line2.replace(/</g, "&lt;") : "--";
+            var line3El = document.getElementById("mrz-line-3");
+            if (line3El) line3El.innerHTML = message.mrzLines.line3 ? message.mrzLines.line3.replace(/</g, "&lt;") : "--";
+          }
           break;
         default:
           break;
       }
-      // add notification messages
-      // const div = document.createElement("div");
-      // div.className =
-      //   "p-2 bg-gray-100 dark:bg-gray-800 rounded shadow text-sm text-gray-800 dark:text-white";
-      // div.textContent = message.eventCodeString + " :: " + message.lParam;
-      // document.getElementById("notifications").appendChild(div);
-      var messgetText = message.eventCodeString + " :: " + message.lParam;
-      document.getElementById("notifications").append(messgetText);
     };
+
+    // Add log entry with timestamp (list style like passport page)
+    function addIdCardLogEntry(eventName, message, type = 'info') {
+      const logContainer = document.getElementById('notifications');
+      const scrollContainer = document.getElementById('log-scroll-container');
+
+      if (!logContainer) return;
+
+      // Remove placeholder if present
+      const placeholder = logContainer.querySelector('.text-gray-400.italic');
+      if (placeholder) {
+        logContainer.innerHTML = '';
+      }
+
+      const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
+
+      const logEntry = document.createElement('div');
+      logEntry.className = 'flex gap-2 items-start py-1 border-b border-gray-100 last:border-0';
+
+      let colorClass = 'text-emerald-600';
+      let icon = '●';
+      if (type === 'error') {
+        colorClass = 'text-red-600';
+        icon = '✕';
+      } else if (type === 'success') {
+        colorClass = 'text-green-600';
+        icon = '✓';
+      } else if (type === 'warning') {
+        colorClass = 'text-yellow-600';
+        icon = '⚠';
+      }
+
+      logEntry.innerHTML = `
+        <span class="${colorClass} font-bold">${icon}</span>
+        <span class="text-gray-400">[${timestamp}]</span>
+        <span class="font-semibold text-gray-700">${eventName}:</span>
+        <span class="text-gray-600">${message}</span>
+      `;
+
+      logContainer.appendChild(logEntry);
+
+      // Update event count
+      idCardEventCount++;
+      const countEl = document.getElementById('log-event-count');
+      if (countEl) countEl.textContent = idCardEventCount;
+      const lastUpdateEl = document.getElementById('log-last-update');
+      if (lastUpdateEl) lastUpdateEl.textContent = `Last: ${timestamp}`;
+
+      // Auto-scroll if enabled
+      if (idCardAutoScrollEnabled && scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+
+    // Clear log
+    function clearIdCardLog() {
+      const logContainer = document.getElementById('notifications');
+      if (logContainer) {
+        logContainer.innerHTML = '<div class="text-gray-400 italic">Log cleared. Waiting for events...</div>';
+      }
+      idCardEventCount = 0;
+      const countEl = document.getElementById('log-event-count');
+      if (countEl) countEl.textContent = '0';
+      const lastUpdateEl = document.getElementById('log-last-update');
+      if (lastUpdateEl) lastUpdateEl.textContent = 'No events yet';
+    }
+
+    // Toggle auto-scroll
+    document.getElementById('log-auto-scroll-toggle')?.addEventListener('click', function() {
+      idCardAutoScrollEnabled = !idCardAutoScrollEnabled;
+      const statusSpan = document.getElementById('auto-scroll-status');
+      if (statusSpan) {
+        statusSpan.textContent = `Auto-scroll: ${idCardAutoScrollEnabled ? 'ON' : 'OFF'}`;
+      }
+      this.classList.toggle('bg-gray-100', idCardAutoScrollEnabled);
+    });
   </script>
 </html>
