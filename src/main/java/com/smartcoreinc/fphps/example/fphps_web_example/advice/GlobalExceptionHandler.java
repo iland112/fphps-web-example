@@ -1,6 +1,10 @@
 package com.smartcoreinc.fphps.example.fphps_web_example.advice;
 
 import com.smartcoreinc.fphps.example.fphps_web_example.exceptions.DeviceOperationException;
+import com.smartcoreinc.fphps.exception.DeviceNotFoundException;
+import com.smartcoreinc.fphps.exception.DeviceNotOpenedException;
+import com.smartcoreinc.fphps.exception.NativeLibraryException;
+import com.smartcoreinc.fphps.exception.SODVerificationException;
 import com.smartcoreinc.fphps.exception.FPHPSException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -64,6 +68,82 @@ public class GlobalExceptionHandler {
         }
 
         // 일반 요청: 기존 에러 페이지로 리다이렉트
+        model.addAttribute("errorMessage", userMessage);
+        return "fragments/error_display";
+    }
+
+    @ExceptionHandler(DeviceNotFoundException.class)
+    public Object handleDeviceNotFoundException(DeviceNotFoundException ex, Model model,
+                                                HttpServletRequest request, HttpServletResponse response) {
+        log.error("Device not found: {}", ex.getMessage(), ex);
+
+        String userMessage = "No passport reader device found. Please check if the device is connected and try again.";
+
+        if (isHtmxRequest(request)) {
+            response.setHeader("HX-Trigger-Toast", URLEncoder.encode(userMessage, StandardCharsets.UTF_8));
+            response.setHeader("HX-Trigger-Toast-Type", "error");
+            response.setHeader("HX-Reswap", "none");
+            response.setStatus(HttpStatus.OK.value());
+            return ResponseEntity.ok().build();
+        }
+
+        model.addAttribute("errorMessage", userMessage);
+        return "fragments/error_display";
+    }
+
+    @ExceptionHandler(DeviceNotOpenedException.class)
+    public Object handleDeviceNotOpenedException(DeviceNotOpenedException ex, Model model,
+                                                  HttpServletRequest request, HttpServletResponse response) {
+        log.error("Device not opened: {}", ex.getMessage(), ex);
+
+        String userMessage = "Device connection lost. Please reconnect the device and try again.";
+
+        if (isHtmxRequest(request)) {
+            response.setHeader("HX-Trigger-Toast", URLEncoder.encode(userMessage, StandardCharsets.UTF_8));
+            response.setHeader("HX-Trigger-Toast-Type", "error");
+            response.setHeader("HX-Reswap", "none");
+            response.setStatus(HttpStatus.OK.value());
+            return ResponseEntity.ok().build();
+        }
+
+        model.addAttribute("errorMessage", userMessage);
+        return "fragments/error_display";
+    }
+
+    @ExceptionHandler(NativeLibraryException.class)
+    public Object handleNativeLibraryException(NativeLibraryException ex, Model model,
+                                               HttpServletRequest request, HttpServletResponse response) {
+        log.error("Native library error: {}", ex.getMessage(), ex);
+
+        String userMessage = "A system error occurred. Please restart the application and try again.";
+
+        if (isHtmxRequest(request)) {
+            response.setHeader("HX-Trigger-Toast", URLEncoder.encode(userMessage, StandardCharsets.UTF_8));
+            response.setHeader("HX-Trigger-Toast-Type", "error");
+            response.setHeader("HX-Reswap", "none");
+            response.setStatus(HttpStatus.OK.value());
+            return ResponseEntity.ok().build();
+        }
+
+        model.addAttribute("errorMessage", userMessage);
+        return "fragments/error_display";
+    }
+
+    @ExceptionHandler(SODVerificationException.class)
+    public Object handleSODVerificationException(SODVerificationException ex, Model model,
+                                                  HttpServletRequest request, HttpServletResponse response) {
+        log.error("SOD verification failed: {}", ex.getMessage(), ex);
+
+        String userMessage = "Passport security verification failed. The document may be invalid or tampered.";
+
+        if (isHtmxRequest(request)) {
+            response.setHeader("HX-Trigger-Toast", URLEncoder.encode(userMessage, StandardCharsets.UTF_8));
+            response.setHeader("HX-Trigger-Toast-Type", "warning");
+            response.setHeader("HX-Reswap", "none");
+            response.setStatus(HttpStatus.OK.value());
+            return ResponseEntity.ok().build();
+        }
+
         model.addAttribute("errorMessage", userMessage);
         return "fragments/error_display";
     }

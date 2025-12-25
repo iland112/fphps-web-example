@@ -1,24 +1,39 @@
 <html xmlns:th="http://www.thymeleaf.org">
+  <!-- Sidebar -->
   <div
     th:fragment="sidebar"
     id="hs-application-sidebar"
-    class="hs-overlay [--auto-close:lg] hs-overlay-open:translate-x-0 -translate-x-full transition-all duration-300 transform w-65 hidden fixed top-16 bottom-0 start-0 z-40 bg-gray-900 lg:block lg:translate-x-0 lg:end-auto dark:bg-neutral-800 dark:border-neutral-700"
+    class="hs-overlay [--auto-close:lg]
+      hs-overlay-open:translate-x-0
+      -translate-x-full transition-all duration-300 transform
+      w-64 h-full
+      hidden
+      fixed inset-y-0 start-0 z-[60]
+      bg-white border-e border-gray-200
+      lg:block lg:translate-x-0 lg:end-auto
+      dark:bg-neutral-800 dark:border-neutral-700"
     role="dialog"
     tabindex="-1"
     aria-label="Sidebar"
   >
     <div class="relative flex flex-col h-full max-h-full">
-      <div class="px-8 pt-4">
+      <!-- Header with Logo -->
+      <div class="sidebar-header px-6 pt-4 pb-2 border-b border-gray-200 dark:border-neutral-700 transition-all duration-300">
         <!-- Logo -->
         <a
-          class="flex-none rounded-xl text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
-          href="#"
+          class="sidebar-logo flex-none rounded-xl text-xl inline-block font-semibold focus:outline-hidden focus:opacity-80"
+          href="/"
           aria-label="SmartCore"
         >
           <img
-            class="w-44 h-16 rounded-sm"
+            class="sidebar-logo-full w-40 h-14 rounded-sm object-contain transition-all duration-300"
             th:src="@{/image/FASTpass.bmp}"
             alt="&copy SmartCore"
+          />
+          <img
+            class="sidebar-logo-mini hidden w-10 h-10 rounded-sm object-contain transition-all duration-300"
+            th:src="@{/image/fastpass-p1.png}"
+            alt="FP"
           />
         </a>
         <!-- End Logo -->
@@ -36,14 +51,16 @@
             <!-- Home -->
             <li>
               <a
-                class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                class="sidebar-link sidebar-nav-link flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-700 dark:text-white dark:hover:bg-neutral-700 transition-all duration-300"
                 href="#"
                 hx-get="/home"
                 hx-target="#response"
                 hx-swap="outerHTML"
+                title="Home"
+                data-breadcrumb=""
               >
                 <svg
-                  class="shrink-0 size-4"
+                  class="shrink-0 size-5"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -57,19 +74,21 @@
                   <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                   <polyline points="9 22 9 12 15 12 15 22" />
                 </svg>
-                Home
+                <span class="sidebar-text">Home</span>
               </a>
             </li>
-            <!-- EPassport -->
-            <li class="hs-accordion" id="epassport-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableRF() == 0 ? 'opacity-50 pointer-events-none' : ''}">
+
+            <!-- EPassport Accordion -->
+            <li class="hs-accordion sidebar-accordion" id="epassport-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableRF() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
-                class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                class="hs-accordion-toggle sidebar-link w-full text-start flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200 transition-all duration-300"
                 aria-expanded="true"
                 aria-controls="epassport-accordion-child"
+                title="E-Passport"
               >
                 <svg
-                  class="shrink-0 mt-0.5 size-4"
+                  class="shrink-0 size-5"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -88,9 +107,9 @@
                   <path d="M6 19v2"/>
                   <rect x="2" y="8" width="20" height="13" rx="2"/>
                 </svg>
-                Passport
+                <span class="sidebar-text">E-Passport</span>
                 <svg
-                  class="hs-accordion-active:block ms-auto hidden size-4"
+                  class="hs-accordion-active:block ms-auto hidden size-4 sidebar-arrow"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -104,7 +123,7 @@
                   <path d="m18 15-6-6-6 6" />
                 </svg>
                 <svg
-                  class="hs-accordion-active:hidden ms-auto block size-4"
+                  class="hs-accordion-active:hidden ms-auto block size-4 sidebar-arrow"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -121,47 +140,51 @@
 
               <div
                 id="epassport-accordion-child"
-                class="hs-accordion-content w-full overflow-hidden transition-[height] duration-300 hidden"
+                class="hs-accordion-content sidebar-submenu w-full overflow-hidden transition-[height] duration-300 hidden"
                 role="region"
                 aria-labelledby="epassport-accordion"
               >
                 <ul class="ps-8 pt-1 space-y-1">
                   <li>
                     <a
-                      class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                      class="sidebar-nav-link flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       href="#"
                       hx-get="/passport/manual-read"
                       hx-indicator="#indicator"
                       hx-target="#response"
                       hx-swap="outerHTML"
+                      data-breadcrumb="E-Passport / Manual Read"
                     >
-                      Manual
+                      Manual Read
                     </a>
                   </li>
                   <li>
                     <a
-                      class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                      class="sidebar-nav-link flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       href="#"
                       hx-get="/passport/auto-read"
                       hx-target="#response"
                       hx-swap="outerHTML"
+                      data-breadcrumb="E-Passport / Automatic Read"
                     >
-                      Automatic
+                      Automatic Read
                     </a>
                   </li>
                 </ul>
               </div>
             </li>
-            <!-- ID Card -->
-            <li class="hs-accordion" id="idcard-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableIDCard() == 0 ? 'opacity-50 pointer-events-none' : ''}">
+
+            <!-- ID Card Accordion -->
+            <li class="hs-accordion sidebar-accordion" id="idcard-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableIDCard() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
-                class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                class="hs-accordion-toggle sidebar-link w-full text-start flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200 transition-all duration-300"
                 aria-expanded="true"
                 aria-controls="idcard-accordion-child"
+                title="ID Card"
               >
                 <svg
-                  class="shrink-0 mt-0.5 size-4"
+                  class="shrink-0 size-5"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -178,9 +201,9 @@
                   <circle cx="9" cy="11" r="2" />
                   <rect x="2" y="5" width="20" height="14" rx="2" />
                 </svg>
-                ID Card
+                <span class="sidebar-text">ID Card</span>
                 <svg
-                  class="hs-accordion-active:block ms-auto hidden size-4"
+                  class="hs-accordion-active:block ms-auto hidden size-4 sidebar-arrow"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -194,7 +217,7 @@
                   <path d="m18 15-6-6-6 6" />
                 </svg>
                 <svg
-                  class="hs-accordion-active:hidden ms-auto block size-4"
+                  class="hs-accordion-active:hidden ms-auto block size-4 sidebar-arrow"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -211,47 +234,51 @@
 
               <div
                 id="idcard-accordion-child"
-                class="hs-accordion-content w-full overflow-hidden transition-[height] duration-300 hidden"
+                class="hs-accordion-content sidebar-submenu w-full overflow-hidden transition-[height] duration-300 hidden"
                 role="region"
                 aria-labelledby="idcard-accordion"
               >
                 <ul class="ps-8 pt-1 space-y-1">
                   <li>
                     <a
-                      class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                      class="sidebar-nav-link flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       href="#"
                       hx-get="/idcard/manual-read"
                       hx-indicator="#indicator"
                       hx-target="#response"
                       hx-swap="outerHTML"
+                      data-breadcrumb="ID Card / Manual Read"
                     >
-                      Manual
+                      Manual Read
                     </a>
                   </li>
                   <li>
                     <a
-                      class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                      class="sidebar-nav-link flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       href="#"
                       hx-get="/idcard/auto-read"
                       hx-target="#response"
                       hx-swap="outerHTML"
+                      data-breadcrumb="ID Card / Automatic Read"
                     >
-                      Automatic
+                      Automatic Read
                     </a>
                   </li>
                 </ul>
               </div>
             </li>
-            <!-- Barcode -->
-            <li class="hs-accordion" id="barcode-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableBarcode() == 0 ? 'opacity-50 pointer-events-none' : ''}">
+
+            <!-- Barcode Accordion -->
+            <li class="hs-accordion sidebar-accordion" id="barcode-accordion" th:classappend="${deviceProperties != null && deviceProperties.getEnableBarcode() == 0 ? 'opacity-50 pointer-events-none' : ''}">
               <button
                 type="button"
-                class="hs-accordion-toggle flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                class="hs-accordion-toggle sidebar-link w-full text-start flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:bg-neutral-800 dark:hover:bg-neutral-700 dark:text-neutral-200 transition-all duration-300"
                 aria-expanded="true"
                 aria-controls="barcode-accordion-child"
+                title="Barcode"
               >
                 <svg
-                  class="shrink-0 mt-0.5 size-4"
+                  class="shrink-0 size-5"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -270,9 +297,9 @@
                   <path d="M12 7v10" />
                   <path d="M17 7v10" />
                 </svg>
-                Barcode
+                <span class="sidebar-text">Barcode</span>
                 <svg
-                  class="hs-accordion-active:block ms-auto hidden size-4"
+                  class="hs-accordion-active:block ms-auto hidden size-4 sidebar-arrow"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -286,7 +313,7 @@
                   <path d="m18 15-6-6-6 6" />
                 </svg>
                 <svg
-                  class="hs-accordion-active:hidden ms-auto block size-4"
+                  class="hs-accordion-active:hidden ms-auto block size-4 sidebar-arrow"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -303,48 +330,56 @@
 
               <div
                 id="barcode-accordion-child"
-                class="hs-accordion-content w-full overflow-hidden transition-[height] duration-300 hidden"
+                class="hs-accordion-content sidebar-submenu w-full overflow-hidden transition-[height] duration-300 hidden"
                 role="region"
                 aria-labelledby="barcode-accordion"
               >
                 <ul class="ps-8 pt-1 space-y-1">
                   <li>
                     <a
-                      class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                      class="sidebar-nav-link flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       href="#"
                       hx-get="/barcode/manual-read"
                       hx-indicator="#indicator"
                       hx-target="#response"
                       hx-swap="outerHTML"
+                      data-breadcrumb="Barcode / Manual Read"
                     >
-                      Manual
+                      Manual Read
                     </a>
                   </li>
                   <li>
                     <a
-                      class="flex items-center gap-x-3.5 py-2 px-2.5 bg-white/10 text-sm text-white rounded-lg hover:bg-white/10 focus:outline-hidden focus:bg-white/10 dark:bg-neutral-700 dark:text-white"
+                      class="sidebar-nav-link flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-700"
                       href="#"
                       hx-get="/barcode/auto-read"
                       hx-target="#response"
                       hx-swap="outerHTML"
+                      data-breadcrumb="Barcode / Automatic Read"
                     >
-                      Automatic
+                      Automatic Read
                     </a>
                   </li>
                 </ul>
               </div>
             </li>
+
+            <!-- Divider -->
+            <li class="pt-2 mt-2 border-t border-gray-200 dark:border-neutral-700"></li>
+
             <!-- Scan Page -->
             <li>
               <a
-                class="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-white rounded-lg hover:bg-white/10 dark:hover:bg-neutral-700 dark:text-white"
+                class="sidebar-link sidebar-nav-link w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-700 dark:text-neutral-200 transition-all duration-300"
                 href="#"
                 hx-get="/scan-page"
                 hx-target="#response"
                 hx-swap="outerHTML"
+                title="Scan Page"
+                data-breadcrumb="Scan Page"
               >
                 <svg
-                  class="shrink-0 size-4"
+                  class="shrink-0 size-5"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -355,24 +390,26 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 >
-                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                  <polyline points="10 17 15 12 10 7" />
-                  <line x1="15" x2="3" y1="12" y2="12" />
+                  <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                  <circle cx="12" cy="13" r="3"/>
                 </svg>
-                Scan Page
+                <span class="sidebar-text">Scan Page</span>
               </a>
             </li>
+
             <!-- Settings -->
             <li>
               <a
-                class="w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-white rounded-lg hover:bg-white/10 dark:hover:bg-neutral-700 dark:text-white"
+                class="sidebar-link sidebar-nav-link w-full flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-gray-800 rounded-lg hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 dark:hover:bg-neutral-700 dark:text-neutral-200 transition-all duration-300"
                 href="#"
                 hx-get="/device-setting"
                 hx-target="#response"
                 hx-swap="outerHTML"
+                title="Device Settings"
+                data-breadcrumb="Device Settings"
               >
                 <svg
-                  class="shrink-0 size-4"
+                  class="shrink-0 size-5"
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
                   height="24"
@@ -388,13 +425,21 @@
                   />
                   <circle cx="12" cy="12" r="3" />
                 </svg>
-                Device Settings
+                <span class="sidebar-text">Device Settings</span>
               </a>
             </li>
           </ul>
         </nav>
       </div>
       <!-- End Content -->
+
+      <!-- Footer -->
+      <div class="sidebar-footer mt-auto p-4 border-t border-gray-200 dark:border-neutral-700 transition-all duration-300">
+        <p class="sidebar-text text-xs text-center text-gray-500 dark:text-neutral-400">
+          &copy; 2025 SmartCore Inc.
+        </p>
+      </div>
     </div>
   </div>
+  <!-- End Sidebar -->
 </html>

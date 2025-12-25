@@ -424,6 +424,107 @@ cd ../../..
 
 ## 작업 이력
 
+### 2025-12-25: Preline UI 레이아웃 개선 및 다크 모드 구현
+
+**구현 내용**:
+- Preline UI 기반 레이아웃 최적화 (헤더, 사이드바, 콘텐츠 영역)
+- 데스크톱 미니 사이드바 토글 기능 구현
+- 동적 브레드크럼 네비게이션 구현
+- 다크 모드 토글 기능 추가
+
+**주요 변경사항**:
+
+1. **헤더 개선** (`header.html`):
+   - 데스크톱 미니 사이드바 토글 버튼 추가 (접기/펼치기 아이콘)
+   - 다크 모드 토글 버튼 추가 (해/달 아이콘)
+   - 동적 브레드크럼 구현:
+     - 홈에서는 "Home"만 표시
+     - 다른 페이지 선택 시 "Home > [페이지명]" 형태로 표시
+   - 다크 모드 스타일 지원 (`dark:` 접두사 클래스)
+
+2. **사이드바 개선** (`sidebar.html`):
+   - 미니 모드 지원을 위한 CSS 클래스 추가:
+     - `.sidebar-text`: 미니 모드에서 숨김
+     - `.sidebar-arrow`: 미니 모드에서 숨김
+     - `.sidebar-submenu`: 미니 모드에서 숨김
+     - `.sidebar-logo-full` / `.sidebar-logo-mini`: 로고 전환
+   - 브레드크럼 연동을 위한 `data-breadcrumb` 속성 추가
+   - `.sidebar-nav-link` 클래스로 네비게이션 링크 식별
+
+3. **레이아웃 개선** (`default.html`):
+   - 미니 사이드바 CSS 스타일 추가:
+     - 확장 상태: `width: 16rem` (256px)
+     - 축소 상태: `width: 4.5rem` (72px)
+     - 부드러운 전환 애니메이션: `transition: width 300ms ease-in-out`
+   - 다크 모드 JavaScript 구현:
+     - 페이지 로드 전 localStorage에서 상태 복원 (깜빡임 방지)
+     - 시스템 다크 모드 설정 감지 (`prefers-color-scheme: dark`)
+     - `<html>` 요소에 `dark` 클래스 토글
+   - 동적 브레드크럼 JavaScript 구현:
+     - 사이드바 링크 클릭 시 브레드크럼 자동 업데이트
+     - HTMX `afterSwap` 이벤트 처리로 동적 콘텐츠 지원
+   - `body`에 `dark:bg-neutral-900` 클래스 추가
+
+4. **Tailwind 설정 업데이트** (`tailwind.config.js`):
+   - `darkMode: 'class'` 설정 추가
+   - 클래스 기반 다크 모드 활성화
+
+5. **콘텐츠 정렬 수정**:
+   - `index.html`: 중복 패딩 제거
+   - `home_content.html`: 중복 패딩 제거
+   - 레이아웃에서 일관된 패딩 적용: `px-4 sm:px-6 lg:px-8`
+
+**기능 상세**:
+
+| 기능 | 설명 | 저장 위치 |
+|------|------|----------|
+| 미니 사이드바 토글 | 데스크톱에서 사이드바 축소/확장 | `localStorage.sidebarMini` |
+| 다크 모드 토글 | 라이트/다크 테마 전환 | `localStorage.darkMode` |
+| 동적 브레드크럼 | 메뉴 선택에 따라 브레드크럼 업데이트 | - |
+
+**브레드크럼 매핑**:
+
+| 메뉴 | 브레드크럼 표시 |
+|------|---------------|
+| Home | Home |
+| E-Passport > Manual Read | Home > E-Passport / Manual Read |
+| E-Passport > Automatic Read | Home > E-Passport / Automatic Read |
+| ID Card > Manual Read | Home > ID Card / Manual Read |
+| ID Card > Automatic Read | Home > ID Card / Automatic Read |
+| Barcode > Manual Read | Home > Barcode / Manual Read |
+| Barcode > Automatic Read | Home > Barcode / Automatic Read |
+| Scan Page | Home > Scan Page |
+| Device Settings | Home > Device Settings |
+
+**다크 모드 색상 팔레트**:
+
+| 요소 | 라이트 모드 | 다크 모드 |
+|------|------------|----------|
+| 배경 | `bg-stone-200` | `bg-neutral-900` |
+| 헤더 | `bg-white` | `bg-neutral-800` |
+| 사이드바 | `bg-white` | `bg-neutral-800` |
+| 텍스트 | `text-gray-800` | `text-neutral-200` |
+| 테두리 | `border-gray-200` | `border-neutral-700` |
+
+**수정된 파일**:
+- `src/main/resources/templates/fragments/header.html`
+- `src/main/resources/templates/fragments/sidebar.html`
+- `src/main/resources/templates/layouts/default.html`
+- `src/main/resources/templates/index.html`
+- `src/main/resources/templates/fragments/home_content.html`
+- `src/main/frontend/tailwind.config.js`
+- `src/main/resources/static/css/main.css` (재빌드)
+
+**테스트 결과**:
+- ✅ 미니 사이드바 토글 정상 동작 (localStorage 저장)
+- ✅ 다크 모드 토글 정상 동작 (localStorage 저장)
+- ✅ 시스템 다크 모드 설정 감지
+- ✅ 브레드크럼 동적 업데이트
+- ✅ 페이지 새로고침 시 상태 유지
+- ✅ HTMX 동적 콘텐츠 로드 후 브레드크럼 업데이트
+
+---
+
 ### 2025-12-24: UI/UX 개선 및 페이지 디자인 통일
 
 **구현 내용**:
@@ -760,6 +861,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2025-12-24
+**최종 업데이트**: 2025-12-25
 **분석 도구**: Claude Code (Anthropic)
 **현재 브랜치**: `feature/pa-integration`

@@ -31,7 +31,7 @@ public class CertificateInfo implements Serializable {
     // 유효기간
     private String notBefore;
     private String notAfter;
-    private boolean isValid;
+    private boolean valid;
 
     // 공개키 정보
     private String publicKeyAlgorithm;
@@ -70,7 +70,7 @@ public class CertificateInfo implements Serializable {
                 .serialNumber(cert.getSerialNumber().toString(16).toUpperCase())
                 .notBefore(formatDate(cert.getNotBefore(), formatter))
                 .notAfter(formatDate(cert.getNotAfter(), formatter))
-                .isValid(now.after(cert.getNotBefore()) && now.before(cert.getNotAfter()))
+                .valid(now.after(cert.getNotBefore()) && now.before(cert.getNotAfter()))
                 .publicKeyAlgorithm(cert.getPublicKey().getAlgorithm())
                 .publicKeySize(getKeySize(cert))
                 .publicKeyFormat(cert.getPublicKey().getFormat())
