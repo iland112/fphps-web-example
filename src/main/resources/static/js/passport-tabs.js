@@ -438,7 +438,7 @@ function renderSODInformation(parsedSOD, containerId = 'sod-info-container') {
     `;
   }
 
-  // Signer Information
+  // Signer Information (matches sod_information.html structure)
   if (parsedSOD.signerInfo) {
     const signer = parsedSOD.signerInfo;
     html += `
@@ -446,16 +446,25 @@ function renderSODInformation(parsedSOD, containerId = 'sod-info-container') {
         <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
           <h4 class="text-sm font-semibold text-gray-900">Signer Information</h4>
         </div>
-        <div class="p-4">
+        <div class="p-4 space-y-3">
           <div class="grid grid-cols-2 gap-3">
             <div class="bg-gray-50 rounded-lg p-3">
               <dt class="text-xs font-medium text-gray-500 uppercase">Digest Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900">${signer.digestAlgorithmName || signer.digestAlgorithmOid || 'N/A'}</dd>
+              <dd class="mt-1 text-sm text-gray-900">${signer.digestAlgorithmName || signer.digestAlgorithm || 'N/A'}</dd>
             </div>
             <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">Signature Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900">${signer.signatureAlgorithmName || signer.signatureAlgorithmOid || 'N/A'}</dd>
+              <dt class="text-xs font-medium text-gray-500 uppercase">Encryption Algorithm</dt>
+              <dd class="mt-1 text-sm text-gray-900">${signer.encryptionAlgorithmName || signer.encryptionAlgorithm || 'N/A'}</dd>
             </div>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <dt class="text-xs font-medium text-gray-500 uppercase">Digital Signature</dt>
+            <details class="mt-2">
+              <summary class="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
+                Show signature (click to expand)
+              </summary>
+              <code class="mt-2 block break-all rounded bg-gray-100 p-2 font-mono text-xs text-gray-700">${signer.signature || 'N/A'}</code>
+            </details>
           </div>
         </div>
       </div>

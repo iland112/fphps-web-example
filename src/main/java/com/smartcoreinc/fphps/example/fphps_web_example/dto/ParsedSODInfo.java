@@ -104,19 +104,53 @@ public class ParsedSODInfo implements Serializable {
 
         try {
             var signerInfo = parsedSOD.signerInformation();
+            String digestOid = signerInfo.getDigestAlgOID();
+            String encryptionOid = signerInfo.getEncryptionAlgOID();
 
             return SignerInfo.builder()
-                    .digestAlgorithm(signerInfo.getDigestAlgOID())
-                    .encryptionAlgorithm(signerInfo.getEncryptionAlgOID())
+                    .digestAlgorithm(digestOid)
+                    .digestAlgorithmName(getAlgorithmName(digestOid))
+                    .encryptionAlgorithm(encryptionOid)
+                    .encryptionAlgorithmName(getSignatureAlgorithmName(encryptionOid))
                     .signature(bytesToHex(signerInfo.getSignature()))
                     .build();
         } catch (Exception e) {
             return SignerInfo.builder()
                     .digestAlgorithm("N/A")
+                    .digestAlgorithmName("N/A")
                     .encryptionAlgorithm("N/A")
+                    .encryptionAlgorithmName("N/A")
                     .signature("Error extracting signature")
                     .build();
         }
+    }
+
+    /**
+     * 서명/암호화 알고리즘 OID로부터 알고리즘 이름 추출
+     */
+    private static String getSignatureAlgorithmName(String oid) {
+        if (oid == null) return "Unknown";
+
+        return switch (oid) {
+            // RSA
+            case "1.2.840.113549.1.1.1" -> "RSA";
+            case "1.2.840.113549.1.1.5" -> "SHA1withRSA";
+            case "1.2.840.113549.1.1.11" -> "SHA256withRSA";
+            case "1.2.840.113549.1.1.12" -> "SHA384withRSA";
+            case "1.2.840.113549.1.1.13" -> "SHA512withRSA";
+            case "1.2.840.113549.1.1.10" -> "RSASSA-PSS";
+            // ECDSA
+            case "1.2.840.10045.2.1" -> "EC";
+            case "1.2.840.10045.4.1" -> "SHA1withECDSA";
+            case "1.2.840.10045.4.3.2" -> "SHA256withECDSA";
+            case "1.2.840.10045.4.3.3" -> "SHA384withECDSA";
+            case "1.2.840.10045.4.3.4" -> "SHA512withECDSA";
+            // DSA
+            case "1.2.840.10040.4.1" -> "DSA";
+            case "1.2.840.10040.4.3" -> "SHA1withDSA";
+            case "2.16.840.1.101.3.4.3.2" -> "SHA256withDSA";
+            default -> "Unknown (" + oid + ")";
+        };
     }
 
     /**
@@ -152,8 +186,10 @@ public class ParsedSODInfo implements Serializable {
     @Builder
     @ToString
     public static class SignerInfo implements Serializable {
-        private String digestAlgorithm;
-        private String encryptionAlgorithm;
+        private String digestAlgorithm;          // OID
+        private String digestAlgorithmName;      // 알고리즘 이름
+        private String encryptionAlgorithm;      // OID
+        private String encryptionAlgorithmName;  // 알고리즘 이름
         private String signature;
     }
 }
