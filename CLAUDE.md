@@ -424,6 +424,69 @@ cd ../../..
 
 ## 작업 이력
 
+### 2025-12-26: 미니 사이드바 서브메뉴 아이콘 추가 및 CRL 상태 상세 표시 개선
+
+**구현 내용**:
+- 미니 사이드바 서브메뉴에 Hero 아이콘 추가
+- PA 검증 결과의 CRL 상태 상세 표시 기능 구현
+- 팝업 방식에서 아코디언 슬라이드 다운 방식으로 변경
+
+**주요 변경사항**:
+
+1. **미니 사이드바 서브메뉴 개선** (`sidebar.html`, `default.html`):
+   - 서브메뉴 아이템에 Hero 아이콘 추가:
+     - **Manual Read**: Hand Raised 아이콘 (손 아이콘)
+     - **Automatic Read**: Play 아이콘 (재생 아이콘)
+   - E-Passport, ID Card, Barcode 모든 서브메뉴에 동일하게 적용
+   - `title` 속성 추가로 미니 모드에서 마우스 오버 시 툴팁 표시
+   - 팝업 CSS 제거하고 아코디언 슬라이드 다운 방식으로 변경
+   - `.submenu-icon`, `.submenu-text` 클래스로 미니/확장 모드 구분
+
+2. **CRL 상태 상세 표시** (`passport-tabs.js`, `CertificateChainValidation.java`):
+   - `CertificateChainValidation` DTO에 CRL 상세 필드 추가:
+     - `crlStatus`: 상태 코드 (CRL_VALID, CRL_UNAVAILABLE 등)
+     - `crlStatusDescription`: 상태 설명
+     - `crlStatusDetailedDescription`: 상세 설명
+     - `crlStatusSeverity`: 심각도 (SUCCESS, WARNING, ERROR, INFO)
+     - `crlMessage`: 기술적 메시지
+   - `renderCrlStatusDetail()` 함수 추가 (`passport-tabs.js`):
+     - Severity에 따른 배지 스타일 (SUCCESS=녹색, ERROR=빨강, WARNING=노랑, INFO=파랑)
+     - 상태 설명 및 상세 설명 표시
+     - "Technical Details" 접기/펼치기 기능
+     - REVOKED 상태 배지 표시
+   - Certificate Chain Validation 카드 레이아웃 개선:
+     - Valid Period와 CRL Status 별도 행으로 분리
+     - CRL 상태 정보 전체 너비 사용
+
+**CRL 상태 스타일 매핑**:
+
+| Status | Severity | Badge Color | Icon |
+|--------|----------|-------------|------|
+| CRL_VALID | SUCCESS | 녹색 | ✓ |
+| CRL_REVOKED | ERROR | 빨강 | ✗ |
+| CRL_UNAVAILABLE | WARNING | 노랑 | ⚠ |
+| CRL_NOT_FOUND | WARNING | 노랑 | ⚠ |
+| CRL_EXPIRED | WARNING | 노랑 | ⚠ |
+| CRL_PARSE_ERROR | ERROR | 빨강 | ✗ |
+| COUNTRY_NOT_SUPPORTED | INFO | 파랑 | ⓘ |
+| CRL_CHECK_SKIPPED | INFO | 파랑 | ⓘ |
+
+**수정된 파일**:
+- `src/main/resources/templates/fragments/sidebar.html` - 서브메뉴 아이콘 추가
+- `src/main/resources/templates/layouts/default.html` - 미니 사이드바 CSS 수정
+- `src/main/resources/static/js/passport-tabs.js` - CRL 상태 렌더링 함수 추가
+- `src/main/resources/static/js/pa-verification.js` - CRL 상태 함수 (기존)
+- `src/main/java/.../dto/pa/CertificateChainValidation.java` - CRL 필드 추가
+
+**테스트 결과**:
+- ✅ 미니 사이드바에서 서브메뉴 아이콘만 표시
+- ✅ 확장 사이드바에서 아이콘 + 텍스트 표시
+- ✅ CRL 상태 상세 정보 표시 (라벨, 설명, 기술적 상세)
+- ✅ Severity에 따른 배지 색상 정상 적용
+- ✅ Technical Details 접기/펼치기 동작
+
+---
+
 ### 2025-12-25: Preline UI 레이아웃 개선 및 다크 모드 구현
 
 **구현 내용**:
@@ -861,6 +924,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2025-12-25
+**최종 업데이트**: 2025-12-26
 **분석 도구**: Claude Code (Anthropic)
-**현재 브랜치**: `feature/pa-integration`
+**현재 브랜치**: `main`
