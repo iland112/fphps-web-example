@@ -134,11 +134,11 @@
           <div class="grid grid-cols-2 gap-3">
             <div class="bg-gray-50 rounded-lg p-3">
               <dt class="text-xs font-medium text-gray-500 uppercase">Digest Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{digestAlgorithm}">2.16.840.1.101.3.4.2.1</dd>
+              <dd class="mt-1 text-sm text-gray-900" th:text="*{digestAlgorithmName} ?: *{digestAlgorithm}">SHA-256</dd>
             </div>
             <div class="bg-gray-50 rounded-lg p-3">
               <dt class="text-xs font-medium text-gray-500 uppercase">Encryption Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{encryptionAlgorithm}">1.2.840.113549.1.1.1</dd>
+              <dd class="mt-1 text-sm text-gray-900" th:text="*{encryptionAlgorithmName} ?: *{encryptionAlgorithm}">RSA</dd>
             </div>
           </div>
           <div class="bg-gray-50 rounded-lg p-3">
