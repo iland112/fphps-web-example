@@ -109,12 +109,89 @@ function getStatusBadge(status) {
 }
 
 /**
+ * CRL 상태 코드를 사람이 읽을 수 있는 설명으로 변환
+ */
+function getCrlStatusInfo(crlStatus, crlMessage) {
+  const statusMap = {
+    'CRL_VALID': {
+      label: 'Valid',
+      description: 'Certificate is not on the revocation list',
+      badgeClass: 'bg-green-100 text-green-800 ring-green-600/20',
+      icon: '✓'
+    },
+    'CRL_REVOKED': {
+      label: 'Revoked',
+      description: 'Certificate has been revoked by the issuing authority',
+      badgeClass: 'bg-red-100 text-red-800 ring-red-600/20',
+      icon: '✗'
+    },
+    'CRL_UNAVAILABLE': {
+      label: 'CRL Unavailable',
+      description: 'CRL data is not available for this issuing country',
+      badgeClass: 'bg-yellow-100 text-yellow-800 ring-yellow-600/20',
+      icon: '⚠'
+    },
+    'CRL_NOT_FOUND': {
+      label: 'CRL Not Found',
+      description: 'No CRL entry found for this DSC certificate',
+      badgeClass: 'bg-yellow-100 text-yellow-800 ring-yellow-600/20',
+      icon: '⚠'
+    },
+    'CRL_EXPIRED': {
+      label: 'CRL Expired',
+      description: 'The CRL data has expired and needs to be updated',
+      badgeClass: 'bg-orange-100 text-orange-800 ring-orange-600/20',
+      icon: '⚠'
+    },
+    'CRL_PARSE_ERROR': {
+      label: 'CRL Parse Error',
+      description: 'Failed to parse the CRL data',
+      badgeClass: 'bg-red-100 text-red-800 ring-red-600/20',
+      icon: '✗'
+    },
+    'CRL_SIGNATURE_INVALID': {
+      label: 'CRL Signature Invalid',
+      description: 'The CRL signature verification failed',
+      badgeClass: 'bg-red-100 text-red-800 ring-red-600/20',
+      icon: '✗'
+    },
+    'COUNTRY_NOT_SUPPORTED': {
+      label: 'Country Not Supported',
+      description: 'CRL verification is not available for this issuing country',
+      badgeClass: 'bg-gray-100 text-gray-800 ring-gray-600/20',
+      icon: 'ⓘ'
+    },
+    'CRL_CHECK_SKIPPED': {
+      label: 'Check Skipped',
+      description: 'CRL verification was skipped (not enabled or not required)',
+      badgeClass: 'bg-gray-100 text-gray-800 ring-gray-600/20',
+      icon: '−'
+    }
+  };
+
+  const info = statusMap[crlStatus] || {
+    label: crlStatus || 'Unknown',
+    description: crlMessage || 'Status information not available',
+    badgeClass: 'bg-gray-100 text-gray-800 ring-gray-600/20',
+    icon: '?'
+  };
+
+  // crlMessage가 있으면 description을 오버라이드
+  if (crlMessage && crlMessage.trim() !== '') {
+    info.description = crlMessage;
+  }
+
+  return info;
+}
+
+/**
  * 인증서 체인 검증 렌더링
  */
 function renderCertificateChain(cert) {
   if (!cert) return '';
   const icon = cert.valid ? '✓' : '✗';
   const colorClass = cert.valid ? 'text-green-600' : 'text-red-600';
+  const crlInfo = getCrlStatusInfo(cert.crlStatus, cert.crlMessage);
 
   return `
     <div class="mt-6 border-t border-gray-100 pt-4">
@@ -138,8 +215,16 @@ function renderCertificateChain(cert) {
         </div>
         <div class="px-4 py-2 sm:grid sm:grid-cols-3 sm:gap-4">
           <dt class="text-sm font-medium text-gray-500">CRL Status</dt>
-          <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-            ${cert.crlStatus || 'N/A'} ${cert.revoked ? '(REVOKED)' : ''}
+          <dd class="mt-1 sm:col-span-2 sm:mt-0">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${crlInfo.badgeClass}">
+                  ${crlInfo.icon} ${crlInfo.label}
+                </span>
+                ${cert.revoked ? '<span class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">REVOKED</span>' : ''}
+              </div>
+              <p class="text-sm text-gray-600">${crlInfo.description}</p>
+            </div>
           </dd>
         </div>
       </dl>
