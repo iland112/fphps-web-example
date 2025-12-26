@@ -73,23 +73,31 @@
             justify-content: center;
         }
 
+        /* Mini Sidebar - Allow submenu popup to overflow */
+        .sidebar-mini #hs-application-sidebar {
+            overflow: visible !important;
+        }
+        .sidebar-mini #hs-application-sidebar > div {
+            overflow: visible !important;
+        }
+        .sidebar-mini #hs-application-sidebar .overflow-y-auto {
+            overflow: visible !important;
+        }
+
         /* Mini Sidebar - Submenu Popup on Hover */
         .sidebar-mini .sidebar-accordion {
-            position: relative;
+            position: static;
         }
         .sidebar-mini .sidebar-accordion .sidebar-submenu {
             display: none !important;
-            position: absolute;
-            left: 100%;
-            top: 0;
+            position: fixed;
             min-width: 180px;
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             padding: 0.5rem;
-            z-index: 100;
-            margin-left: 0.25rem;
+            z-index: 9999;
         }
         .sidebar-mini .sidebar-accordion:hover .sidebar-submenu {
             display: block !important;
@@ -216,6 +224,22 @@
                     localStorage.setItem('sidebarMini', isMini);
                 });
             }
+
+            // Mini Sidebar - Position submenu popup on hover
+            document.querySelectorAll('.sidebar-accordion').forEach(accordion => {
+                const toggle = accordion.querySelector('.hs-accordion-toggle');
+                const submenu = accordion.querySelector('.sidebar-submenu');
+
+                if (toggle && submenu) {
+                    accordion.addEventListener('mouseenter', () => {
+                        if (document.body.classList.contains('sidebar-mini')) {
+                            const rect = toggle.getBoundingClientRect();
+                            submenu.style.left = '4.5rem';
+                            submenu.style.top = rect.top + 'px';
+                        }
+                    });
+                }
+            });
 
             // Dynamic Breadcrumb Update Functionality
             const breadcrumbSeparator = document.getElementById('breadcrumb-separator');
