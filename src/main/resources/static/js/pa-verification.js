@@ -238,6 +238,7 @@ function getDefaultDescription(status) {
  */
 function renderCertificateChain(cert) {
   if (!cert) return '';
+
   const icon = cert.valid ? '✓' : '✗';
   const colorClass = cert.valid ? 'text-green-600' : 'text-red-600';
 
