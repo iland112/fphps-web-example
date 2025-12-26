@@ -126,6 +126,9 @@ function renderCertificateChain(cert) {
     ? '<svg class="size-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>'
     : '<svg class="size-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>';
 
+  // CRL 상태 정보 생성
+  const crlStatusHtml = renderCrlStatusDetail(cert);
+
   return `
     <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
       <div class="flex items-center gap-2 px-4 py-3 ${bgColor}">
@@ -142,23 +145,92 @@ function renderCertificateChain(cert) {
             <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">CSCA Subject</dt>
             <dd class="mt-1 text-sm text-gray-900 font-mono break-all">${cert.cscaSubject || 'N/A'}</dd>
           </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Valid Period</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                ${cert.notBefore ? new Date(cert.notBefore).toLocaleDateString() : 'N/A'} -
-                ${cert.notAfter ? new Date(cert.notAfter).toLocaleDateString() : 'N/A'}
-              </dd>
-            </div>
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">CRL Status</dt>
-              <dd class="mt-1 text-sm text-gray-900">
-                ${cert.crlStatus || 'N/A'} ${cert.revoked ? '<span class="text-red-600 font-semibold">(REVOKED)</span>' : ''}
-              </dd>
-            </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Valid Period</dt>
+            <dd class="mt-1 text-sm text-gray-900">
+              ${cert.notBefore ? new Date(cert.notBefore).toLocaleDateString() : 'N/A'} -
+              ${cert.notAfter ? new Date(cert.notAfter).toLocaleDateString() : 'N/A'}
+            </dd>
+          </div>
+          <div class="bg-gray-50 rounded-lg p-3">
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">CRL Status</dt>
+            <dd class="mt-1">
+              ${crlStatusHtml}
+            </dd>
           </div>
         </dl>
       </div>
+    </div>
+  `;
+}
+
+/**
+ * CRL 상태 상세 정보 렌더링 (passport-tabs.js용)
+ */
+function renderCrlStatusDetail(cert) {
+  if (!cert) return 'N/A';
+
+  // Severity에 따른 스타일 매핑
+  const severityStyles = {
+    'SUCCESS': { badgeClass: 'bg-green-100 text-green-800 ring-green-600/20', icon: '✓' },
+    'ERROR': { badgeClass: 'bg-red-100 text-red-800 ring-red-600/20', icon: '✗' },
+    'WARNING': { badgeClass: 'bg-yellow-100 text-yellow-800 ring-yellow-600/20', icon: '⚠' },
+    'INFO': { badgeClass: 'bg-blue-100 text-blue-800 ring-blue-600/20', icon: 'ⓘ' }
+  };
+
+  // status로 severity 추론
+  const statusStyleMap = {
+    'CRL_VALID': 'SUCCESS',
+    'CRL_REVOKED': 'ERROR',
+    'CRL_UNAVAILABLE': 'WARNING',
+    'CRL_NOT_FOUND': 'WARNING',
+    'CRL_EXPIRED': 'WARNING',
+    'CRL_PARSE_ERROR': 'ERROR',
+    'CRL_SIGNATURE_INVALID': 'ERROR',
+    'COUNTRY_NOT_SUPPORTED': 'INFO',
+    'CRL_CHECK_SKIPPED': 'INFO'
+  };
+
+  const severity = cert.crlStatusSeverity || statusStyleMap[cert.crlStatus] || 'INFO';
+  const style = severityStyles[severity] || severityStyles['INFO'];
+
+  // 라벨 (API description 사용, 없으면 status에서 생성)
+  const label = cert.crlStatusDescription || (cert.crlStatus ? cert.crlStatus.replace(/_/g, ' ') : 'Unknown');
+
+  // 설명 (상세 설명 > crlMessage > 기본 메시지)
+  const description = cert.crlStatusDetailedDescription || cert.crlMessage || '';
+
+  // 기술적 상세 정보 (crlMessage가 있고 description과 다른 경우)
+  const hasDetailedInfo = cert.crlMessage && cert.crlMessage !== description;
+
+  let detailsHtml = '';
+  if (hasDetailedInfo) {
+    detailsHtml = `
+      <details class="mt-2">
+        <summary class="cursor-pointer text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1">
+          <svg class="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Technical Details
+        </summary>
+        <div class="mt-2 p-2 bg-gray-100 rounded text-xs font-mono text-gray-700 break-all">
+          ${cert.crlMessage}
+        </div>
+      </details>
+    `;
+  }
+
+  return `
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${style.badgeClass}">
+          ${style.icon} ${label}
+        </span>
+        <span class="text-xs text-gray-400">(${severity})</span>
+        ${cert.revoked ? '<span class="inline-flex items-center rounded-md bg-red-100 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">REVOKED</span>' : ''}
+      </div>
+      ${description ? `<p class="text-sm text-gray-600">${description}</p>` : ''}
+      ${detailsHtml}
     </div>
   `;
 }
