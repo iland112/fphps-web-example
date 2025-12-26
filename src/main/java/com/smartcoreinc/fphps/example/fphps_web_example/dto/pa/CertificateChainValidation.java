@@ -4,6 +4,13 @@ import java.time.LocalDateTime;
 
 /**
  * 인증서 체인 검증 결과
+ *
+ * CRL 검증 API 응답 필드:
+ * - crlStatus: CRL 상태 코드 (예: CRL_VALID, CRL_UNAVAILABLE, CRL_REVOKED)
+ * - crlStatusDescription: 상태 설명 (예: "CRL not available in LDAP")
+ * - crlStatusDetailedDescription: 상세 설명 (예: "LDAP 서버에서 CRL을 조회할 수 없습니다...")
+ * - crlStatusSeverity: 심각도 (SUCCESS, WARNING, ERROR, INFO)
+ * - crlMessage: 기술적 메시지 (예: "LDAP에서 해당 CSCA의 CRL을 찾을 수 없음...")
  */
 public record CertificateChainValidation(
     boolean valid,
@@ -16,6 +23,9 @@ public record CertificateChainValidation(
     boolean crlChecked,
     boolean revoked,
     String crlStatus,
+    String crlStatusDescription,
+    String crlStatusDetailedDescription,
+    String crlStatusSeverity,
     String crlMessage,
     String validationErrors
 ) {}
