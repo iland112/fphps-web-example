@@ -51,7 +51,7 @@ dependencies {
     implementation 'org.bouncycastle:bcprov-jdk18on:1.78'
     implementation 'org.bouncycastle:bcpkix-jdk18on:1.78'
 
-	implementation files("D:\\Workspaces\\java\\smartcore\\FPHPS\\lib\\build\\local-repository\\com\\smartcoreinc\\fphps\\1.0.0\\fphps-1.0.0.jar")
+	implementation files("libs/fphps-1.0.0.jar")
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
