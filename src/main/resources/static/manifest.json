@@ -75,21 +75,5 @@
       "icons": [{ "src": "/image/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],
-  "categories": ["business", "utilities"],
-  "screenshots": [
-    {
-      "src": "/image/screenshots/desktop-home.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Home Screen"
-    },
-    {
-      "src": "/image/screenshots/desktop-passport.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "E-Passport Reading"
-    }
-  ]
+  "categories": ["business", "utilities"]
 }
