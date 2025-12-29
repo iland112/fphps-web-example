@@ -38,7 +38,7 @@ out/
 ### Front end node_modules
 src/main/frontend/node_modules
 
-docs/
+docs/analysis/
 log/
 data/
 .serena/
