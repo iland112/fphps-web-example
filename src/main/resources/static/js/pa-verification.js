@@ -140,21 +140,74 @@ async function verifyPassportPAV2(btnId, containerId, emptyStateId) {
 
 /**
  * 에러 카드 렌더링
+ * @param {string} title - 에러 제목
+ * @param {string} message - 에러 메시지
+ * @param {string} type - 'error' | 'warning' | 'info' (기본: 'error')
  */
-function renderErrorCard(title, message) {
+function renderErrorCard(title, message, type = 'error') {
+  // "No passport data available" 메시지는 안내 메시지로 처리
+  const isNoDataMessage = message && message.toLowerCase().includes('no passport data available');
+  const effectiveType = isNoDataMessage ? 'info' : type;
+
+  const styles = {
+    error: {
+      container: 'bg-red-50 border-red-200',
+      iconBg: 'bg-red-100',
+      iconColor: 'text-red-600',
+      titleColor: 'text-red-800',
+      textColor: 'text-red-700',
+      icon: '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>'
+    },
+    warning: {
+      container: 'bg-amber-50 border-amber-200',
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600',
+      titleColor: 'text-amber-800',
+      textColor: 'text-amber-700',
+      icon: '<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>'
+    },
+    info: {
+      container: 'bg-blue-50 border-blue-200',
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+      titleColor: 'text-blue-800',
+      textColor: 'text-blue-700',
+      icon: '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>'
+    }
+  };
+
+  const style = styles[effectiveType] || styles.error;
+
+  // 안내 메시지인 경우 더 자세한 설명 추가
+  let displayMessage = message;
+  let helpText = '';
+
+  if (isNoDataMessage) {
+    displayMessage = 'Please read a passport first before running PA verification.';
+    helpText = `
+      <div class="mt-4 flex items-center gap-2 text-sm ${style.textColor}">
+        <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>Use the <strong>Manual Read</strong> or <strong>Auto Read</strong> function to scan a passport.</span>
+      </div>
+    `;
+  }
+
   return `
-    <div class="rounded-xl bg-red-50 border border-red-200 p-5">
-      <div class="flex items-start gap-3">
+    <div class="rounded-xl ${style.container} border p-6">
+      <div class="flex items-start gap-4">
         <div class="flex-shrink-0">
-          <div class="flex size-10 items-center justify-center rounded-lg bg-red-100">
-            <svg class="size-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
+          <div class="flex size-12 items-center justify-center rounded-xl ${style.iconBg}">
+            <svg class="size-6 ${style.iconColor}" viewBox="0 0 20 20" fill="currentColor">
+              ${style.icon}
             </svg>
           </div>
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-semibold text-red-800">${title}</h3>
-          <p class="mt-1 text-sm text-red-700">${message}</p>
+          <h3 class="text-base font-semibold ${style.titleColor}">${isNoDataMessage ? 'Passport Data Required' : title}</h3>
+          <p class="mt-2 text-sm ${style.textColor}">${displayMessage}</p>
+          ${helpText}
         </div>
       </div>
     </div>
