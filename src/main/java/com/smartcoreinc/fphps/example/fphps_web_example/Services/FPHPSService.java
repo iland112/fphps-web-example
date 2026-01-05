@@ -38,6 +38,9 @@ public class FPHPSService {
         this.strategies = strategies;
         this.devicePropertiesService = devicePropertiesService;
         this.deviceManager = FPHPSDeviceManager.getInstance();
+
+        // Auto Read 완료 시 결과를 lastReadResponse에 저장하는 콜백 등록
+        this.fastPassWebSocketHandler.setOnReadCompleteCallback(this::saveAutoReadResponse);
         try {
             initDevices();
             // DB에 저장된 설정이 있는지 확인
@@ -136,6 +139,16 @@ public class FPHPSService {
         // 읽기 결과 저장 (Manual/Auto 모두)
         if (response != null) {
             this.lastReadResponse = response;
+            // 디버그: 저장된 데이터 확인
+            if (response.getMrzInfo() != null) {
+                log.info("lastReadResponse saved: passportNumber={}, SOD size={}",
+                    response.getMrzInfo().getPassportNumber(),
+                    response.getSodDataBytes() != null ? response.getSodDataBytes().length : 0);
+            } else {
+                log.warn("lastReadResponse saved but MrzInfo is null");
+            }
+        } else {
+            log.warn("read() returned null response, lastReadResponse not updated");
         }
 
         return response;
@@ -165,6 +178,26 @@ public class FPHPSService {
      */
     public DocumentReadResponse getLastReadResponse() {
         return lastReadResponse;
+    }
+
+    /**
+     * Auto Read 완료 시 호출되는 콜백 메서드
+     * WebSocketHandler에서 FPHPS_EV_EPASS_READ_DONE 이벤트 수신 시 호출됨
+     * @param response Auto Read 결과
+     */
+    private void saveAutoReadResponse(DocumentReadResponse response) {
+        if (response != null) {
+            this.lastReadResponse = response;
+            if (response.getMrzInfo() != null) {
+                log.info("Auto Read response saved via callback: passportNumber={}, SOD size={}",
+                    response.getMrzInfo().getPassportNumber(),
+                    response.getSodDataBytes() != null ? response.getSodDataBytes().length : 0);
+            } else {
+                log.info("Auto Read response saved via callback (MrzInfo is null)");
+            }
+        } else {
+            log.warn("saveAutoReadResponse called with null response");
+        }
     }
 
     /**
