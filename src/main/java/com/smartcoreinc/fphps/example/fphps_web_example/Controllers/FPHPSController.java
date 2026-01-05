@@ -14,6 +14,7 @@ import com.smartcoreinc.fphps.example.fphps_web_example.forms.ScanForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.SettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.ParsedSODInfo;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResponse;
+import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResultWithData;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -157,13 +158,13 @@ public class FPHPSController {
     }
 
     /**
-     * Manual Read의 PA 검증 수행
+     * PA 검증 수행 (V1 - 기존 API)
      * 마지막 읽기 결과를 사용하여 PA API 호출
      */
     @PostMapping("/passport/verify-pa")
     @ResponseBody
     public PaVerificationResponse verifyPassportPA() {
-        log.debug("PA verification requested for manual read");
+        log.debug("PA verification requested (V1)");
 
         DocumentReadResponse lastResponse = fphpsService.getLastReadResponse();
         if (lastResponse == null) {
@@ -172,6 +173,33 @@ public class FPHPSController {
         }
 
         return paService.verifyFromDocumentResponse(lastResponse);
+    }
+
+    /**
+     * PA 검증 수행 (V2 - 새로운 API Gateway)
+     * 마지막 읽기 결과를 사용하여 API Gateway를 통해 PA API 호출
+     * MRZ 데이터와 Face 이미지도 함께 반환
+     */
+    @PostMapping("/passport/verify-pa-v2")
+    @ResponseBody
+    public PaVerificationResultWithData verifyPassportPAV2() {
+        log.debug("PA verification requested (V2 - API Gateway)");
+
+        DocumentReadResponse lastResponse = fphpsService.getLastReadResponse();
+        if (lastResponse == null) {
+            throw new PassiveAuthenticationService.PaVerificationException(
+                "No passport data available. Please read passport first.");
+        }
+
+        // 디버그: 사용되는 데이터 확인
+        if (lastResponse.getMrzInfo() != null) {
+            log.info("PA V2 using lastReadResponse: passportNumber={}, SOD size={}",
+                lastResponse.getMrzInfo().getPassportNumber(),
+                lastResponse.getSodDataBytes() != null ? lastResponse.getSodDataBytes().length : 0);
+        }
+
+        PaVerificationResponse paResult = paService.verifyFromDocumentResponseV2(lastResponse);
+        return PaVerificationResultWithData.from(paResult, lastResponse);
     }
 
     /**

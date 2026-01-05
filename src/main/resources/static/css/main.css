@@ -2329,6 +2329,9 @@
   .w-10 {
     width: calc(var(--spacing) * 10);
   }
+  .w-12 {
+    width: calc(var(--spacing) * 12);
+  }
   .w-14 {
     width: calc(var(--spacing) * 14);
   }
@@ -2837,6 +2840,9 @@
   }
   .bg-indigo-100 {
     background-color: var(--color-indigo-100);
+  }
+  .bg-indigo-600 {
+    background-color: var(--color-indigo-600);
   }
   .bg-orange-100 {
     background-color: var(--color-orange-100);
@@ -3929,6 +3935,13 @@
       }
     }
   }
+  .hover\:bg-indigo-700 {
+    &:hover {
+      @media (hover: hover) {
+        background-color: var(--color-indigo-700);
+      }
+    }
+  }
   .hover\:bg-red-50 {
     &:hover {
       @media (hover: hover) {
@@ -4132,6 +4145,11 @@
   .focus\:ring-gray-400 {
     &:focus {
       --tw-ring-color: var(--color-gray-400);
+    }
+  }
+  .focus\:ring-indigo-600 {
+    &:focus {
+      --tw-ring-color: var(--color-indigo-600);
     }
   }
   .focus\:ring-purple-500 {

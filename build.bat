@@ -1,32 +1,44 @@
 @echo off
 chcp 65001 > nul
-setlocal
+setlocal EnableDelayedExpansion
 
-:: FastPass Web Application Build Script
-:: =====================================
+REM FastPass Web Application Build Script
 
 echo.
-echo  ╔═══════════════════════════════════════════════════════════╗
-echo  ║       FastPass E-Passport Reader - Build Script           ║
-echo  ╚═══════════════════════════════════════════════════════════╝
+echo ===============================================================
+echo        FastPass E-Passport Reader - Build Script
+echo ===============================================================
 echo.
 
-:: Parse arguments
+REM Default options
 set BUILD_TYPE=bootJar
 set SKIP_TEST=-x test
 set BUILD_CSS=false
 
+REM Parse arguments
 :parse_args
-if "%~1"=="" goto :end_parse
-if /i "%~1"=="--test" set SKIP_TEST=
-if /i "%~1"=="--css" set BUILD_CSS=true
-if /i "%~1"=="--clean" set BUILD_TYPE=clean bootJar
-if /i "%~1"=="--help" goto :show_help
+if "%~1"=="" goto end_parse
+if /i "%~1"=="--test" (
+    set SKIP_TEST=
+    shift
+    goto parse_args
+)
+if /i "%~1"=="--css" (
+    set BUILD_CSS=true
+    shift
+    goto parse_args
+)
+if /i "%~1"=="--clean" (
+    set BUILD_TYPE=clean bootJar
+    shift
+    goto parse_args
+)
+if /i "%~1"=="--help" goto show_help
 shift
-goto :parse_args
+goto parse_args
 :end_parse
 
-:: Build CSS if requested
+REM Build CSS if requested
 if "%BUILD_CSS%"=="true" (
     echo [STEP 1/2] Building Tailwind CSS...
     cd src\main\frontend
@@ -40,10 +52,10 @@ if "%BUILD_CSS%"=="true" (
     echo.
 )
 
-:: Build Java application
+REM Build Java application
 echo [STEP] Building Java application...
 echo [INFO] Build type: %BUILD_TYPE%
-if defined SKIP_TEST (
+if not "%SKIP_TEST%"=="" (
     echo [INFO] Skipping tests
 )
 echo.
@@ -58,9 +70,9 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo ══════════════════════════════════════════════════════════════
+echo ===============================================================
 echo   BUILD SUCCESSFUL
-echo ══════════════════════════════════════════════════════════════
+echo ===============================================================
 echo.
 echo   JAR file location: build\libs\
 dir /b build\libs\*.jar 2>nul

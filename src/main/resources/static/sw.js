@@ -3,9 +3,9 @@
  * Handles caching strategies for offline support
  */
 
-const CACHE_NAME = 'fastpass-pwa-v1';
-const STATIC_CACHE = 'fastpass-static-v1';
-const DYNAMIC_CACHE = 'fastpass-dynamic-v1';
+const CACHE_NAME = 'fastpass-pwa-v2';
+const STATIC_CACHE = 'fastpass-static-v2';
+const DYNAMIC_CACHE = 'fastpass-dynamic-v2';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
@@ -29,6 +29,9 @@ const NETWORK_FIRST_ROUTES = [
   '/fphps/barcode/',
   '/fphps/device',
   '/fphps/scan-page',
+  '/passport/',  // PA verification API endpoints
+  '/idcard/',
+  '/barcode/',
   '/fastpass' // WebSocket endpoint
 ];
 
@@ -203,10 +206,15 @@ async function staleWhileRevalidate(request) {
   const cachedResponse = await caches.match(request);
 
   const fetchPromise = fetch(request)
-    .then((networkResponse) => {
+    .then(async (networkResponse) => {
       if (networkResponse.ok) {
-        const cache = caches.open(DYNAMIC_CACHE);
-        cache.then(c => c.put(request, networkResponse.clone()));
+        try {
+          const responseToCache = networkResponse.clone();
+          const cache = await caches.open(DYNAMIC_CACHE);
+          await cache.put(request, responseToCache);
+        } catch (err) {
+          console.log('[SW] Failed to cache response:', err);
+        }
       }
       return networkResponse;
     })
