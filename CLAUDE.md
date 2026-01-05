@@ -424,6 +424,56 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-01-05: Auto Read PA V2 검증 지원 및 UI 개선
+
+**구현 내용**:
+- Automatic Read 후 PA V2 검증이 올바르게 동작하도록 콜백 메커니즘 구현
+- MRZ Lines HTML 이스케이프 처리로 `<` 문자 표시 문제 해결
+- E-MRTD Data 탭 MRZ Data 카드 레이아웃 개선
+- Passive Authentication 탭 Data Group Hash Validation 테이블 개선
+
+**주요 변경사항**:
+
+1. **Auto Read 콜백 메커니즘** (`FastPassWebSocketHandler.java`, `PassportReadStrategy.java`, `FPHPSService.java`):
+   - **문제**: Auto Read는 `read()` 메서드가 null을 반환하여 `lastReadResponse`가 저장되지 않음
+   - **해결**: WebSocket 이벤트 `FPHPS_EV_EPASS_READ_DONE` 수신 시 `getDocumentData()` 호출하여 결과 저장
+   - `FastPassWebSocketHandler`에 `onReadCompleteCallback`과 `currentReader` 필드 추가
+   - `PassportReadStrategy`에서 Auto Read 시 `currentReader` 설정
+   - `FPHPSService` 생성자에서 콜백 등록하여 `lastReadResponse` 자동 저장
+
+2. **MRZ Lines HTML 이스케이프** (`pa-verification.js`):
+   - **문제**: MRZ Line에 포함된 `<` 문자가 HTML 태그로 해석되어 텍스트 잘림 발생
+   - **해결**: `escapeHtml()` 함수 추가하여 특수문자 이스케이프 처리
+   - `renderMrzContent()` 함수에서 `escapeHtml(mrz.mrzLine1)` 적용
+
+3. **E-MRTD Data 탭 MRZ Data 카드 레이아웃** (`passport_cards.html`):
+   - 기존 가로 flex 레이아웃에서 세로 grid 레이아웃으로 변경
+   - Row 1: MRZ Image
+   - Row 2: MRZ Lines (Line 1, Line 2 라벨 포함)
+   - `grid-rows-2` 제거하여 각 행이 콘텐츠 높이에 맞게 자동 조절
+
+4. **PA 탭 Data Group Hash Validation 테이블** (`pa-verification.js`):
+   - 테이블 컨테이너에 `p-4` 패딩 추가
+   - `min-w-full`을 `w-full`로 변경하여 전체 너비 사용
+   - 테이블에 `border border-gray-200 rounded-lg` 스타일 추가
+   - 해시 값 축약 표시(`substring(0, 16)...`) 제거하여 전체 해시 표시
+   - `break-all` 클래스로 긴 해시 값 줄바꿈 처리
+
+**수정된 파일**:
+- `src/main/java/.../config/handler/FastPassWebSocketHandler.java` - 콜백 메커니즘 추가
+- `src/main/java/.../strategies/PassportReadStrategy.java` - currentReader 설정
+- `src/main/java/.../Services/FPHPSService.java` - 콜백 등록 및 saveAutoReadResponse
+- `src/main/resources/static/js/pa-verification.js` - escapeHtml, 테이블 스타일 개선
+- `src/main/resources/templates/fragments/passport_cards.html` - MRZ Data 카드 레이아웃
+
+**테스트 결과**:
+- ✅ Manual Read 후 PA V2 검증 정상 동작
+- ✅ Automatic Read 후 PA V2 검증 정상 동작 (lastReadResponse 저장됨)
+- ✅ MRZ Lines에 `<` 문자 포함 시 정상 표시
+- ✅ Data Group Hash Validation 테이블 전체 너비 사용 및 해시 전체 표시
+
+---
+
 ### 2025-12-26: 미니 사이드바 서브메뉴 아이콘 추가 및 CRL 상태 상세 표시 개선
 
 **구현 내용**:
@@ -924,6 +974,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2025-12-26
+**최종 업데이트**: 2026-01-05
 **분석 도구**: Claude Code (Anthropic)
 **현재 브랜치**: `main`

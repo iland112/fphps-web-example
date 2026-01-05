@@ -129,8 +129,10 @@
         </div>
         <h4 class="text-sm font-semibold text-gray-900">MRZ Data</h4>
       </div>
-      <div class="flex flex-col lg:flex-row gap-4">
-        <div class="lg:w-96 border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-2">
+      <!-- 2행 그리드: Row 1 - MRZ Image, Row 2 - MRZ Lines -->
+      <div class="grid gap-4">
+        <!-- Row 1: MRZ Image -->
+        <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-2">
           <img
             class="aspect-auto h-auto w-full flex-none rounded-lg bg-white object-cover shadow-sm"
             th:id="${mrzPhotoId}"
@@ -138,16 +140,20 @@
             alt="mrz-photo"
           />
         </div>
-        <div class="flex-1 space-y-3">
-          <div class="bg-gray-50 rounded-xl p-3">
-            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Line 1</dt>
-            <dd th:id="${mrzLine1Id}" class="text-xs font-mono font-semibold text-gray-900 break-all bg-white rounded-lg p-2 border border-gray-200"
-                th:text="${mrzLines?.line1} ?: 'LINE 1'">LINE 1</dd>
-          </div>
-          <div class="bg-gray-50 rounded-xl p-3">
-            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Line 2</dt>
-            <dd th:id="${mrzLine2Id}" class="text-xs font-mono font-semibold text-gray-900 break-all bg-white rounded-lg p-2 border border-gray-200"
-                th:text="${mrzLines?.line2} ?: 'LINE 2'">LINE 2</dd>
+        <!-- Row 2: MRZ Lines -->
+        <div class="bg-gray-50 rounded-xl p-3">
+          <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">MRZ Lines</dt>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-medium text-gray-500 w-12 shrink-0">Line 1:</span>
+              <dd th:id="${mrzLine1Id}" class="text-xs font-mono font-semibold text-gray-900 bg-white rounded-lg px-2 py-1.5 border border-gray-200 flex-1 overflow-x-auto whitespace-nowrap"
+                  th:text="${mrzLines?.line1} ?: 'LINE 1'">LINE 1</dd>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-medium text-gray-500 w-12 shrink-0">Line 2:</span>
+              <dd th:id="${mrzLine2Id}" class="text-xs font-mono font-semibold text-gray-900 bg-white rounded-lg px-2 py-1.5 border border-gray-200 flex-1 overflow-x-auto whitespace-nowrap"
+                  th:text="${mrzLines?.line2} ?: 'LINE 2'">LINE 2</dd>
+            </div>
           </div>
         </div>
       </div>
