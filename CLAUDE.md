@@ -424,6 +424,49 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-01-06: PA 검증 에러 메시지 UI 개선 및 PWA 캐시 업데이트
+
+**구현 내용**:
+- Manual Read 페이지의 "No passport data available" 메시지를 사용자 친화적인 Info 카드로 개선
+- PA 검증 JavaScript의 에러 카드 렌더링에 다중 스타일(error, warning, info) 지원 추가
+- Service Worker 캐시 버전 업데이트로 브라우저 캐시 무효화
+
+**주요 변경사항**:
+
+1. **Thymeleaf 템플릿 Empty State 개선** (`epassport_manual_read.html`):
+   - 단순 텍스트 메시지를 스타일링된 Info 카드로 변경
+   - 파란색 배경(`bg-blue-50`)과 테두리(`border-blue-200`) 적용
+   - 정보 아이콘과 함께 명확한 안내 메시지 제공
+   - "Read Passport 버튼을 클릭하세요" 사용자 액션 가이드 추가
+
+2. **PA 검증 에러 카드 개선** (`pa-verification.js`):
+   - `renderErrorCard()` 함수에 `type` 파라미터 추가 (error, warning, info)
+   - 메시지 내용에 따른 자동 스타일 결정 (`isNoDataMessage` 체크)
+   - 각 타입별 색상 스타일:
+     - `error`: 빨간색 (`bg-red-50`, `text-red-800`)
+     - `warning`: 노란색 (`bg-amber-50`, `text-amber-800`)
+     - `info`: 파란색 (`bg-blue-50`, `text-blue-800`)
+   - 각 타입별 아이콘 (X 원, 경고 삼각형, 정보 원)
+
+3. **Service Worker 캐시 업데이트** (`sw.js`):
+   - 캐시 버전을 v2에서 v3로 업데이트
+   - `CACHE_NAME`: `fastpass-pwa-v3`
+   - `STATIC_CACHE`: `fastpass-static-v3`
+   - `DYNAMIC_CACHE`: `fastpass-dynamic-v3`
+   - 브라우저 캐시 무효화로 최신 JavaScript 코드 적용
+
+**수정된 파일**:
+- `src/main/resources/templates/fragments/epassport_manual_read.html` - Empty state 스타일링
+- `src/main/resources/static/js/pa-verification.js` - 에러 카드 다중 스타일
+- `src/main/resources/static/js/sw.js` - 캐시 버전 v3
+
+**테스트 결과**:
+- ✅ Manual Read 페이지에서 데이터 없을 때 파란색 Info 카드 표시
+- ✅ PA 검증 오류 시 적절한 색상의 에러 카드 표시
+- ✅ Service Worker 캐시 갱신으로 최신 코드 적용
+
+---
+
 ### 2026-01-05: Auto Read PA V2 검증 지원 및 UI 개선
 
 **구현 내용**:
@@ -974,6 +1017,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2026-01-05
+**최종 업데이트**: 2026-01-06
 **분석 도구**: Claude Code (Anthropic)
 **현재 브랜치**: `main`
