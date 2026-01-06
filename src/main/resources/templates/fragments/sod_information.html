@@ -30,24 +30,6 @@
         </div>
       </div>
 
-      <!-- Data Group Hashes -->
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-          <h4 class="text-sm font-semibold text-gray-900">Data Group Hashes</h4>
-          <p class="text-xs text-gray-500 mt-0.5">Hash values stored in the SOD for each Data Group</p>
-        </div>
-        <div class="p-4">
-          <div class="space-y-2">
-            <th:block th:each="dgHash : ${sodInfo.dataGroupHashes}" th:object="${dgHash}">
-              <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-                <span class="inline-flex items-center justify-center w-14 rounded bg-indigo-100 px-2 py-1 text-xs font-bold text-indigo-800" th:text="*{dgName}">DG01</span>
-                <code class="flex-1 text-xs font-mono text-gray-700 break-all" th:text="*{hashValue}">A1B2C3D4E5F6...</code>
-              </div>
-            </th:block>
-          </div>
-        </div>
-      </div>
-
       <!-- DSC Certificate 정보 -->
       <div th:if="${sodInfo.dscCertificate != null}" th:object="${sodInfo.dscCertificate}" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
         <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
@@ -189,6 +171,24 @@
               </summary>
               <code class="mt-2 block break-all rounded bg-gray-100 p-2 font-mono text-xs text-gray-700" th:text="*{signature}">A1B2C3D4E5F6...</code>
             </details>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Group Hashes -->
+      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+          <h4 class="text-sm font-semibold text-gray-900">Data Group Hashes</h4>
+          <p class="text-xs text-gray-500 mt-0.5">Hash values stored in the SOD for each Data Group</p>
+        </div>
+        <div class="p-4">
+          <div class="space-y-2">
+            <th:block th:each="dgHash : ${sodInfo.dataGroupHashes}" th:object="${dgHash}">
+              <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
+                <span class="inline-flex items-center justify-center w-14 rounded bg-indigo-100 px-2 py-1 text-xs font-bold text-indigo-800" th:text="*{dgName}">DG01</span>
+                <code class="flex-1 text-xs font-mono text-gray-700 break-all" th:text="*{hashValue}">A1B2C3D4E5F6...</code>
+              </div>
+            </th:block>
           </div>
         </div>
       </div>

@@ -11,6 +11,13 @@ import java.time.LocalDateTime;
  * - crlStatusDetailedDescription: 상세 설명 (예: "LDAP 서버에서 CRL을 조회할 수 없습니다...")
  * - crlStatusSeverity: 심각도 (SUCCESS, WARNING, ERROR, INFO)
  * - crlMessage: 기술적 메시지 (예: "LDAP에서 해당 CSCA의 CRL을 찾을 수 없음...")
+ *
+ * v1.2.0 Certificate Expiration 필드:
+ * - dscExpired: DSC 인증서 만료 여부
+ * - cscaExpired: CSCA 인증서 만료 여부
+ * - validAtSigningTime: 여권 서명 당시 인증서 유효 여부 (Point-in-Time Validation)
+ * - expirationStatus: 만료 상태 (VALID, WARNING, EXPIRED)
+ * - expirationMessage: 만료 상태 설명 메시지
  */
 public record CertificateChainValidation(
     boolean valid,
@@ -27,5 +34,12 @@ public record CertificateChainValidation(
     String crlStatusDetailedDescription,
     String crlStatusSeverity,
     String crlMessage,
-    String validationErrors
+    String validationErrors,
+
+    // v1.2.0 Certificate Expiration fields
+    Boolean dscExpired,
+    Boolean cscaExpired,
+    Boolean validAtSigningTime,
+    String expirationStatus,
+    String expirationMessage
 ) {}

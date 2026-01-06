@@ -3,9 +3,9 @@
  * Handles caching strategies for offline support
  */
 
-const CACHE_NAME = 'fastpass-pwa-v3';
-const STATIC_CACHE = 'fastpass-static-v3';
-const DYNAMIC_CACHE = 'fastpass-dynamic-v3';
+const CACHE_NAME = 'fastpass-pwa-v4';
+const STATIC_CACHE = 'fastpass-static-v4';
+const DYNAMIC_CACHE = 'fastpass-dynamic-v4';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
