@@ -9,6 +9,9 @@ import com.smartcoreinc.fphps.manager.FPHPSDevice;
 import com.smartcoreinc.fphps.readers.EPassportReader;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class PassportReadStrategy implements DocumentReadStrategy {
 
@@ -26,7 +29,7 @@ public class PassportReadStrategy implements DocumentReadStrategy {
     @Override
     public DocumentReadResponse read(FPHPSDevice device, FastPassWebSocketHandler fastPassWebSocketHandler, boolean isAuto) {
         FPHPSDeviceProperties properties = devicePropertiesService.getProperties();
-        
+
         // Ensure properties are set for Passport reading
         properties.setEnableRF(1);
         properties.setEnableIDCard(0); // Explicitly disable ID Card reading
@@ -35,6 +38,14 @@ public class PassportReadStrategy implements DocumentReadStrategy {
         device.getDeviceSetting().setDeviceProperties(properties);
 
         EPassportReader reader = new EPassportReader(device, fastPassWebSocketHandler);
+
+        // Auto Read 시 WebSocketHandler에 현재 Reader 설정
+        // (Auto Read 완료 이벤트 시 getDocumentData() 호출을 위해)
+        if (isAuto) {
+            log.debug("Setting currentReader for Auto Read");
+            fastPassWebSocketHandler.setCurrentReader(reader);
+        }
+
         return reader.read(FPHPS_READ_TYPES.FPHPS_RT_PASSPORT, isAuto);
     }
 }

@@ -1,5 +1,6 @@
 package com.smartcoreinc.fphps.example.fphps_web_example.advice;
 
+import com.smartcoreinc.fphps.example.fphps_web_example.Services.PassiveAuthenticationService;
 import com.smartcoreinc.fphps.example.fphps_web_example.exceptions.DeviceOperationException;
 import com.smartcoreinc.fphps.exception.DeviceNotFoundException;
 import com.smartcoreinc.fphps.exception.DeviceNotOpenedException;
@@ -10,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 @Slf4j
 @ControllerAdvice
@@ -27,6 +30,24 @@ public class GlobalExceptionHandler {
      */
     private boolean isHtmxRequest(HttpServletRequest request) {
         return "true".equals(request.getHeader("HX-Request"));
+    }
+
+    /**
+     * JSON/REST API 요청인지 확인
+     * - Accept 헤더가 application/json인 경우
+     * - Content-Type이 application/json인 경우
+     * - XHR 요청이면서 HTMX가 아닌 경우
+     */
+    private boolean isJsonRequest(HttpServletRequest request) {
+        String accept = request.getHeader("Accept");
+        String contentType = request.getContentType();
+        String xRequestedWith = request.getHeader("X-Requested-With");
+
+        boolean acceptsJson = accept != null && accept.contains(MediaType.APPLICATION_JSON_VALUE);
+        boolean sendsJson = contentType != null && contentType.contains(MediaType.APPLICATION_JSON_VALUE);
+        boolean isXhr = "XMLHttpRequest".equals(xRequestedWith);
+
+        return acceptsJson || sendsJson || (isXhr && !isHtmxRequest(request));
     }
 
     /**
@@ -148,6 +169,31 @@ public class GlobalExceptionHandler {
         return "fragments/error_display";
     }
 
+    /**
+     * PA 검증 예외 처리 - JSON 응답 반환
+     */
+    @ExceptionHandler(PassiveAuthenticationService.PaVerificationException.class)
+    public ResponseEntity<Map<String, Object>> handlePaVerificationException(
+            PassiveAuthenticationService.PaVerificationException ex,
+            HttpServletRequest request) {
+        log.error("PA verification failed: {}", ex.getMessage(), ex);
+
+        String userMessage = ex.getMessage() != null ? ex.getMessage() : "PA verification failed.";
+
+        // PA 검증은 항상 JSON API로 호출되므로 JSON 응답 반환
+        Map<String, Object> errorResponse = Map.of(
+            "success", false,
+            "error", true,
+            "message", userMessage,
+            "status", "FAILURE"
+        );
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(errorResponse);
+    }
+
     @ExceptionHandler(FPHPSException.class)
     public Object handleFPHPSException(FPHPSException ex, Model model,
                                        HttpServletRequest request, HttpServletResponse response) {
@@ -172,7 +218,21 @@ public class GlobalExceptionHandler {
                                          HttpServletRequest request, HttpServletResponse response) {
         log.error("An unexpected error occurred: {}", ex.getMessage(), ex);
 
-        String userMessage = "An unexpected error occurred. Please try again.";
+        String userMessage = getUserFriendlyMessage(ex);
+
+        // JSON API 요청인 경우 JSON 응답 반환
+        if (isJsonRequest(request)) {
+            Map<String, Object> errorResponse = Map.of(
+                "success", false,
+                "error", true,
+                "message", userMessage,
+                "status", "FAILURE"
+            );
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(errorResponse);
+        }
 
         if (isHtmxRequest(request)) {
             response.setHeader("HX-Trigger-Toast", URLEncoder.encode(userMessage, StandardCharsets.UTF_8));

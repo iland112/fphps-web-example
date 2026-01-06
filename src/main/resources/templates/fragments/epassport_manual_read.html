@@ -128,13 +128,34 @@
       </div>
 
     </th:block>
-    <div th:if="${response == null or response.mrzInfo == null}">
-      <p>No passport data available.</p>
+    <!-- Empty State: No Passport Data -->
+    <div th:if="${response == null or response.mrzInfo == null}" class="rounded-xl bg-blue-50 border border-blue-200 p-6">
+      <div class="flex items-start gap-4">
+        <div class="flex-shrink-0">
+          <div class="flex size-12 items-center justify-center rounded-xl bg-blue-100">
+            <svg class="size-6 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-base font-semibold text-blue-800">Passport Data Required</h3>
+          <p class="mt-2 text-sm text-blue-700">Please read a passport first to view the data.</p>
+          <div class="mt-4 flex items-center gap-2 text-sm text-blue-700">
+            <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Click the <strong>Read Passport</strong> button above to scan a passport.</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Shared Passport Tabs JavaScript -->
   <script th:src="@{/js/passport-tabs.js}"></script>
+  <!-- PA Verification JavaScript -->
+  <script th:src="@{/js/pa-verification.js}"></script>
 
   <!-- Tab Switching JavaScript -->
   <script>
