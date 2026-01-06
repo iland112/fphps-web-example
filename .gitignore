@@ -38,7 +38,7 @@ out/
 ### Front end node_modules
 src/main/frontend/node_modules
 
-docs/
+docs/analysis/
 log/
 data/
 .serena/
@@ -50,4 +50,8 @@ setup-wsl-portforward.ps1
 ### Playwright ###
 .playwright-mcp/
 src/main/frontend/test-results/
+test-results/
 nul
+
+### Node modules ###
+node_modules/

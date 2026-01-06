@@ -2,7 +2,7 @@
   <!-- Passive Authentication Tab Content Fragment -->
   <!-- 사용법: th:replace="~{fragments/pa_tab_content :: paTabContent(btnId='verify-pa-btn', containerId='pa-result-container', prefix='manual')}" -->
   <div th:fragment="paTabContent(btnId, containerId, emptyStateId, prefix)" class="pa-tab-wrapper space-y-4">
-    <!-- Header Section with Icon and Button -->
+    <!-- Header Section with Icon and Buttons -->
     <div class="flex items-center justify-between pb-3 border-b border-gray-200">
       <div class="flex items-center gap-3">
         <div class="flex size-10 items-center justify-center rounded-lg bg-cyan-100">
@@ -15,21 +15,42 @@
           <p class="text-sm text-gray-500">Verify passport authenticity using ICAO Local PKD</p>
         </div>
       </div>
-      <button
-        th:id="${btnId}"
-        type="button"
-        th:data-btn-id="${btnId}"
-        th:data-container-id="${containerId}"
-        th:data-empty-state-id="${emptyStateId}"
-        onclick="verifyPassportPA(this.dataset.btnId, this.dataset.containerId, this.dataset.emptyStateId)"
-        class="inline-flex items-center justify-center gap-x-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-all shrink-0"
-      >
-        <svg th:id="${btnId + '-spinner'}" class="hidden animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <span th:id="${btnId + '-text'}">Verify PA</span>
-      </button>
+      <!-- Button Group -->
+      <div class="flex items-center gap-2">
+        <!-- V1 Button (Option 1) -->
+        <button
+          th:id="${btnId}"
+          type="button"
+          th:data-btn-id="${btnId}"
+          th:data-container-id="${containerId}"
+          th:data-empty-state-id="${emptyStateId}"
+          onclick="verifyPassportPA(this.dataset.btnId, this.dataset.containerId, this.dataset.emptyStateId)"
+          class="inline-flex items-center justify-center gap-x-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-all shrink-0"
+        >
+          <svg th:id="${btnId + '-spinner'}" class="hidden animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span th:id="${btnId + '-text'}">Verify PA</span>
+        </button>
+        <!-- V2 Button (Option 2 - API Gateway) -->
+        <button
+          th:id="${btnId + '-v2'}"
+          type="button"
+          th:data-btn-id="${btnId + '-v2'}"
+          th:data-container-id="${containerId}"
+          th:data-empty-state-id="${emptyStateId}"
+          onclick="verifyPassportPAV2(this.dataset.btnId, this.dataset.containerId, this.dataset.emptyStateId)"
+          class="inline-flex items-center justify-center gap-x-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-all shrink-0"
+          title="Verify using API Gateway (Option 2)"
+        >
+          <svg th:id="${btnId + '-v2-spinner'}" class="hidden animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span th:id="${btnId + '-v2-text'}">Verify PA (V2)</span>
+        </button>
+      </div>
     </div>
 
     <!-- Results Container -->
