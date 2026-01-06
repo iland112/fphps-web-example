@@ -33,6 +33,11 @@ public class CertificateInfo implements Serializable {
     private String notAfter;
     private boolean valid;
 
+    // 유효성 상세 정보
+    private String validationStatus;        // VALID, EXPIRED, NOT_YET_VALID, INVALID
+    private String validationMessage;       // 사용자 친화적 메시지
+    private String validationDescription;   // 상세 설명
+
     // 공개키 정보
     private String publicKeyAlgorithm;
     private int publicKeySize;
@@ -62,7 +67,12 @@ public class CertificateInfo implements Serializable {
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        DateTimeFormatter displayFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
         Date now = new Date();
+
+        // 유효성 상태 계산
+        boolean isValid = now.after(cert.getNotBefore()) && now.before(cert.getNotAfter());
+        ValidationResult validation = calculateValidationStatus(cert, now, displayFormatter);
 
         return CertificateInfo.builder()
                 .subject(cert.getSubjectX500Principal().getName())
@@ -70,7 +80,10 @@ public class CertificateInfo implements Serializable {
                 .serialNumber(cert.getSerialNumber().toString(16).toUpperCase())
                 .notBefore(formatDate(cert.getNotBefore(), formatter))
                 .notAfter(formatDate(cert.getNotAfter(), formatter))
-                .valid(now.after(cert.getNotBefore()) && now.before(cert.getNotAfter()))
+                .valid(isValid)
+                .validationStatus(validation.status)
+                .validationMessage(validation.message)
+                .validationDescription(validation.description)
                 .publicKeyAlgorithm(cert.getPublicKey().getAlgorithm())
                 .publicKeySize(getKeySize(cert))
                 .publicKeyFormat(cert.getPublicKey().getFormat())
@@ -82,6 +95,59 @@ public class CertificateInfo implements Serializable {
                 .type(cert.getType())
                 .extensions(extractExtensions(cert))
                 .build();
+    }
+
+    /**
+     * 인증서 유효성 상태 계산
+     */
+    private static ValidationResult calculateValidationStatus(X509Certificate cert, Date now, DateTimeFormatter displayFormatter) {
+        Date notBefore = cert.getNotBefore();
+        Date notAfter = cert.getNotAfter();
+
+        String formattedNotAfter = notAfter.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .format(displayFormatter);
+        String formattedNotBefore = notBefore.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .format(displayFormatter);
+
+        if (now.before(notBefore)) {
+            // 아직 유효하지 않음
+            return new ValidationResult(
+                "NOT_YET_VALID",
+                "Certificate Not Yet Valid",
+                "This certificate will become valid on " + formattedNotBefore + "."
+            );
+        } else if (now.after(notAfter)) {
+            // 만료됨
+            return new ValidationResult(
+                "EXPIRED",
+                "Certificate Expired",
+                "This certificate expired on " + formattedNotAfter + "."
+            );
+        } else {
+            // 유효함
+            return new ValidationResult(
+                "VALID",
+                "Certificate Valid",
+                "This certificate is valid until " + formattedNotAfter + "."
+            );
+        }
+    }
+
+    /**
+     * 유효성 검사 결과를 담는 내부 클래스
+     */
+    private static class ValidationResult {
+        final String status;
+        final String message;
+        final String description;
+
+        ValidationResult(String status, String message, String description) {
+            this.status = status;
+            this.message = message;
+            this.description = description;
+        }
     }
 
     /**
