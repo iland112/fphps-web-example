@@ -47,6 +47,9 @@
             <button type="button" onclick="switchTab('pa')" id="tab-pa" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
               <span>Passive Authentication</span>
             </button>
+            <button type="button" onclick="switchTab('face')" id="tab-face" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+              <span>Face Verification</span>
+            </button>
           </nav>
 
           <!-- Tab Content -->
@@ -120,6 +123,16 @@
                 btnId='manual-verify-pa-btn',
                 containerId='manual-pa-result-container',
                 emptyStateId='manual-pa-empty-state',
+                prefix='manual'
+              )}"></div>
+            </div>
+
+            <!-- Face Verification Tab Content -->
+            <div id="content-face" class="tab-content hidden">
+              <div th:replace="~{fragments/face_verification_tab_content :: faceVerificationTabContent(
+                btnId='manual-verify-face-btn',
+                containerId='manual-face-result-container',
+                emptyStateId='manual-face-empty-state',
                 prefix='manual'
               )}"></div>
             </div>

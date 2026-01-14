@@ -8,6 +8,7 @@ import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.DevicePropertiesService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FPHPSService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.PassiveAuthenticationService;
+import com.smartcoreinc.fphps.example.fphps_web_example.Services.FaceVerificationService;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.DevSettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.EPassportSettingForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.ScanForm;
@@ -15,6 +16,7 @@ import com.smartcoreinc.fphps.example.fphps_web_example.forms.SettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.ParsedSODInfo;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResponse;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResultWithData;
+import com.smartcoreinc.fphps.example.fphps_web_example.dto.face.FaceVerificationResponse;
 
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,11 +37,13 @@ public class FPHPSController {
     private final FPHPSService fphpsService;
     private final DevicePropertiesService devicePropertiesService;
     private final PassiveAuthenticationService paService;
+    private final FaceVerificationService faceService;
 
-    public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService, PassiveAuthenticationService paService) {
+    public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService, PassiveAuthenticationService paService, FaceVerificationService faceService) {
         this.fphpsService = fphpsService;
         this.devicePropertiesService = devicePropertiesService;
         this.paService = paService;
+        this.faceService = faceService;
     }
 
     @ModelAttribute("deviceProperties")
@@ -259,5 +263,23 @@ public class FPHPSController {
         return "device_setting_form";
     }
 
+    /**
+     * Face Verification 수행
+     * 마지막 읽기 결과를 사용하여 InsightFace API로 얼굴 검증 수행
+     * Document photo (VIZ)와 Chip photo (DG2)를 비교
+     */
+    @PostMapping("/passport/verify-face")
+    @ResponseBody
+    public FaceVerificationResponse verifyFace() {
+        log.debug("Face verification requested");
+
+        DocumentReadResponse lastResponse = fphpsService.getLastReadResponse();
+        if (lastResponse == null) {
+            throw new FaceVerificationService.FaceVerificationException(
+                "No passport data available. Please read passport first.");
+        }
+
+        return faceService.verifyFromDocumentResponse(lastResponse);
+    }
 
 }
