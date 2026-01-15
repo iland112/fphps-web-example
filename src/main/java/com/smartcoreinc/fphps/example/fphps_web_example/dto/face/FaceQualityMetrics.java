@@ -10,7 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param brightnessScore Image brightness quality (0-1)
  * @param sharpnessScore Image sharpness quality (0-1)
  * @param poseScore Face pose quality (0-1, frontal=1)
- * @param imageBase64 Base64 encoded cropped face image
+ * @param imageBase64 Base64 encoded original image
+ * @param bbox Face bounding box coordinates
  */
 public record FaceQualityMetrics(
     @JsonProperty("detection_score") Double detectionScore,
@@ -18,5 +19,6 @@ public record FaceQualityMetrics(
     @JsonProperty("brightness_score") Double brightnessScore,
     @JsonProperty("sharpness_score") Double sharpnessScore,
     @JsonProperty("pose_score") Double poseScore,
-    @JsonProperty("image_base64") String imageBase64
+    @JsonProperty("image_base64") String imageBase64,
+    @JsonProperty("bbox") BoundingBox bbox
 ) {}

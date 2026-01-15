@@ -28,6 +28,9 @@
 | **Gson** | 2.10.1 | JSON 직렬화/역직렬화 |
 | **JavaTuples** | 1.2 | 불변 튜플 데이터 구조 |
 | **Lombok** | | 보일러플레이트 코드 생성 |
+| **WebJars** | | JavaScript 라이브러리 로컬 의존성 관리 |
+| └ webjars-locator-core | 0.59 | WebJar 경로 자동 버전 해결 |
+| └ htmx.org | 2.0.4 | HTMX 라이브러리 (CDN 대체) |
 
 ### 프론트엔드 (Frontend)
 
@@ -423,6 +426,145 @@ cd ../../..
 ---
 
 ## 작업 이력
+
+### 2026-01-15: Face Verification 원본 이미지 표시 및 Bounding Box Overlay 구현
+
+**구현 내용**:
+- InsightFace에서 크롭한 얼굴 이미지 대신 원본 이미지 표시로 변경
+- 얼굴 경계 박스(Bounding Box) 좌표 추가 및 Canvas Overlay 구현
+- 토글 가능한 얼굴 영역 시각화 기능 추가
+- CDN에서 WebJars로 JavaScript 라이브러리 의존성 관리 방식 전환
+
+**주요 변경사항**:
+
+1. **원본 이미지 표시** ([face_verification.py](face-verification-service/app/face_verification.py)):
+   - **변경 전**: InsightFace가 얼굴을 크롭한 이미지 전송
+   - **변경 후**: 원본 여권 사진 전송, bbox 좌표 함께 전달
+   ```python
+   # Line 122-123: 원본 이미지 인코딩
+   original_base64 = self.encode_face_image(img)
+
+   # Lines 149-155: Bounding Box 좌표 추가
+   bbox_coords = {
+       "x1": int(bbox[0]),
+       "y1": int(bbox[1]),
+       "x2": int(bbox[2]),
+       "y2": int(bbox[3])
+   }
+   ```
+
+2. **BoundingBox 모델 추가** ([models.py](face-verification-service/app/models.py), [BoundingBox.java](src/main/java/com/smartcoreinc/fphps/example/fphps_web_example/dto/face/BoundingBox.java)):
+   - Python Pydantic Model: `BoundingBox(x1, y1, x2, y2)`
+   - Java Record DTO: `@JsonProperty` 매핑으로 snake_case 호환
+   - FaceQualityMetrics에 bbox 필드 추가
+
+3. **Canvas Overlay 구현** ([face-verification.js](src/main/resources/static/js/face-verification.js)):
+   - **HTML5 Canvas API**를 사용한 얼굴 영역 오버레이
+   - **토글 버튼**: "Show Face Box" / "Hide Face Box"
+   - **시각적 요소**:
+     - 반투명 검은 배경 (rgba(0,0,0,0.3))
+     - 녹색 경계 박스 (#10b981, 3px stroke)
+     - 코너 마커 (15px length, 4px stroke)
+     - "FACE" 라벨
+
+   **주요 함수**:
+   ```javascript
+   // Lines 314-359: Canvas 초기화 및 스케일 계산
+   function initializeFaceBoxCanvas(type, imageBase64, bbox) {
+       const scaleX = img.width / img.naturalWidth;
+       const scaleY = img.height / img.naturalHeight;
+       // bbox 데이터와 scale factor를 canvas data attribute에 저장
+   }
+
+   // Lines 364-388: 토글 기능
+   function toggleFaceBox(type) {
+       const isVisible = canvas.style.display !== 'none';
+       if (isVisible) {
+           canvas.style.display = 'none';
+       } else {
+           canvas.style.display = 'block';
+           drawFaceBox(canvas);
+       }
+   }
+
+   // Lines 393-463: Canvas 그리기
+   function drawFaceBox(canvas) {
+       // 1. 전체 반투명 오버레이
+       // 2. 얼굴 영역 클리어
+       // 3. 녹색 경계 박스
+       // 4. 코너 마커 (4개 모서리)
+       // 5. "FACE" 라벨
+   }
+   ```
+
+4. **WebJars 의존성 관리** ([build.gradle](build.gradle)):
+   - **변경 전**: CDN에서 HTMX 로드 (`https://unpkg.com/htmx.org@2.0.4`)
+   - **변경 후**: WebJars를 통한 로컬 의존성
+   ```gradle
+   // Lines 43-45
+   implementation 'org.webjars:webjars-locator-core:0.59'
+   implementation 'org.webjars.npm:htmx.org:2.0.4'
+   ```
+
+   **장점**:
+   - 오프라인 지원
+   - 버전 관리 명확성
+   - 보안 및 안정성 향상
+   - Gradle 의존성으로 일관된 빌드
+
+5. **default.html 업데이트** ([default.html](src/main/resources/templates/layouts/default.html)):
+   ```html
+   <!-- Line 39-40: CDN에서 WebJar로 변경 -->
+   <script th:src="@{/webjars/htmx.org/dist/htmx.min.js}"></script>
+   ```
+   - WebJars Locator가 자동으로 버전 해결: `/webjars/htmx.org/2.0.4/dist/htmx.min.js`
+
+6. **Service Worker 캐시 업데이트** ([sw.js](src/main/resources/static/sw.js)):
+   - 캐시 버전: v19 → v20
+   - 브라우저 캐시 무효화로 최신 JavaScript 및 WebJar 경로 적용
+
+**기술적 세부사항**:
+
+| 기능 | 구현 방식 |
+|------|----------|
+| Canvas 위치 계산 | `naturalWidth/Height`와 `displayWidth/Height`의 비율로 스케일 팩터 계산 |
+| Canvas 레이어링 | `position: absolute`로 이미지 위에 오버레이 |
+| Bbox 스케일링 | `scaledX = x * scaleX`, `scaledY = y * scaleY` |
+| 코너 마커 | 각 모서리에 L자 형태로 15px 길이 선 그리기 |
+| WebJar 경로 해결 | WebJars Locator가 `/webjars/{library}/{path}`를 자동 버전 해결 |
+
+**수정된 파일**:
+
+**Python Service:**
+- `face-verification-service/app/face_verification.py` - 원본 이미지 인코딩, bbox 좌표 추가
+- `face-verification-service/app/models.py` - BoundingBox 모델 추가
+
+**Java Backend:**
+- `src/main/java/.../dto/face/BoundingBox.java` - 새 파일, bbox 좌표 DTO
+- `src/main/java/.../dto/face/FaceQualityMetrics.java` - bbox 필드 추가
+
+**Frontend:**
+- `src/main/resources/static/js/face-verification.js` - Canvas overlay 구현
+- `src/main/resources/templates/layouts/default.html` - WebJar 경로 변경
+
+**Build Configuration:**
+- `build.gradle` - WebJars 의존성 추가
+- `src/main/resources/static/sw.js` - 캐시 v20
+
+**Docker:**
+- Face Verification 서비스 재빌드 및 재시작
+
+**테스트 결과**:
+- ✅ Document Photo 원본 이미지 표시
+- ✅ Chip Photo 원본 이미지 표시
+- ✅ Bounding Box 좌표 정상 수신
+- ✅ Canvas overlay 토글 정상 동작
+- ✅ 녹색 경계 박스 및 코너 마커 정상 표시
+- ✅ Scale factor 계산 정확
+- ✅ HTMX WebJar 로딩 정상
+- ✅ Gradle 빌드 성공 (BUILD SUCCESSFUL in 38s)
+
+---
 
 ### 2026-01-15: Face Verification UI/UX 개선 - Quality Metrics 시각화
 
@@ -1096,6 +1238,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2026-01-06
+**최종 업데이트**: 2026-01-15
 **분석 도구**: Claude Code (Anthropic)
-**현재 브랜치**: `main`
+**현재 브랜치**: `feature/face-verification`

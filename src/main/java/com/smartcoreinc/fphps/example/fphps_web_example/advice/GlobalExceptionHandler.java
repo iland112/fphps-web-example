@@ -216,7 +216,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public Object handleGenericException(Exception ex, Model model,
                                          HttpServletRequest request, HttpServletResponse response) {
-        log.error("An unexpected error occurred: {}", ex.getMessage(), ex);
+        // Static 리소스 404 에러는 WARN 레벨로 낮춤 (favicon, 브라우저 확장 등)
+        if (ex instanceof org.springframework.web.servlet.resource.NoResourceFoundException) {
+            log.warn("Static resource not found: {}", ex.getMessage());
+        } else {
+            log.error("An unexpected error occurred: {}", ex.getMessage(), ex);
+        }
 
         String userMessage = getUserFriendlyMessage(ex);
 

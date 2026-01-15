@@ -301,8 +301,11 @@
       }
     }
 
-    // WebSocket connection setup
-    const socket = new WebSocket("ws://localhost:8080/fastpass");
+    // WebSocket connection setup - Use current host and port
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${wsProtocol}//${window.location.host}/fastpass`;
+    console.log('Connecting to WebSocket:', wsUrl);
+    const socket = new WebSocket(wsUrl);
 
     // Connection opened
     socket.onopen = function(event) {

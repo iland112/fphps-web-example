@@ -28,6 +28,8 @@ public class PassportReadStrategy implements DocumentReadStrategy {
 
     @Override
     public DocumentReadResponse read(FPHPSDevice device, FastPassWebSocketHandler fastPassWebSocketHandler, boolean isAuto) {
+        log.info("📖 Passport Read Started - Mode: {}, RF Enabled", isAuto ? "AUTO" : "MANUAL");
+
         FPHPSDeviceProperties properties = devicePropertiesService.getProperties();
 
         // Ensure properties are set for Passport reading
@@ -35,6 +37,7 @@ public class PassportReadStrategy implements DocumentReadStrategy {
         properties.setEnableIDCard(0); // Explicitly disable ID Card reading
         properties.setEnableBarcode(0); // Explicitly disable Barcode reading
 
+        log.debug("Device properties set: RF=1, IDCard=0, Barcode=0");
         device.getDeviceSetting().setDeviceProperties(properties);
 
         EPassportReader reader = new EPassportReader(device, fastPassWebSocketHandler);
@@ -42,10 +45,24 @@ public class PassportReadStrategy implements DocumentReadStrategy {
         // Auto Read 시 WebSocketHandler에 현재 Reader 설정
         // (Auto Read 완료 이벤트 시 getDocumentData() 호출을 위해)
         if (isAuto) {
-            log.debug("Setting currentReader for Auto Read");
+            log.info("Setting currentReader for Auto Read");
             fastPassWebSocketHandler.setCurrentReader(reader);
         }
 
-        return reader.read(FPHPS_READ_TYPES.FPHPS_RT_PASSPORT, isAuto);
+        log.info("Calling EPassportReader.read() - isAuto: {}", isAuto);
+        DocumentReadResponse response = reader.read(FPHPS_READ_TYPES.FPHPS_RT_PASSPORT, isAuto);
+
+        if (response != null) {
+            log.info("✓ EPassportReader.read() returned response - MRZ: {}",
+                response.getMrzInfo() != null ? "Available" : "NULL");
+        } else {
+            if (isAuto) {
+                log.info("EPassportReader.read() returned NULL (expected for Auto Read)");
+            } else {
+                log.warn("⚠ EPassportReader.read() returned NULL for Manual Read - UNEXPECTED!");
+            }
+        }
+
+        return response;
     }
 }

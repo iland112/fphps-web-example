@@ -140,15 +140,20 @@ public class FPHPSService {
         if (response != null) {
             this.lastReadResponse = response;
             // 디버그: 저장된 데이터 확인
-            if (response.getMrzInfo() != null) {
-                log.info("lastReadResponse saved: passportNumber={}, SOD size={}",
+            if (response.getMrzInfo() != null && response.getMrzInfo().getPassportNumber() != null) {
+                log.info("✓ Read response saved - Passport: {}, SOD: {} bytes, Mode: {}",
                     response.getMrzInfo().getPassportNumber(),
-                    response.getSodDataBytes() != null ? response.getSodDataBytes().length : 0);
+                    response.getSodDataBytes() != null ? response.getSodDataBytes().length : 0,
+                    isAuto ? "AUTO" : "MANUAL");
             } else {
-                log.warn("lastReadResponse saved but MrzInfo is null");
+                log.warn("⚠ Read response saved but NO MRZ DATA - Mode: {}", isAuto ? "AUTO" : "MANUAL");
             }
         } else {
-            log.warn("read() returned null response, lastReadResponse not updated");
+            if (isAuto) {
+                log.debug("Auto Read: read() returned null (expected - data will be retrieved via callback)");
+            } else {
+                log.warn("⚠ Manual Read: read() returned null response - Passport may not have been detected");
+            }
         }
 
         return response;
@@ -188,15 +193,15 @@ public class FPHPSService {
     private void saveAutoReadResponse(DocumentReadResponse response) {
         if (response != null) {
             this.lastReadResponse = response;
-            if (response.getMrzInfo() != null) {
-                log.info("Auto Read response saved via callback: passportNumber={}, SOD size={}",
+            if (response.getMrzInfo() != null && response.getMrzInfo().getPassportNumber() != null) {
+                log.info("✓ Auto Read callback saved - Passport: {}, SOD: {} bytes",
                     response.getMrzInfo().getPassportNumber(),
                     response.getSodDataBytes() != null ? response.getSodDataBytes().length : 0);
             } else {
-                log.info("Auto Read response saved via callback (MrzInfo is null)");
+                log.warn("⚠ Auto Read callback saved but NO MRZ DATA - Passport was not detected during Auto Read");
             }
         } else {
-            log.warn("saveAutoReadResponse called with null response");
+            log.warn("⚠ Auto Read callback called with NULL response - No passport data available");
         }
     }
 

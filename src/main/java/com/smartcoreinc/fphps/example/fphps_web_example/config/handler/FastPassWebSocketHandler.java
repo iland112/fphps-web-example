@@ -122,15 +122,20 @@ public class FastPassWebSocketHandler extends TextWebSocketHandler implements Me
             try {
                 DocumentReadResponse response = currentReader.getDocumentData();
                 if (response != null) {
-                    log.info("Auto Read completed - Retrieved DocumentReadResponse: passportNumber={}, SOD size={}",
-                        response.getMrzInfo() != null ? response.getMrzInfo().getPassportNumber() : "null",
-                        response.getSodDataBytes() != null ? response.getSodDataBytes().length : 0);
+                    // MRZ 데이터 확인
+                    if (response.getMrzInfo() != null && response.getMrzInfo().getPassportNumber() != null) {
+                        log.info("✓ Auto Read SUCCESS - Passport: {}, SOD: {} bytes",
+                            response.getMrzInfo().getPassportNumber(),
+                            response.getSodDataBytes() != null ? response.getSodDataBytes().length : 0);
+                    } else {
+                        log.warn("⚠ Auto Read completed but NO MRZ DATA - Check if passport was placed on reader");
+                    }
                     onReadCompleteCallback.accept(response);
                 } else {
-                    log.warn("Auto Read completed but getDocumentData() returned null");
+                    log.warn("⚠ Auto Read completed but getDocumentData() returned NULL - Passport may not have been detected");
                 }
             } catch (Exception e) {
-                log.error("Failed to retrieve Auto Read result: {}", e.getMessage(), e);
+                log.error("✗ Failed to retrieve Auto Read result: {}", e.getMessage(), e);
             } finally {
                 // Reader 정리
                 clearCurrentReader();
