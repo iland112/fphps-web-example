@@ -3,9 +3,9 @@
  * Handles caching strategies for offline support
  */
 
-const CACHE_NAME = 'fastpass-pwa-v4';
-const STATIC_CACHE = 'fastpass-static-v4';
-const DYNAMIC_CACHE = 'fastpass-dynamic-v4';
+const CACHE_NAME = 'fastpass-pwa-v11';
+const STATIC_CACHE = 'fastpass-static-v11';
+const DYNAMIC_CACHE = 'fastpass-dynamic-v11';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
@@ -14,6 +14,7 @@ const STATIC_ASSETS = [
   '/css/main.css',
   '/js/passport-tabs.js',
   '/js/pa-verification.js',
+  '/js/face-verification.js',
   '/image/FASTpass.bmp',
   '/image/fastpass-p1.png',
   '/image/favicon.png',

@@ -424,6 +424,85 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-01-15: Face Verification UI/UX 개선 - Quality Metrics 시각화
+
+**구현 내용**:
+- InsightFace 기반 얼굴 검증 결과의 Quality Metrics를 시각적으로 개선
+- Color-coded progress bars와 아이콘을 통한 직관적인 품질 표시
+- 2-column 레이아웃으로 이미지와 메트릭을 효율적으로 배치
+- Snake_case와 camelCase 호환성 확보
+
+**주요 변경사항**:
+
+1. **Quality Metrics 시각화** ([face-verification.js](src/main/resources/static/js/face-verification.js)):
+   - **Color-coded Progress Bars**:
+     - 녹색 (≥70%): Good Quality
+     - 노란색 (40-70%): Fair Quality
+     - 빨간색 (<40%): Poor Quality
+   - **Overall Quality Badge**: 평균 점수 기반 종합 품질 평가
+   - **아이콘 추가**:
+     - 🎯 Detection Score
+     - 📏 Size (Face Area Ratio)
+     - 💡 Brightness Score
+     - 🔍 Sharpness Score
+     - 👤 Pose Score
+
+2. **2-Column 레이아웃** ([face-verification.js](src/main/resources/static/js/face-verification.js:127-148)):
+   - Document Photo Quality: Quality Metrics (좌) | Face Image (우)
+   - Chip Photo Quality: Face Image (좌) | Quality Metrics (우)
+   - `grid-cols-2` 레이아웃으로 공간 효율적 활용
+   - 이미지 크기 최적화로 가독성 향상
+
+3. **Snake_case/CamelCase 호환성** ([face-verification.js](src/main/resources/static/js/face-verification.js:203-208)):
+   ```javascript
+   const detectionScore = quality.detection_score || quality.detectionScore;
+   const faceAreaRatio = quality.face_area_ratio || quality.faceAreaRatio;
+   const brightnessScore = quality.brightness_score || quality.brightnessScore;
+   const sharpnessScore = quality.sharpness_score || quality.sharpnessScore;
+   const poseScore = quality.pose_score || quality.poseScore;
+   ```
+   - Python API (snake_case) ↔ Java Backend (camelCase) 완벽 호환
+   - 데이터 필드명 변환 로직 추가
+
+4. **Jackson @JsonProperty 매핑** ([FaceQualityMetrics.java](src/main/java/com/smartcoreinc/fphps/example/fphps_web_example/dto/face/FaceQualityMetrics.java)):
+   ```java
+   @JsonProperty("detection_score") Double detectionScore,
+   @JsonProperty("face_area_ratio") Double faceAreaRatio,
+   @JsonProperty("brightness_score") Double brightnessScore,
+   @JsonProperty("sharpness_score") Double sharpnessScore,
+   @JsonProperty("pose_score") Double poseScore,
+   @JsonProperty("image_base64") String imageBase64
+   ```
+   - Python FastAPI의 snake_case를 Java camelCase로 자동 변환
+
+5. **Service Worker 캐시 업데이트** ([sw.js](src/main/resources/static/sw.js:6-8)):
+   - 캐시 버전: v10 → v11
+   - 브라우저 캐시 무효화로 최신 JavaScript 적용
+
+**기술적 개선사항**:
+
+| 항목 | 개선 전 | 개선 후 |
+|------|---------|---------|
+| Quality 표시 | "X Poor Quality" 배지만 표시 | Color-coded progress bars + 아이콘 |
+| 레이아웃 | 단일 컬럼, 이미지 과대 | 2-column grid, 이미지 최적화 |
+| 데이터 호환성 | camelCase만 지원 | snake_case & camelCase 호환 |
+| 시각적 피드백 | 최소한 | 5가지 메트릭 + 종합 평가 |
+
+**수정된 파일**:
+- `src/main/resources/static/js/face-verification.js` - UI 렌더링 로직
+- `src/main/java/.../dto/face/FaceQualityMetrics.java` - @JsonProperty 매핑
+- `src/main/resources/static/sw.js` - 캐시 v11
+
+**테스트 결과**:
+- ✅ Document Photo Quality 메트릭 정상 표시
+- ✅ Chip Photo Quality 메트릭 정상 표시
+- ✅ Color-coded progress bars 정상 작동
+- ✅ 아이콘 정상 표시 (🎯📏💡🔍👤)
+- ✅ 2-column 레이아웃 적용
+- ✅ Snake_case/camelCase 호환성 확인
+
+---
+
 ### 2026-01-06: PA 검증 에러 메시지 UI 개선 및 PWA 캐시 업데이트
 
 **구현 내용**:
