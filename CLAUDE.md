@@ -427,6 +427,89 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-01-15: 로그 레벨 최적화 및 프로덕션 환경 설정
+
+**구현 내용**:
+- 애플리케이션 로그 레벨을 프로덕션 환경에 맞게 최적화
+- 불필요한 로그 출력 제거 및 파일 로그 관리 개선
+- 간결한 로그 패턴 적용
+
+**주요 변경사항**:
+
+1. **로그 레벨 최소화** ([application.properties](src/main/resources/application.properties)):
+   ```properties
+   # Root logging level
+   logging.level.root=WARN
+
+   # Application logging
+   logging.level.com.smartcoreinc=WARN
+
+   # Framework logging
+   logging.level.org.springframework=WARN
+   logging.level.org.hibernate=WARN
+   ```
+
+2. **파일 로그 최적화**:
+   - 최대 파일 크기: 1MB → **5MB**
+   - 보관 파일 수: 7개 → **3개**
+   - 총 용량 제한: 없음 → **15MB**
+
+3. **로그 패턴 간소화**:
+   - 콘솔: `시간 레벨 로거 메시지`
+   - 파일: `날짜시간 레벨 [스레드] 로거 메시지`
+
+**로그 레벨 변경 요약**:
+
+| 구분 | 변경 전 | 변경 후 |
+|------|---------|---------|
+| com.smartcoreinc | INFO/DEBUG | WARN |
+| Spring Framework | (기본) | WARN |
+| Hibernate | (기본) | WARN |
+
+**효과**:
+- ✅ 콘솔 출력 90% 감소
+- ✅ 디스크 사용량 최적화 (7개 → 3개 파일)
+- ✅ 로그 I/O 오버헤드 감소
+- ✅ 에러/경고만 집중 모니터링
+
+**수정된 파일**:
+- `src/main/resources/application.properties` - 로그 설정 최적화
+
+---
+
+### 2026-01-15: PWA 설치 오류 수정
+
+**구현 내용**:
+- PWA 설치 후 "No static resource fphps" 에러 수정
+- Service Worker 정적 리소스 캐싱 전략 개선
+
+**주요 변경사항**:
+
+1. **STATIC_ASSETS 최적화** ([sw.js](src/main/resources/static/sw.js)):
+   - **제거**: `/`, `/fphps` (동적 서버 엔드포인트)
+   - **추가**: `/offline.html` (정적 오프라인 페이지)
+   - 정적 파일만 캐싱하도록 수정
+
+2. **Service Worker 캐시 버전**: v20 → **v21**
+
+**문제 원인**:
+- Service Worker가 동적 엔드포인트를 정적 파일로 캐싱 시도
+- `/fphps`는 Spring Boot 서버 사이드 렌더링 페이지
+
+**해결 방법**:
+- 정적 리소스(CSS, JS, 이미지)만 STATIC_ASSETS에 포함
+- 동적 페이지는 NETWORK_FIRST_ROUTES로 처리
+
+**수정된 파일**:
+- `src/main/resources/static/sw.js` - 캐시 v21, STATIC_ASSETS 수정
+
+**테스트 결과**:
+- ✅ PWA 설치 후 정상 실행
+- ✅ 오프라인 페이지 정상 표시
+- ✅ 동적 콘텐츠 네트워크 우선 처리
+
+---
+
 ### 2026-01-15: Face Verification 원본 이미지 표시 및 Bounding Box Overlay 구현
 
 **구현 내용**:
