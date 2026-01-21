@@ -3,14 +3,12 @@
  * Handles caching strategies for offline support
  */
 
-const CACHE_NAME = 'fastpass-pwa-v20';
-const STATIC_CACHE = 'fastpass-static-v20';
-const DYNAMIC_CACHE = 'fastpass-dynamic-v20';
+const CACHE_NAME = 'fastpass-pwa-v21';
+const STATIC_CACHE = 'fastpass-static-v21';
+const DYNAMIC_CACHE = 'fastpass-dynamic-v21';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
-  '/',
-  '/fphps',
   '/css/main.css',
   '/js/passport-tabs.js',
   '/js/pa-verification.js',
@@ -19,6 +17,7 @@ const STATIC_ASSETS = [
   '/image/fastpass-p1.png',
   '/image/favicon.png',
   '/manifest.json',
+  '/offline.html',
   // External CDN resources
   'https://cdn.jsdelivr.net/npm/preline@3.0.1/dist/preline.min.js'
 ];
