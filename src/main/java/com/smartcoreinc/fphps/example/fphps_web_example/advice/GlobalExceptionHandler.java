@@ -67,6 +67,12 @@ public class GlobalExceptionHandler {
             if (message.contains("timeout") || message.contains("Timeout")) {
                 return "Operation timed out. Please try again.";
             }
+            if (message.contains("Chip data read failed") || message.contains("getEPassResults")) {
+                return "Visual data was read successfully, but chip data could not be retrieved. The passport may not be positioned correctly on the RF antenna, or the chip may be damaged.";
+            }
+            if (message.contains("RF") || message.contains("RFID")) {
+                return "RFID chip read failed. Please ensure the passport is correctly positioned on the reader's antenna.";
+            }
         }
 
         return message != null ? message : "An unexpected error occurred.";

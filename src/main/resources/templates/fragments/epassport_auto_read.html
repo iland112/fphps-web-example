@@ -25,6 +25,22 @@
             </span>
             <span id="connection-status-text" class="text-sm text-white">Not Connected</span>
           </div>
+          <!-- Export Data Button -->
+          <button
+            id="auto-export-data-btn"
+            type="button"
+            onclick="exportPassportData('auto-export-data-btn')"
+            class="inline-flex items-center gap-x-2 rounded-xl bg-emerald-500/90 backdrop-blur-sm px-4 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 transition-all duration-200 border border-white/30 shadow-sm"
+          >
+            <svg id="auto-export-data-spinner" class="hidden animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <svg class="size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            <span id="auto-export-data-text">Export Data</span>
+          </button>
           <button
             id="auto-read-button"
             type="button"
@@ -51,6 +67,31 @@
         </div>
         <div class="flex w-full h-2 bg-white/20 rounded-full overflow-hidden">
           <div id="read-progress-bar" class="flex flex-col justify-center rounded-full overflow-hidden bg-white text-xs text-blue-600 text-center whitespace-nowrap transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chip Read Failure Warning (Hidden by default) -->
+    <div id="chip-failure-warning" class="hidden px-4 sm:px-0 mb-4">
+      <div class="rounded-xl bg-amber-50 border border-amber-200 p-4">
+        <div class="flex items-start gap-3">
+          <div class="flex-shrink-0">
+            <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100">
+              <svg class="size-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+              </svg>
+            </div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-sm font-semibold text-amber-800">Chip Data Read Failed</h3>
+            <p class="mt-1 text-sm text-amber-700">
+              VIZ (Visual Inspection Zone) data was successfully read, but the chip (RFID) data could not be retrieved.
+              The passport may not be positioned correctly, or the chip may be damaged.
+            </p>
+            <p class="mt-2 text-sm text-amber-700 font-medium" id="chip-error-details">
+              Showing available VIZ data below. Chip-specific features (e-Passport photo, Data Groups, SOD) are not available.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -251,14 +292,15 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Shared Passport Tabs JavaScript -->
-  <script th:src="@{/js/passport-tabs.js}"></script>
-  <!-- PA Verification JavaScript -->
-  <script th:src="@{/js/pa-verification.js}"></script>
+    <!-- Shared Passport Tabs JavaScript -->
+    <script th:src="@{/js/passport-tabs.js}"></script>
+    <!-- PA Verification JavaScript -->
+    <script th:src="@{/js/pa-verification.js}"></script>
+    <!-- Data Export JavaScript -->
+    <script th:src="@{/js/data-export.js}"></script>
 
-  <script>
+    <script>
     // Global state management
     let autoScrollEnabled = true;
     let eventCount = 0;
@@ -374,9 +416,44 @@
           break;
         case "FPHPS_EVENTS.FPHPS_EV_EPASS_READ_DONE":
           console.log("E-Passport read completed");
+          console.log("Chip read failed:", message.chipReadFailed);
+          console.log("Chip error:", message.chipReadErrorMessage);
+
+          // Check if chip read failed
+          if (message.chipReadFailed) {
+            // Show chip failure warning
+            const warningDiv = document.getElementById('chip-failure-warning');
+            if (warningDiv) {
+              warningDiv.classList.remove('hidden');
+              // Update error details if available
+              if (message.chipReadErrorMessage) {
+                const errorDetails = document.getElementById('chip-error-details');
+                if (errorDetails) {
+                  errorDetails.innerHTML = `Error: ${message.chipReadErrorMessage}<br>Showing available VIZ data below. Chip-specific features (e-Passport photo, Data Groups, SOD) are not available.`;
+                }
+              }
+            }
+
+            // Hide chip-specific tabs
+            const sodTab = document.getElementById('tab-sod');
+            const paTab = document.getElementById('tab-pa');
+            const faceTab = document.getElementById('tab-face');
+            if (sodTab) sodTab.classList.add('hidden');
+            if (paTab) paTab.classList.add('hidden');
+            if (faceTab) faceTab.classList.add('hidden');
+
+            addLogEntry("Warning", "Chip read failed - VIZ data available", "warning");
+          } else {
+            // Hide warning and show all tabs
+            const warningDiv = document.getElementById('chip-failure-warning');
+            if (warningDiv) {
+              warningDiv.classList.add('hidden');
+            }
+            addLogEntry("System", "E-Passport read completed successfully", "success");
+          }
+
           // Reset button state and prepare for next read
           resetAutoReadButton();
-          addLogEntry("System", "E-Passport read completed successfully", "success");
           break;
         case "FPHPS_EVENTS.FPHPS_EV_PAGE_CAPTURED":
           console.log("ePassResults: ", message.ePassResults);
@@ -659,5 +736,6 @@
         resetAutoReadButton();
       }
     }
-  </script>
+    </script>
+  </div>
 </html>

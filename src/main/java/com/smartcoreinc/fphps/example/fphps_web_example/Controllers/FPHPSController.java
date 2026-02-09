@@ -17,16 +17,22 @@ import com.smartcoreinc.fphps.example.fphps_web_example.dto.ParsedSODInfo;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResponse;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResultWithData;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.face.FaceVerificationResponse;
-
+import com.smartcoreinc.fphps.helpers.DocumentDataExporter;
+import com.smartcoreinc.fphps.exception.DocumentExportException;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.nio.file.Path;
+import java.util.Map;
+import java.util.HashMap;
 
 
 @Slf4j
@@ -38,6 +44,9 @@ public class FPHPSController {
     private final DevicePropertiesService devicePropertiesService;
     private final PassiveAuthenticationService paService;
     private final FaceVerificationService faceService;
+
+    @Value("${document-export.base-dir}")
+    private String exportBaseDir;
 
     public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService, PassiveAuthenticationService paService, FaceVerificationService faceService) {
         this.fphpsService = fphpsService;
@@ -115,24 +124,68 @@ public class FPHPSController {
 
     @GetMapping("/passport/manual-read")
     public String manualReadPost(@ModelAttribute EPassportSettingForm formData, Model model) {
-        DocumentReadResponse response = fphpsService.read("PASSPORT", false);
-        model.addAttribute("response", response);
+        try {
+            log.info("📖 Manual Read Started");
+            DocumentReadResponse response = fphpsService.read("PASSPORT", false);
 
-        // ParsedSOD 정보 추출 및 모델에 추가
-        if (response != null && response.getParsedSOD() != null) {
-            ParsedSODInfo sodInfo = ParsedSODInfo.from(response.getParsedSOD());
-            model.addAttribute("parsedSODInfo", sodInfo);
-            log.debug("ParsedSOD information added to model: {}", sodInfo);
-        } else {
-            log.debug("No ParsedSOD data available in response");
+            // 응답 null 체크 및 로깅
+            if (response == null) {
+                log.warn("⚠ Manual Read: No response received - Passport may not have been detected");
+                model.addAttribute("response", null);
+                return "fragments/epassport_manual_read :: passport-information";
+            }
+
+            // VIZ 데이터 확인
+            boolean hasVizData = response.getMrzInfo() != null;
+            // Chip 데이터 확인
+            boolean hasChipData = response.getEPassResults() != null;
+
+            if (hasVizData && !hasChipData) {
+                log.warn("⚠ Manual Read: VIZ data available but Chip read failed");
+                log.info("→ Displaying VIZ data with chip failure warning");
+            } else if (hasVizData && hasChipData) {
+                log.info("✓ Manual Read: Both VIZ and Chip data successfully read");
+            } else if (!hasVizData) {
+                log.warn("⚠ Manual Read: No VIZ data - Passport not detected or positioned incorrectly");
+            }
+
+            // 이미지 데이터 확인 및 로깅
+            log.info("📸 Image data in response:");
+            log.info("  - VIZ Photo: {}", response.getVizPhotoImage() != null ? "✓ Present" : "✗ Absent");
+            log.info("  - ePass Photo: {}", response.getEPassPhotoImage() != null ? "✓ Present" : "✗ Absent");
+            log.info("  - MRZ Image: {}", response.getMrzImage() != null ? "✓ Present" : "✗ Absent");
+            log.info("  - IR Image: {}", response.getIrImage() != null ? "✓ Present" : "✗ Absent");
+            log.info("  - UV Image: {}", response.getUvImage() != null ? "✓ Present" : "✗ Absent");
+            log.info("  - WH Image: {}", response.getWhImage() != null ? "✓ Present" : "✗ Absent");
+
+            model.addAttribute("response", response);
+
+            // ParsedSOD 정보 추출 및 모델에 추가 (Chip 데이터가 있을 때만)
+            if (response.getParsedSOD() != null) {
+                try {
+                    ParsedSODInfo sodInfo = ParsedSODInfo.from(response.getParsedSOD());
+                    model.addAttribute("parsedSODInfo", sodInfo);
+                    log.debug("ParsedSOD information added to model");
+                } catch (Exception e) {
+                    log.warn("Failed to parse SOD information: {}", e.getMessage());
+                }
+            } else {
+                log.debug("No ParsedSOD data available (chip read may have failed)");
+            }
+
+            return "fragments/epassport_manual_read :: passport-information";
+
+        } catch (Exception e) {
+            log.error("❌ Manual Read failed with exception: {}", e.getMessage(), e);
+            // 예외 발생 시 빈 응답으로 처리하여 UI에 적절한 메시지 표시
+            model.addAttribute("response", null);
+            throw e; // GlobalExceptionHandler가 처리하도록 재던짐
         }
-
-        return "fragments/epassport_manual_read";
     }
 
     @GetMapping("/passport/auto-read")
     public String showAutoReadPage() {
-        return "fragments/epassport_auto_read";
+        return "fragments/epassport_auto_read :: e-passport-auto-read";
     }
 
     @PostMapping("/passport/run-auto-read")
@@ -221,12 +274,12 @@ public class FPHPSController {
     public String idCardManualRead(Model model) {
         DocumentReadResponse response = fphpsService.read("IDCARD", false);
         model.addAttribute("response", response);
-        return "fragments/idcard_manual_read";
+        return "fragments/idcard_manual_read :: id-card-information";
     }
 
     @GetMapping("/idcard/auto-read")
     public String showIDCardAutoReadPage() {
-        return "fragments/idcard_auto_read";
+        return "fragments/idcard_auto_read :: id-card-auto-read";
     }
 
     @PostMapping("/idcard/run-auto-read")
@@ -241,12 +294,12 @@ public class FPHPSController {
     public String barcodeManualRead(Model model) {
         DocumentReadResponse response = fphpsService.read("BARCODE", false);
         model.addAttribute("response", response);
-        return "fragments/barcode_manual_read";
+        return "fragments/barcode_manual_read :: barcode-information";
     }
 
     @GetMapping("/barcode/auto-read")
     public String showBarcodeAutoReadPage() {
-        return "fragments/barcode_auto_read";
+        return "fragments/barcode_auto_read :: barcode-auto-read";
     }
 
     @PostMapping("/barcode/run-auto-read")
@@ -280,6 +333,65 @@ public class FPHPSController {
         }
 
         return faceService.verifyFromDocumentResponse(lastResponse);
+    }
+
+    /**
+     * 여권 데이터 내보내기
+     * 마지막 읽기 결과를 파일 시스템에 저장
+     * - 이미지 파일 (VIZ, ePass, MRZ, IR, UV, WH)
+     * - SOD 및 Data Group 바이너리 파일
+     * - MRZ 텍스트 파일
+     *
+     * @return 내보내기 결과 (성공 시 저장 경로, 실패 시 에러 메시지)
+     */
+    @PostMapping(value = "/passport/export-data", produces = "application/json")
+    @ResponseBody
+    public Map<String, Object> exportPassportData() {
+        log.debug("Document data export requested");
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 마지막 읽기 결과 확인
+            DocumentReadResponse lastResponse = fphpsService.getLastReadResponse();
+            if (lastResponse == null) {
+                response.put("success", false);
+                response.put("message", "No passport data available. Please read passport first.");
+                return response;
+            }
+
+            // 여권 번호 확인
+            String passportNumber = null;
+            if (lastResponse.getMrzInfo() != null) {
+                passportNumber = lastResponse.getMrzInfo().getPassportNumber();
+            }
+
+            if (passportNumber == null || passportNumber.trim().isEmpty()) {
+                log.warn("Passport number is missing, using timestamp-based folder name");
+            }
+
+            // 데이터 내보내기
+            Path exportPath = DocumentDataExporter.exportToFolder(lastResponse, exportBaseDir);
+
+            log.info("Document data exported successfully to: {}", exportPath);
+
+            response.put("success", true);
+            response.put("message", "Document data exported successfully");
+            response.put("exportPath", exportPath.toString());
+            response.put("passportNumber", passportNumber != null ? passportNumber : "UNKNOWN");
+
+        } catch (DocumentExportException e) {
+            log.error("Failed to export document data", e);
+            response.put("success", false);
+            response.put("message", "Export failed: " + e.getMessage());
+
+        } catch (Exception e) {
+            log.error("Unexpected error during document data export", e);
+            response.put("success", false);
+            response.put("message", "Unexpected error: " + e.getMessage());
+        }
+
+        return response;
     }
 
 }
