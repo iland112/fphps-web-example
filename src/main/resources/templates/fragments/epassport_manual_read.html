@@ -9,21 +9,65 @@
             Data details after reading the passport/e-passport
           </p>
         </div>
-        <!-- Status Badge -->
-        <div class="p-3 bg-green-50 rounded-lg border border-green-200">
-          <div class="flex items-center gap-2">
-            <svg class="size-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3">
+          <!-- Export Data Button -->
+          <button
+            id="manual-export-data-btn"
+            type="button"
+            onclick="exportPassportData('manual-export-data-btn')"
+            class="inline-flex items-center justify-center gap-x-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-cyan-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all"
+          >
+            <svg id="manual-export-data-spinner" class="hidden animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span class="text-sm font-semibold text-green-800">Read Success</span>
+            <svg class="size-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            <span id="manual-export-data-text">Export Data</span>
+          </button>
+          <!-- Status Badge -->
+          <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+            <div class="flex items-center gap-2">
+              <svg class="size-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="text-sm font-semibold text-green-800">Read Success</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <!-- Passport Holder Info Card -->
     <th:block
-      th:if="${response != null and response.mrzInfo != null and response.ePassResults != null}"
+      th:if="${response != null and response.mrzInfo != null}"
     >
+      <!-- Chip Read Failure Warning -->
+      <div th:if="${response.ePassResults == null}" class="px-4 sm:px-0 mb-4">
+        <div class="rounded-xl bg-amber-50 border border-amber-200 p-4">
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0">
+              <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100">
+                <svg class="size-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm font-semibold text-amber-800">Chip Data Read Failed</h3>
+              <p class="mt-1 text-sm text-amber-700">
+                VIZ (Visual Inspection Zone) data was successfully read, but the chip (RFID) data could not be retrieved.
+                The passport may not be positioned correctly, or the chip may be damaged.
+              </p>
+              <p class="mt-2 text-sm text-amber-700 font-medium">
+                Showing available VIZ data below. Chip-specific features (e-Passport photo, Data Groups, SOD) are not available.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="px-4 sm:px-0 mb-2">
         <div th:replace="~{fragments/passport_cards :: passportHeader(
           mrzInfo=${response.mrzInfo},
@@ -41,15 +85,18 @@
             <button type="button" onclick="switchTab('emrtd')" id="tab-emrtd" class="passport-tab group relative min-w-0 flex-1 overflow-hidden bg-white px-4 py-4 text-center text-sm font-medium text-gray-900 hover:bg-gray-50 focus:z-10 border-b-2 border-blue-500">
               <span>E-MRTD Data</span>
             </button>
-            <button type="button" onclick="switchTab('sod')" id="tab-sod" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
-              <span>SOD Information</span>
-            </button>
-            <button type="button" onclick="switchTab('pa')" id="tab-pa" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
-              <span>Passive Authentication</span>
-            </button>
-            <button type="button" onclick="switchTab('face')" id="tab-face" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
-              <span>Face Verification</span>
-            </button>
+            <!-- Chip-only tabs: only show if ePassResults is available -->
+            <th:block th:if="${response.ePassResults != null}">
+              <button type="button" onclick="switchTab('sod')" id="tab-sod" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+                <span>SOD Information</span>
+              </button>
+              <button type="button" onclick="switchTab('pa')" id="tab-pa" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+                <span>Passive Authentication</span>
+              </button>
+              <button type="button" onclick="switchTab('face')" id="tab-face" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+                <span>Face Verification</span>
+              </button>
+            </th:block>
           </nav>
 
           <!-- Tab Content -->
@@ -60,8 +107,8 @@
               <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <!-- Row 1, Col 1: Photo Comparison -->
                 <div th:replace="~{fragments/passport_cards :: photoComparison(
-                  vizPhotoData=${response.vizPhotoImage.imageData},
-                  epassPhotoData=${response.ePassPhotoImage.imageData},
+                  vizPhotoData=${response.vizPhotoImage != null ? response.vizPhotoImage.imageData : null},
+                  epassPhotoData=${response.ePassPhotoImage != null ? response.ePassPhotoImage.imageData : null},
                   vizPhotoId='manual-viz-photo',
                   epassPhotoId='manual-epass-photo'
                 )}"></div>
@@ -87,7 +134,7 @@
 
                 <!-- Row 2, Col 1-2: MRZ Image (spans 2 columns) -->
                 <div th:replace="~{fragments/passport_cards :: mrzImageCard(
-                  mrzImageData=${response.mrzImage.imageData},
+                  mrzImageData=${response.mrzImage != null ? response.mrzImage.imageData : null},
                   mrzLines=${response.mrzLines},
                   mrzPhotoId='manual-mrz-photo',
                   mrzLine1Id='manual-mrz-line-1',
@@ -102,9 +149,9 @@
 
                 <!-- Row 3, Col 1-3: Document Images (spans all 3 columns) -->
                 <div th:replace="~{fragments/passport_cards :: documentImages(
-                  whImageData=${response.whImage.imageData},
-                  irImageData=${response.irImage.imageData},
-                  uvImageData=${response.uvImage.imageData},
+                  whImageData=${response.whImage != null ? response.whImage.imageData : null},
+                  irImageData=${response.irImage != null ? response.irImage.imageData : null},
+                  uvImageData=${response.uvImage != null ? response.uvImage.imageData : null},
                   whImageId='manual-wh-image',
                   irImageId='manual-ir-image',
                   uvImageId='manual-uv-image'
@@ -112,30 +159,33 @@
               </div>
             </div>
 
-            <!-- SOD Tab Content -->
-            <div id="content-sod" class="tab-content hidden">
-              <div th:replace="~{fragments/sod_information :: sodInformation(${parsedSODInfo})}"></div>
-            </div>
+            <!-- Chip-only tab contents: only show if ePassResults is available -->
+            <th:block th:if="${response.ePassResults != null}">
+              <!-- SOD Tab Content -->
+              <div id="content-sod" class="tab-content hidden">
+                <div th:replace="~{fragments/sod_information :: sodInformation(${parsedSODInfo})}"></div>
+              </div>
 
-            <!-- PA Tab Content -->
-            <div id="content-pa" class="tab-content hidden">
-              <div th:replace="~{fragments/pa_tab_content :: paTabContent(
-                btnId='manual-verify-pa-btn',
-                containerId='manual-pa-result-container',
-                emptyStateId='manual-pa-empty-state',
-                prefix='manual'
-              )}"></div>
-            </div>
+              <!-- PA Tab Content -->
+              <div id="content-pa" class="tab-content hidden">
+                <div th:replace="~{fragments/pa_tab_content :: paTabContent(
+                  btnId='manual-verify-pa-btn',
+                  containerId='manual-pa-result-container',
+                  emptyStateId='manual-pa-empty-state',
+                  prefix='manual'
+                )}"></div>
+              </div>
 
-            <!-- Face Verification Tab Content -->
-            <div id="content-face" class="tab-content hidden">
-              <div th:replace="~{fragments/face_verification_tab_content :: faceVerificationTabContent(
-                btnId='manual-verify-face-btn',
-                containerId='manual-face-result-container',
-                emptyStateId='manual-face-empty-state',
-                prefix='manual'
-              )}"></div>
-            </div>
+              <!-- Face Verification Tab Content -->
+              <div id="content-face" class="tab-content hidden">
+                <div th:replace="~{fragments/face_verification_tab_content :: faceVerificationTabContent(
+                  btnId='manual-verify-face-btn',
+                  containerId='manual-face-result-container',
+                  emptyStateId='manual-face-empty-state',
+                  prefix='manual'
+                )}"></div>
+              </div>
+            </th:block>
           </div>
         </div>
       </div>
@@ -163,15 +213,16 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Shared Passport Tabs JavaScript -->
-  <script th:src="@{/js/passport-tabs.js}"></script>
-  <!-- PA Verification JavaScript -->
-  <script th:src="@{/js/pa-verification.js}"></script>
+    <!-- Shared Passport Tabs JavaScript -->
+    <script th:src="@{/js/passport-tabs.js}"></script>
+    <!-- PA Verification JavaScript -->
+    <script th:src="@{/js/pa-verification.js}"></script>
+    <!-- Data Export JavaScript -->
+    <script th:src="@{/js/data-export.js}"></script>
 
-  <!-- Tab Switching JavaScript -->
-  <script>
+    <!-- Tab Switching JavaScript -->
+    <script>
     function switchTab(tabName) {
       // Update tab buttons
       document.querySelectorAll('.passport-tab').forEach(tab => {
@@ -193,5 +244,6 @@
       activeContent.classList.remove('hidden');
       activeContent.classList.add('block');
     }
-  </script>
+    </script>
+  </div>
 </html>

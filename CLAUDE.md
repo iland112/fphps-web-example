@@ -427,6 +427,138 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-02-09: EC 파라미터 지원 및 SOD 데이터 표시 문제 해결
+
+**구현 내용**:
+- Bouncy Castle provider를 명시적으로 지정하여 explicit EC parameters 지원
+- SOD 검증을 non-blocking으로 변경하여 검증 실패 시에도 데이터 표시 가능
+- Export Data 버튼 UI 개선 및 폴더명 형식 변경
+
+**주요 변경사항**:
+
+1. **EC 파라미터 지원 문제 해결** ([SODParser.java](../FPHPS/lib/src/main/java/com/smartcoreinc/fphps/sod/SODParser.java)):
+   - **문제**: `IOException: Only named ECParameters supported` 에러 발생
+   - **원인**: Java 기본 CertificateFactory는 named EC curves만 지원
+   - **해결**: Bouncy Castle provider 명시적 지정
+   ```java
+   // 변경 전
+   CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+
+   // 변경 후
+   CertificateFactory certFactory = CertificateFactory.getInstance("X.509", "BC");
+   ```
+
+2. **SOD 검증을 Non-blocking으로 변경** ([EPassportReader.java](../FPHPS/lib/src/main/java/com/smartcoreinc/fphps/readers/EPassportReader.java)):
+   - **문제**: DG 해시 검증 실패 시 parsedSOD가 저장되지 않아 UI에 "No SOD data available" 표시
+   - **원인**: 검증 실패 시 exception을 던져 전체 프로세스 중단
+   - **해결**: 검증을 try-catch로 감싸고, parsedSOD를 검증 전에 먼저 저장
+   ```java
+   private void readSODInternal(DocumentReadResponse response, boolean verify) throws Exception {
+       // 1. Parse SOD
+       ParsedSOD parsedSod = getSOD(false);
+
+       // 2. Set SOD data bytes (always store)
+       byte[] sodDataBytes = getSODataBytes(false);
+       response.setSodDataBytes(sodDataBytes);
+
+       // 3. Read Data Group contents
+       Map<Integer, byte[]> dataGroupContents = readDataGroupContents(parsedSod);
+       response.setDgDataMap(dataGroupContents);
+
+       // 4. Always set ParsedSOD (even if verification fails)
+       response.setParsedSOD(parsedSod);
+
+       // 5. Verify SOD signature (non-blocking)
+       if (verify) {
+           try {
+               SODSignatureVerifier.verifySignature(...);
+           } catch (Exception e) {
+               log.warn("SOD signature verification failed: {}", e.getMessage());
+               // Don't throw - allow data to be used
+           }
+       }
+
+       // 6. Verify Data Group hashes (non-blocking)
+       if (verify) {
+           try {
+               DataGroupHashVerifier.verify(...);
+           } catch (Exception e) {
+               log.warn("DG hash verification failed: {}", e.getMessage());
+               // Don't throw - allow data to be used
+           }
+       }
+   }
+   ```
+
+3. **Export Data 버튼 스타일 개선** ([epassport_manual_read.html](src/main/resources/templates/fragments/epassport_manual_read.html)):
+   - **변경 전**: `bg-emerald-600` (회색 배경에 하얀 글자로 가독성 낮음)
+   - **변경 후**: `bg-cyan-600` (청록색 배경으로 명확한 가시성)
+   - **추가 개선사항**:
+     - 그림자 효과 강화: `shadow-lg hover:shadow-xl`
+     - 비활성화 상태 개선: `disabled:bg-gray-400 disabled:cursor-not-allowed`
+
+4. **폴더명 형식 변경** ([DocumentDataExporter.java](../FPHPS/lib/src/main/java/com/smartcoreinc/fphps/helpers/DocumentDataExporter.java)):
+   - **변경 전**: 여권번호만 사용 (예: `M12345678`)
+   - **변경 후**: 국가코드 + 여권번호 (예: `KOR_M12345678`)
+   ```java
+   private static String extractPassportNumber(DocumentReadResponse response) {
+       String folderName = null;
+       if (response.getMrzInfo() != null) {
+           String issuingState = response.getMrzInfo().getIssuingState();
+           String passportNumber = response.getMrzInfo().getPassportNumber();
+
+           if (issuingState != null && !issuingState.trim().isEmpty() &&
+               passportNumber != null && !passportNumber.trim().isEmpty()) {
+               folderName = issuingState.trim() + "_" + passportNumber.trim();
+           } else if (passportNumber != null && !passportNumber.trim().isEmpty()) {
+               folderName = passportNumber.trim();
+           }
+       }
+
+       if (folderName == null || folderName.trim().isEmpty()) {
+           folderName = "PASSPORT_" + System.currentTimeMillis();
+       }
+
+       return folderName;
+   }
+   ```
+
+**기술적 해결 과제**:
+
+1. **EC 인증서 파싱 문제**:
+   - Java 기본 provider는 explicit EC parameters를 지원하지 않음
+   - Bouncy Castle provider는 모든 EC 형식 지원
+   - CertificateFactory 생성 시 provider 명시적 지정으로 해결
+
+2. **검증 실패와 데이터 표시의 분리**:
+   - 이전: 검증 실패 → exception → 데이터 미저장 → UI 표시 불가
+   - 개선: 검증 실패 → 경고 로그 → 데이터는 저장 → UI 표시 가능
+   - 검증 결과는 별도 플래그로 관리 가능
+
+**수정된 파일**:
+
+**FPHPS Library:**
+- `lib/src/main/java/com/smartcoreinc/fphps/sod/SODParser.java` - Bouncy Castle provider 명시
+- `lib/src/main/java/com/smartcoreinc/fphps/readers/EPassportReader.java` - Non-blocking 검증
+- `lib/src/main/java/com/smartcoreinc/fphps/helpers/DocumentDataExporter.java` - 폴더명 형식 변경
+
+**Web Application:**
+- `src/main/resources/templates/fragments/epassport_manual_read.html` - 버튼 스타일 개선
+
+**빌드 결과**:
+- ✅ FPHPS 라이브러리: BUILD SUCCESSFUL
+- ✅ 웹 애플리케이션: BUILD SUCCESSFUL
+
+**테스트 결과**:
+- ✅ EC 파라미터 에러 해결 (explicit EC parameters 지원)
+- ✅ SOD 데이터 정상 파싱 및 저장
+- ✅ SOD Information 탭 정상 표시
+- ✅ DG 해시 검증 실패 시에도 데이터 표시 가능
+- ✅ Export Data 버튼 가시성 개선
+- ✅ 폴더명 형식: `국가코드_여권번호` (예: `ARE_SQ0001024`)
+
+---
+
 ### 2026-01-15: 로그 레벨 최적화 및 프로덕션 환경 설정
 
 **구현 내용**:
