@@ -85,6 +85,10 @@
             <button type="button" onclick="switchTab('emrtd')" id="tab-emrtd" class="passport-tab group relative min-w-0 flex-1 overflow-hidden bg-white px-4 py-4 text-center text-sm font-medium text-gray-900 hover:bg-gray-50 focus:z-10 border-b-2 border-blue-500">
               <span>E-MRTD Data</span>
             </button>
+            <!-- MRZ Validation tab: always show if MRZ data is available -->
+            <button th:if="${response.mrzInfo != null}" type="button" onclick="switchTab('mrz-validation')" id="tab-mrz-validation" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+              <span>MRZ Validation</span>
+            </button>
             <!-- Chip-only tabs: only show if ePassResults is available -->
             <th:block th:if="${response.ePassResults != null}">
               <button type="button" onclick="switchTab('sod')" id="tab-sod" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
@@ -157,6 +161,11 @@
                   uvImageId='manual-uv-image'
                 )}"></div>
               </div>
+            </div>
+
+            <!-- MRZ Validation Tab Content -->
+            <div th:if="${response.mrzInfo != null}" id="content-mrz-validation" class="tab-content hidden">
+              <div th:replace="~{fragments/mrz_validation :: mrzValidation(${response.mrzValidationResult})}"></div>
             </div>
 
             <!-- Chip-only tab contents: only show if ePassResults is available -->

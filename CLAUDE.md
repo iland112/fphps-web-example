@@ -427,6 +427,122 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-02-09: ICAO Doc 9303 MRZ Validation 기능 구현
+
+**구현 내용**:
+- ICAO 9303 표준 기반 MRZ 데이터 검증 기능 구현
+- Check Digit 검증, Format 검증, Field 검증 3단계 검증 시스템
+- Manual Read 및 Automatic Read 모두에서 MRZ 검증 지원
+- 검증 결과 UI 시각화 (탭 기반 인터페이스)
+
+**주요 변경사항**:
+
+1. **Phase 1: Check Digit Validation** ([IcaoCheckDigitValidator.java](D:\Workspaces\java\smartcore\FPHPS\lib\src\main\java\com\smartcoreinc\fphps\validators\IcaoCheckDigitValidator.java)):
+   - ICAO 9303 check digit 알고리즘 구현 (weights: 7, 3, 1)
+   - `calculate()`: check digit 계산
+   - `validate()`: check digit 검증
+   - `calculateComposite()`: TD3 여권 복합 check digit 계산
+   - 5가지 check digit 검증:
+     - Passport Number
+     - Birth Date
+     - Expiry Date
+     - Optional Data
+     - Composite Check Digit
+
+2. **Phase 2: Format and Field Validation** ([MrzValidator.java](D:\Workspaces\java\smartcore\FPHPS\lib\src\main\java\com\smartcoreinc\fphps\validators\MrzValidator.java)):
+   - **Format Validation**:
+     - Document Type 검증 (P, V, I, A)
+     - Character Set 검증 (A-Z, 0-9, < 만 허용)
+   - **Field Validation**:
+     - Country Code 검증 (ISO 3166-1 alpha-3, 3자리 알파벳)
+     - Date Format 검증 (YYMMDD, 월 1-12, 일 1-31)
+     - Sex Code 검증 (M, F, <)
+
+3. **Validation Result DTO** ([MrzValidationResult.java](D:\Workspaces\java\smartcore\FPHPS\lib\src\main\java\com\smartcoreinc\fphps\validators\MrzValidationResult.java)):
+   - Check digit 검증 결과 목록 (`CheckDigitResult`)
+   - Format 오류 목록 (`ValidationError`)
+   - Field 오류 목록 (`ValidationError`)
+   - 전체 검증 상태 및 요약 메시지
+
+4. **Integration** ([EPassportReader.java](D:\Workspaces\java\smartcore\FPHPS\lib\src\main\java\com\smartcoreinc\fphps\readers\EPassportReader.java)):
+   - MRZ 파싱 후 자동 검증 수행
+   - `MrzValidator` 인스턴스 생성 및 검증 실행
+   - `DocumentReadResponse`에 `mrzValidationResult` 필드 추가
+
+5. **Phase 3: UI Integration**:
+   - **Thymeleaf Fragment** ([mrz_validation.html](src/main/resources/templates/fragments/mrz_validation.html)):
+     - 전체 검증 상태 헤더 (성공/실패 아이콘)
+     - Check Digit 검증 결과 카드 (개별 필드별 상태)
+     - Format Errors 카드 (빨간색)
+     - Field Errors 카드 (노란색)
+     - Color-coded status badges
+
+   - **Manual Read 페이지** ([epassport_manual_read.html](src/main/resources/templates/fragments/epassport_manual_read.html)):
+     - "MRZ Validation" 탭 추가 (E-MRTD Data 탭 다음)
+     - 탭 버튼 및 컨텐츠 영역 추가
+
+   - **Automatic Read 페이지** ([epassport_auto_read.html](src/main/resources/templates/fragments/epassport_auto_read.html)):
+     - "MRZ Validation" 탭 추가
+     - WebSocket 이벤트 핸들러에서 `mrzValidationResult` 렌더링
+
+   - **JavaScript Rendering** ([passport-tabs.js](src/main/resources/static/js/passport-tabs.js)):
+     - `renderMrzValidation()` 함수 추가
+     - Check digit 결과, Format 오류, Field 오류 동적 렌더링
+     - Color-coded UI (녹색=성공, 빨강=Format 오류, 노랑=Field 오류)
+
+**검증 항목 요약**:
+
+| 검증 타입 | 항목 | 설명 |
+|----------|------|------|
+| **Check Digit** | Passport Number | 여권 번호 체크 디지트 (weights: 7,3,1) |
+| | Birth Date | 생년월일 체크 디지트 |
+| | Expiry Date | 만료일 체크 디지트 |
+| | Optional Data | 선택 데이터 체크 디지트 (있는 경우) |
+| | Composite | 복합 체크 디지트 (TD3 여권) |
+| **Format** | Document Type | P, V, I, A 검증 |
+| | Character Set | A-Z, 0-9, < 만 허용 |
+| **Field** | Country Code | 3자리 알파벳 (ISO 3166-1 alpha-3) |
+| | Date Format | YYMMDD 형식, 월 1-12, 일 1-31 |
+| | Sex Code | M, F, < 검증 |
+
+**기술적 세부사항**:
+
+| 구성 요소 | 구현 방식 |
+|----------|----------|
+| Check Digit 알고리즘 | Weights 7, 3, 1 반복, A=10...Z=35, 0-9=0-9, <=0, sum % 10 |
+| Composite Check Digit | PassportNumber+BirthDate+ExpiryDate+OptionalData (각 check digit 포함) |
+| Error Handling | 개별 try-catch로 검증 실패 시에도 계속 진행 |
+| UI Rendering | Thymeleaf server-side + JavaScript client-side (WebSocket) |
+| Color Coding | 녹색(성공), 빨강(Format 오류), 노랑(Field 오류) |
+
+**수정된 파일**:
+
+**FPHPS Library (D:\Workspaces\java\smartcore\FPHPS\lib):**
+- `src/main/java/.../validators/IcaoCheckDigitValidator.java` - 새 파일, Check digit 알고리즘
+- `src/main/java/.../validators/MrzValidationResult.java` - 새 파일, 검증 결과 DTO
+- `src/main/java/.../validators/MrzValidator.java` - 새 파일, MRZ 검증기
+- `src/main/java/.../dto/DocumentReadResponse.java` - `mrzValidationResult` 필드 추가
+- `src/main/java/.../readers/EPassportReader.java` - MRZ 검증 통합
+- `build/libs/lib-1.0.0.jar` - 재빌드
+
+**FPHPS_WEB_Example:**
+- `libs/fphps-1.0.0.jar` - 업데이트된 라이브러리
+- `src/main/resources/templates/fragments/mrz_validation.html` - 새 파일, MRZ 검증 UI
+- `src/main/resources/templates/fragments/epassport_manual_read.html` - MRZ Validation 탭 추가
+- `src/main/resources/templates/fragments/epassport_auto_read.html` - MRZ Validation 탭 추가, WebSocket 핸들러
+- `src/main/resources/static/js/passport-tabs.js` - `renderMrzValidation()` 함수 추가
+
+**테스트 결과**:
+- ✅ Library 빌드 성공 (BUILD SUCCESSFUL in 5s)
+- ✅ Web Example 빌드 성공 (BUILD SUCCESSFUL in 7s)
+- ✅ Check Digit 검증 로직 구현 완료
+- ✅ Format/Field 검증 로직 구현 완료
+- ✅ Manual Read UI 통합 완료
+- ✅ Automatic Read UI 통합 완료
+- ✅ WebSocket 렌더링 로직 추가 완료
+
+---
+
 ### 2026-02-09: EC 파라미터 지원 및 SOD 데이터 표시 문제 해결
 
 **구현 내용**:

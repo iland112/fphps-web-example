@@ -118,6 +118,13 @@
             E-MRTD Data
           </button>
           <button
+            onclick="switchTabAuto('mrz-validation')"
+            id="tab-mrz-validation"
+            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+          >
+            MRZ Validation
+          </button>
+          <button
             onclick="switchTabAuto('sod')"
             id="tab-sod"
             class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
@@ -207,6 +214,11 @@
             uvImageId='uv-image'
           )}"></div>
         </div>
+      </div>
+
+      <!-- MRZ Validation Tab Content -->
+      <div id="content-mrz-validation" class="tab-content-auto hidden">
+        <div id="auto-mrz-validation-container"></div>
       </div>
 
       <!-- SOD Information Tab Content -->
@@ -380,6 +392,13 @@
         console.log("ParsedSOD data:", message.parsedSOD);
         // 공유 JavaScript의 renderSODInformation 함수 사용 (새 컨테이너 ID 전달)
         renderSODInformation(message.parsedSOD, 'auto-sod-info-container');
+      }
+
+      // MRZ Validation 결과 렌더링
+      if (message.mrzValidationResult) {
+        console.log("MRZ Validation found in event:", message.eventCodeString);
+        console.log("MRZ Validation data:", message.mrzValidationResult);
+        renderMrzValidation(message.mrzValidationResult, 'auto-mrz-validation-container');
       }
 
       // Add log entry for all events

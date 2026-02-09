@@ -547,3 +547,170 @@ function renderSODInformation(parsedSOD, containerId = 'sod-info-container') {
   container.innerHTML = html;
   console.log("SOD information rendered successfully");
 }
+
+// ============================================
+// MRZ Validation Functions
+// ============================================
+
+/**
+ * Render MRZ Validation Result
+ * @param {Object} validationResult - MrzValidationResult from server
+ * @param {string} containerId - ID of the container element
+ */
+function renderMrzValidation(validationResult, containerId = 'auto-mrz-validation-container') {
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.error("MRZ validation container not found:", containerId);
+    return;
+  }
+
+  if (!validationResult) {
+    container.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-12">
+        <svg class="size-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+        </svg>
+        <p class="text-sm text-gray-500">No MRZ validation data available</p>
+      </div>
+    `;
+    return;
+  }
+
+  const isValid = validationResult.valid;
+  const statusColor = isValid ? 'green' : 'red';
+  const statusIcon = isValid
+    ? `<svg class="size-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+       </svg>`
+    : `<svg class="size-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
+       </svg>`;
+
+  let html = `
+    <!-- Header -->
+    <div class="flex items-center gap-3 pb-3 border-b border-gray-200">
+      <div class="flex size-10 items-center justify-center rounded-lg bg-${statusColor}-100">
+        ${statusIcon}
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900">ICAO 9303 MRZ Validation</h3>
+        <p class="text-sm text-${statusColor}-600">${validationResult.summaryMessage || 'Validation complete'}</p>
+      </div>
+    </div>
+  `;
+
+  // Check Digit Results
+  if (validationResult.checkDigitResults && validationResult.checkDigitResults.length > 0) {
+    html += `
+      <div class="mt-4 bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
+          <h4 class="text-sm font-semibold text-gray-900">Check Digit Validation</h4>
+          <p class="text-xs text-gray-500 mt-0.5">ICAO 9303 check digit verification results</p>
+        </div>
+        <div class="p-4 space-y-2">
+    `;
+
+    validationResult.checkDigitResults.forEach(checkResult => {
+      const checkValid = checkResult.valid;
+      const checkColor = checkValid ? 'green' : 'red';
+      const checkIcon = checkValid
+        ? `<svg class="size-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+           </svg>`
+        : `<svg class="size-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
+           </svg>`;
+
+      html += `
+        <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+          <div class="flex items-center gap-3">
+            <div class="flex size-8 items-center justify-center rounded-full bg-${checkColor}-100">
+              ${checkIcon}
+            </div>
+            <div>
+              <span class="text-sm font-semibold text-gray-900">${checkResult.fieldName}</span>
+              ${!checkValid && checkResult.errorMessage ? `<p class="text-xs text-red-600 mt-0.5">${checkResult.errorMessage}</p>` : ''}
+            </div>
+          </div>
+          <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-${checkColor}-100 text-${checkColor}-800">
+            ${checkValid ? 'VALID' : 'INVALID'}
+          </span>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+  }
+
+  // Format Errors
+  if (validationResult.formatErrors && validationResult.formatErrors.length > 0) {
+    html += `
+      <div class="mt-4 bg-red-50 border border-red-200 rounded-lg overflow-hidden">
+        <div class="bg-red-100 px-4 py-3 border-b border-red-200">
+          <h4 class="text-sm font-semibold text-red-900">Format Errors</h4>
+          <p class="text-xs text-red-700 mt-0.5">MRZ format validation failures</p>
+        </div>
+        <div class="p-4 space-y-2">
+    `;
+
+    validationResult.formatErrors.forEach(error => {
+      html += `
+        <div class="flex items-start gap-3 bg-white rounded-lg p-3 border border-red-200">
+          <div class="flex size-8 items-center justify-center rounded-full bg-red-100 flex-shrink-0">
+            <svg class="size-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div>
+            <span class="text-sm font-semibold text-red-900">${error.type}</span>
+            <p class="text-xs text-red-700 mt-0.5">${error.message}</p>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+  }
+
+  // Field Errors
+  if (validationResult.fieldErrors && validationResult.fieldErrors.length > 0) {
+    html += `
+      <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg overflow-hidden">
+        <div class="bg-amber-100 px-4 py-3 border-b border-amber-200">
+          <h4 class="text-sm font-semibold text-amber-900">Field Errors</h4>
+          <p class="text-xs text-amber-700 mt-0.5">Field validation failures</p>
+        </div>
+        <div class="p-4 space-y-2">
+    `;
+
+    validationResult.fieldErrors.forEach(error => {
+      html += `
+        <div class="flex items-start gap-3 bg-white rounded-lg p-3 border border-amber-200">
+          <div class="flex size-8 items-center justify-center rounded-full bg-amber-100 flex-shrink-0">
+            <svg class="size-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div>
+            <span class="text-sm font-semibold text-amber-900">${error.type}</span>
+            <p class="text-xs text-amber-700 mt-0.5">${error.message}</p>
+          </div>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+  console.log("MRZ validation rendered successfully");
+}
