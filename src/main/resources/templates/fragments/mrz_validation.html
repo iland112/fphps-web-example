@@ -1,65 +1,173 @@
 <html xmlns:th="http://www.thymeleaf.org">
+
+  <!--/*
+    Info icon fragment for MRZ tooltips (hover-based).
+    Uses showMrzTooltip()/hideMrzTooltip() and MRZ_TOOLTIPS from passport-tabs.js.
+  */-->
+  <span th:fragment="infoIcon(tooltipKey)" class="mrz-tooltip-wrapper relative inline-flex items-center ml-1">
+    <button type="button" th:attr="data-mrz-tooltip=${tooltipKey}"
+            onmouseenter="showMrzTooltip(event)" onmouseleave="hideMrzTooltip(event)" onclick="showMrzTooltip(event)"
+            class="text-gray-400 hover:text-blue-500 focus:text-blue-500 transition-colors">
+      <svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    </button>
+  </span>
+
   <!-- MRZ Validation 결과 표시 프래그먼트 -->
-  <div id="mrz-validation-section" th:fragment="mrzValidation(validationResult)" class="space-y-4">
+  <div id="mrz-validation-section" th:fragment="mrzValidation(validationResult, ePassMrzLines)" class="space-y-5">
     <th:block th:if="${validationResult != null}">
+
       <!-- 전체 검증 상태 헤더 -->
-      <div class="flex items-center gap-3 pb-3 border-b border-gray-200">
-        <div class="flex size-10 items-center justify-center rounded-lg"
-             th:classappend="${validationResult.valid} ? 'bg-green-100' : 'bg-red-100'">
-          <svg th:if="${validationResult.valid}" class="size-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
-          </svg>
-          <svg th:unless="${validationResult.valid}" class="size-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
-          </svg>
-        </div>
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900">ICAO 9303 MRZ Validation</h3>
-          <p class="text-sm"
-             th:classappend="${validationResult.valid} ? 'text-green-600' : 'text-red-600'"
-             th:text="${validationResult.summaryMessage}">Validation summary</p>
+      <div class="rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4"
+             th:classappend="${validationResult.valid} ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'bg-gradient-to-r from-red-50 to-rose-50'">
+          <div class="flex items-center gap-3">
+            <div class="flex size-10 items-center justify-center rounded-xl"
+                 th:classappend="${validationResult.valid} ? 'bg-green-100' : 'bg-red-100'">
+              <svg th:if="${validationResult.valid}" class="size-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+              </svg>
+              <svg th:unless="${validationResult.valid}" class="size-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">ICAO 9303 MRZ Validation</h3>
+              <p class="text-sm"
+                 th:classappend="${validationResult.valid} ? 'text-green-600' : 'text-red-600'"
+                 th:text="${validationResult.summaryMessage}">Validation summary</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Check Digit 검증 결과 -->
+      <!-- MRZ Lines 비교 표시 -->
+      <div th:if="${validationResult.mrzLine1 != null || validationResult.mrzLine2 != null}"
+           class="rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-semibold text-gray-900 inline-flex items-center">
+              MRZ Lines (TD3 - 2 x 44 characters)
+              <span th:replace="~{fragments/mrz_validation :: infoIcon('mrzLines')}"></span>
+            </h4>
+            <!-- Match/Mismatch 배지: Chip MRZ가 있을 때만 -->
+            <th:block th:if="${ePassMrzLines != null && ePassMrzLines.line1 != null}">
+              <span th:if="${validationResult.mrzLine1 == ePassMrzLines.line1 && validationResult.mrzLine2 == ePassMrzLines.line2}"
+                    class="inline-flex items-center gap-1 rounded-full bg-green-100 text-green-800 px-2.5 py-0.5 text-[10px] font-semibold">
+                <svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
+                MATCH
+              </span>
+              <span th:unless="${validationResult.mrzLine1 == ePassMrzLines.line1 && validationResult.mrzLine2 == ePassMrzLines.line2}"
+                    class="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-800 px-2.5 py-0.5 text-[10px] font-semibold">
+                <svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+                MISMATCH
+              </span>
+            </th:block>
+          </div>
+        </div>
+        <div class="p-4" th:classappend="${ePassMrzLines != null && ePassMrzLines.line1 != null} ? 'grid grid-cols-1 lg:grid-cols-2 gap-3' : ''">
+          <!-- VIZ MRZ -->
+          <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+            <p class="text-[10px] text-gray-400 mb-1.5 font-semibold uppercase tracking-wider"
+               th:text="${ePassMrzLines != null && ePassMrzLines.line1 != null} ? 'VIZ (OCR)' : 'VIZ MRZ'">VIZ MRZ</p>
+            <div class="font-mono text-sm text-green-400 tracking-wider leading-relaxed">
+              <div th:if="${validationResult.mrzLine1 != null}">
+                <span class="text-gray-500 text-xs mr-2">L1</span>
+                <span th:text="${validationResult.mrzLine1}">Line 1</span>
+              </div>
+              <div th:if="${validationResult.mrzLine2 != null}">
+                <span class="text-gray-500 text-xs mr-2">L2</span>
+                <span th:text="${validationResult.mrzLine2}">Line 2</span>
+              </div>
+            </div>
+          </div>
+          <!-- Chip MRZ (DG1) - 칩 데이터가 있을 때만 -->
+          <div th:if="${ePassMrzLines != null && ePassMrzLines.line1 != null}"
+               class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+            <p class="text-[10px] text-cyan-400 mb-1.5 font-semibold uppercase tracking-wider">Chip (DG1)</p>
+            <div class="font-mono text-sm text-cyan-400 tracking-wider leading-relaxed">
+              <div th:if="${ePassMrzLines.line1 != null}">
+                <span class="text-gray-500 text-xs mr-2">L1</span>
+                <span th:text="${ePassMrzLines.line1}">Line 1</span>
+              </div>
+              <div th:if="${ePassMrzLines.line2 != null}">
+                <span class="text-gray-500 text-xs mr-2">L2</span>
+                <span th:text="${ePassMrzLines.line2}">Line 2</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Check Digit 검증 결과 - Compact Grid -->
       <div th:if="${!validationResult.checkDigitResults.isEmpty()}"
-           class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-          <h4 class="text-sm font-semibold text-gray-900">Check Digit Validation</h4>
-          <p class="text-xs text-gray-500 mt-0.5">ICAO 9303 check digit verification results</p>
+           class="rounded-xl bg-white border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 bg-gray-50">
+          <h4 class="text-sm font-semibold text-gray-900 inline-flex items-center">
+            Check Digit Validation
+            <span th:replace="~{fragments/mrz_validation :: infoIcon('checkDigitHeader')}"></span>
+          </h4>
+          <p class="text-xs text-gray-500 mt-0.5">ICAO 9303 check digit verification (weights: 7, 3, 1 repeating, sum mod 10)</p>
         </div>
         <div class="p-4">
-          <div class="space-y-2">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <th:block th:each="checkResult : ${validationResult.checkDigitResults}">
-              <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                <div class="flex items-center gap-3">
-                  <!-- Status Icon -->
-                  <div th:if="${checkResult.valid}"
-                       class="flex size-8 items-center justify-center rounded-full bg-green-100">
-                    <svg class="size-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
-                    </svg>
+              <div class="bg-gray-50 rounded-lg p-3 border border-gray-100">
+                <!-- Header: icon + label + info + badge -->
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center gap-1.5">
+                    <div th:if="${checkResult.valid}"
+                         class="flex size-5 items-center justify-center rounded-full bg-green-100">
+                      <svg class="size-3 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/>
+                      </svg>
+                    </div>
+                    <div th:unless="${checkResult.valid}"
+                         class="flex size-5 items-center justify-center rounded-full bg-red-100">
+                      <svg class="size-3 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
+                      </svg>
+                    </div>
+                    <span class="text-xs font-semibold text-gray-900" th:text="${checkResult.label}">Label</span>
+                    <span class="mrz-tooltip-wrapper relative inline-flex items-center">
+                      <button type="button" th:attr="data-mrz-tooltip=${checkResult.fieldName}"
+                              onmouseenter="showMrzTooltip(event)" onmouseleave="hideMrzTooltip(event)" onclick="showMrzTooltip(event)"
+                              class="text-gray-400 hover:text-blue-500 transition-colors">
+                        <svg class="size-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                      </button>
+                    </span>
                   </div>
-                  <div th:unless="${checkResult.valid}"
-                       class="flex size-8 items-center justify-center rounded-full bg-red-100">
-                    <svg class="size-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
-                    </svg>
-                  </div>
-
-                  <!-- Field Name -->
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                        th:classappend="${checkResult.valid} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                        th:text="${checkResult.valid} ? 'VALID' : 'INVALID'">Status</span>
+                </div>
+                <!-- Data value -->
+                <div class="font-mono text-[11px] text-gray-600 truncate mb-1.5"
+                     th:title="${checkResult.data}"
+                     th:text="${checkResult.data != null && !checkResult.data.isEmpty()} ? ${checkResult.data} : 'N/A'">data</div>
+                <!-- Expected / Actual CDs -->
+                <div class="flex items-center gap-3 text-[11px]">
                   <div>
-                    <span class="text-sm font-semibold text-gray-900" th:text="${checkResult.fieldName}">Field Name</span>
-                    <p th:if="${!checkResult.valid}"
-                       class="text-xs text-red-600 mt-0.5"
-                       th:text="${checkResult.errorMessage}">Error message</p>
+                    <span class="text-gray-400">Expected:</span>
+                    <span class="font-mono font-semibold"
+                          th:classappend="${checkResult.valid} ? 'text-green-700' : 'text-red-700'"
+                          th:text="${checkResult.expectedCheckDigit}">0</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-400">Actual:</span>
+                    <span class="font-mono font-semibold"
+                          th:classappend="${checkResult.valid} ? 'text-green-700' : 'text-red-700'"
+                          th:text="${checkResult.actualCheckDigit}">0</span>
                   </div>
                 </div>
-
-                <!-- Status Badge -->
-                <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                      th:classappend="${checkResult.valid} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                      th:text="${checkResult.valid} ? 'VALID' : 'INVALID'">Status</span>
+                <!-- Error message -->
+                <p th:if="${checkResult.errorMessage != null}"
+                   class="mt-1.5 text-[10px] rounded px-1.5 py-0.5"
+                   th:classappend="${checkResult.valid} ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'"
+                   th:text="${checkResult.errorMessage}">Message</p>
               </div>
             </th:block>
           </div>
@@ -68,53 +176,67 @@
 
       <!-- Format 오류 -->
       <div th:if="${!validationResult.formatErrors.isEmpty()}"
-           class="bg-red-50 border border-red-200 rounded-lg overflow-hidden">
-        <div class="bg-red-100 px-4 py-3 border-b border-red-200">
-          <h4 class="text-sm font-semibold text-red-900">Format Errors</h4>
+           class="rounded-xl bg-white border border-red-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-red-100 bg-red-50">
+          <h4 class="text-sm font-semibold text-red-900 inline-flex items-center">
+            Format Errors
+            <span th:replace="~{fragments/mrz_validation :: infoIcon('formatErrors')}"></span>
+          </h4>
           <p class="text-xs text-red-700 mt-0.5">MRZ format validation failures</p>
         </div>
-        <div class="p-4">
-          <div class="space-y-2">
-            <th:block th:each="formatError : ${validationResult.formatErrors}">
-              <div class="flex items-start gap-3 bg-white rounded-lg p-3 border border-red-200">
-                <div class="flex size-8 items-center justify-center rounded-full bg-red-100 flex-shrink-0">
-                  <svg class="size-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+        <div class="divide-y divide-red-100">
+          <th:block th:each="formatError : ${validationResult.formatErrors}">
+            <div class="px-5 py-4">
+              <div class="flex items-start gap-3">
+                <div class="flex size-6 items-center justify-center rounded-full bg-red-100 flex-shrink-0 mt-0.5">
+                  <svg class="size-3.5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                   </svg>
                 </div>
                 <div>
                   <span class="text-sm font-semibold text-red-900" th:text="${formatError.type}">Error Type</span>
                   <p class="text-xs text-red-700 mt-0.5" th:text="${formatError.message}">Error message</p>
+                  <p th:if="${formatError.rule != null}"
+                     class="text-xs text-red-600 mt-1 bg-red-50 rounded px-2 py-1">
+                    <span class="font-medium">Rule:</span> <span th:text="${formatError.rule}">ICAO rule</span>
+                  </p>
                 </div>
               </div>
-            </th:block>
-          </div>
+            </div>
+          </th:block>
         </div>
       </div>
 
       <!-- Field 오류 -->
       <div th:if="${!validationResult.fieldErrors.isEmpty()}"
-           class="bg-amber-50 border border-amber-200 rounded-lg overflow-hidden">
-        <div class="bg-amber-100 px-4 py-3 border-b border-amber-200">
-          <h4 class="text-sm font-semibold text-amber-900">Field Errors</h4>
+           class="rounded-xl bg-white border border-amber-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-amber-100 bg-amber-50">
+          <h4 class="text-sm font-semibold text-amber-900 inline-flex items-center">
+            Field Errors
+            <span th:replace="~{fragments/mrz_validation :: infoIcon('fieldErrors')}"></span>
+          </h4>
           <p class="text-xs text-amber-700 mt-0.5">Field validation failures</p>
         </div>
-        <div class="p-4">
-          <div class="space-y-2">
-            <th:block th:each="fieldError : ${validationResult.fieldErrors}">
-              <div class="flex items-start gap-3 bg-white rounded-lg p-3 border border-amber-200">
-                <div class="flex size-8 items-center justify-center rounded-full bg-amber-100 flex-shrink-0">
-                  <svg class="size-4 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+        <div class="divide-y divide-amber-100">
+          <th:block th:each="fieldError : ${validationResult.fieldErrors}">
+            <div class="px-5 py-4">
+              <div class="flex items-start gap-3">
+                <div class="flex size-6 items-center justify-center rounded-full bg-amber-100 flex-shrink-0 mt-0.5">
+                  <svg class="size-3.5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                   </svg>
                 </div>
                 <div>
                   <span class="text-sm font-semibold text-amber-900" th:text="${fieldError.type}">Field Name</span>
                   <p class="text-xs text-amber-700 mt-0.5" th:text="${fieldError.message}">Error message</p>
+                  <p th:if="${fieldError.rule != null}"
+                     class="text-xs text-amber-600 mt-1 bg-amber-50 rounded px-2 py-1">
+                    <span class="font-medium">Rule:</span> <span th:text="${fieldError.rule}">ICAO rule</span>
+                  </p>
                 </div>
               </div>
-            </th:block>
-          </div>
+            </div>
+          </th:block>
         </div>
       </div>
     </th:block>

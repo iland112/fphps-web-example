@@ -427,6 +427,67 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-02-10: VIZ/Chip MRZ 비교 표시 및 Composite Check Digit 버그 수정
+
+**구현 내용**:
+- MRZ Validation 탭에 VIZ (OCR) MRZ와 Chip (DG1) MRZ를 나란히 비교 표시하는 기능 추가
+- Auto Read에서 MRZ Validation이 렌더링되지 않던 버그 수정 (EventMessageData에 필드 누락)
+- Composite Check Digit 계산 시 Optional Data의 `<` filler 누락 버그 수정
+
+**주요 변경사항**:
+
+1. **VIZ/Chip MRZ 비교 UI**:
+   - VIZ MRZ를 우선으로 표시 (녹색 텍스트), Chip MRZ는 비교 참조용 (청록색 텍스트)
+   - 칩 읽기 성공 시 2-column 레이아웃으로 VIZ와 Chip MRZ 나란히 표시
+   - Match/Mismatch 배지: Line 1 + Line 2 문자열 비교
+   - 칩 읽기 실패 시 VIZ MRZ만 표시 (기존 동작 유지)
+
+2. **Auto Read MRZ Validation 버그 수정**:
+   - **문제**: `EventMessageData`에 `mrzValidationResult`, `ePassMrzLines` 필드 누락
+   - **원인**: WebSocket으로 MRZ Validation 데이터가 전송되지 않아 Auto Read에서 MRZ Validation 탭이 빈 상태
+   - **해결**: `EventMessageData`에 필드 추가, `AbstractReader.FPHPS_EV_EPASS_READ_DONE`에서 MRZ validation 수행 및 ePass MRZ 설정
+
+3. **Composite Check Digit 계산 버그 수정** (`MrzValidator.java`):
+   - **문제**: Native SDK가 Optional Data에서 trailing `<` filler를 제거하여 Composite 계산 오류 발생
+   - **증상**: `1662195100161<` (14자) 대신 `1662195100161` (13자)가 사용되어 가중치 위치가 1칸 밀림
+   - **결과**: Composite Expected=4 (오류), Actual=2 (정확) → INVALID로 잘못 표시
+   - **해결**: MRZ Line 2가 있으면 직접 positions 1-10, 14-20, 22-28, 29-43을 추출하여 `<` filler 정확히 보존. Fallback으로 optional data를 14자로 `<` 패딩
+
+**Composite Check Digit 버그 상세**:
+
+| 항목 | 수정 전 | 수정 후 |
+|------|---------|---------|
+| Composite 입력 | 38자 (`<` 누락) | 39자 (ICAO 정확) |
+| 계산 결과 (Expected) | 4 (오류) | 2 (정확) |
+| Actual (MRZ pos 44) | 2 | 2 |
+| 검증 결과 | INVALID | VALID |
+
+**수정된 파일**:
+
+**FPHPS Library (D:\Workspaces\java\smartcore\FPHPS\lib):**
+- `src/main/java/.../dto/EventMessageData.java` - `mrzValidationResult`, `ePassMrzLines` 필드 추가
+- `src/main/java/.../readers/AbstractReader.java` - `FPHPS_EV_EPASS_READ_DONE`에서 MRZ validation + ePass MRZ 설정
+- `src/main/java/.../validators/MrzValidator.java` - Composite check digit 계산을 MRZ Line 2 직접 추출 방식으로 수정
+- `build/libs/lib-1.0.0.jar` - 재빌드
+
+**FPHPS_WEB_Example:**
+- `libs/fphps-1.0.0.jar` - 업데이트된 라이브러리
+- `src/main/resources/templates/fragments/mrz_validation.html` - VIZ/Chip MRZ 비교 UI, fragment 파라미터 추가
+- `src/main/resources/templates/fragments/epassport_manual_read.html` - fragment 호출에 ePassMrzLines 추가
+- `src/main/resources/templates/fragments/epassport_auto_read.html` - renderMrzValidation에 ePassMrzLines 전달
+- `src/main/resources/static/js/passport-tabs.js` - renderMrzValidation()에 ePassMrzLines 지원, VIZ/Chip 비교 렌더링
+- `src/main/resources/static/sw.js` - 캐시 v24 → v25
+
+**테스트 결과**:
+- ✅ Library 빌드 성공 (BUILD SUCCESSFUL)
+- ✅ Web Example 빌드 성공 (BUILD SUCCESSFUL)
+- ✅ Composite Check Digit 계산 정확 (MRZ Line 2 직접 추출)
+- ✅ VIZ/Chip MRZ 비교 UI 표시 (Manual Read - Thymeleaf SSR)
+- ✅ Auto Read MRZ Validation 렌더링 (WebSocket - JavaScript)
+- ✅ Match/Mismatch 배지 표시
+
+---
+
 ### 2026-02-09: ICAO Doc 9303 MRZ Validation 기능 구현
 
 **구현 내용**:

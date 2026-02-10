@@ -165,7 +165,7 @@
 
             <!-- MRZ Validation Tab Content -->
             <div th:if="${response.mrzInfo != null}" id="content-mrz-validation" class="tab-content hidden">
-              <div th:replace="~{fragments/mrz_validation :: mrzValidation(${response.mrzValidationResult})}"></div>
+              <div th:replace="~{fragments/mrz_validation :: mrzValidation(${response.mrzValidationResult}, ${response.ePassMrzLines})}"></div>
             </div>
 
             <!-- Chip-only tab contents: only show if ePassResults is available -->

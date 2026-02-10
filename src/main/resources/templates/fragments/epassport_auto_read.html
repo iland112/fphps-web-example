@@ -398,7 +398,7 @@
       if (message.mrzValidationResult) {
         console.log("MRZ Validation found in event:", message.eventCodeString);
         console.log("MRZ Validation data:", message.mrzValidationResult);
-        renderMrzValidation(message.mrzValidationResult, 'auto-mrz-validation-container');
+        renderMrzValidation(message.mrzValidationResult, 'auto-mrz-validation-container', message.ePassMrzLines);
       }
 
       // Add log entry for all events
