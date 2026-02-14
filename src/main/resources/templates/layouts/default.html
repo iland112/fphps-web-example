@@ -161,7 +161,7 @@
         })();
 
         window.addEventListener('DOMContentLoaded', () => {
-            window.HSStaticMethods.autoInit();
+            try { window.HSStaticMethods.autoInit(); } catch(e) { /* Preline init - some components may not exist on current page */ }
 
             // Dark Mode Toggle Functionality
             const darkModeToggle = document.getElementById('dark-mode-toggle');

@@ -1,5 +1,7 @@
 package com.smartcoreinc.fphps.example.fphps_web_example.dto.pa;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.UUID;
  * PA V2 API 실제 검증 데이터 DTO
  * API Gateway 응답의 "data" 객체 내용
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record PaVerificationData(
     String status,
     String verificationId,

@@ -2,15 +2,12 @@ package com.smartcoreinc.fphps.example.fphps_web_example.dto.pa;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import java.time.LocalDateTime;
-
 /**
- * PA 검증 에러 정보
+ * PA Lookup API 응답 래퍼 DTO
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record PaError(
-    String code,
-    String message,
-    String severity,
-    LocalDateTime timestamp
+public record PaLookupResponse(
+    boolean success,
+    PaLookupValidation validation,
+    String message
 ) {}

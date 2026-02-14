@@ -64,7 +64,8 @@ FPHPS_WEB_Example/
 │   ├── Services/
 │   │   ├── FPHPSService.java                   # 핵심 디바이스 관리 서비스
 │   │   ├── DevicePropertiesService.java        # 디바이스 속성 상태 관리
-│   │   └── PassiveAuthenticationService.java   # PA 검증 서비스 (외부 API 연동)
+│   │   ├── PassiveAuthenticationService.java   # PA 검증/Lookup 서비스 (외부 API 연동)
+│   │   └── FaceVerificationService.java        # 얼굴 검증 서비스 (InsightFace 연동)
 │   │
 │   ├── strategies/                             # 전략 패턴 구현
 │   │   ├── DocumentReadStrategy.java           # 전략 인터페이스
@@ -82,7 +83,14 @@ FPHPS_WEB_Example/
 │   ├── dto/                                    # DTO 클래스
 │   │   ├── pa/                                 # PA API DTO
 │   │   │   ├── PaVerificationRequest.java      # PA 검증 요청
-│   │   │   └── PaVerificationResponse.java     # PA 검증 응답
+│   │   │   ├── PaVerificationResponse.java     # PA 검증 응답
+│   │   │   ├── PaLookupRequest.java            # PA Lookup 요청 (subjectDn, fingerprint)
+│   │   │   ├── PaLookupResponse.java           # PA Lookup 응답 래퍼
+│   │   │   └── PaLookupValidation.java         # PA Lookup 검증 결과 (21개 필드)
+│   │   ├── face/                               # Face Verification DTO
+│   │   │   ├── FaceVerificationResponse.java   # 얼굴 검증 응답
+│   │   │   ├── FaceQualityMetrics.java         # 얼굴 품질 메트릭
+│   │   │   └── BoundingBox.java                # 얼굴 영역 좌표
 │   │   ├── CertificateInfo.java                # X509 인증서 정보
 │   │   └── ParsedSODInfo.java                  # SOD 파싱 정보
 │   │
@@ -155,6 +163,10 @@ FPHPS_WEB_Example/
 | GET/POST | `/fphps/device-setting` | 디바이스 설정 관리 |
 | GET | `/fphps/passport/manual-read` | 수동 전자여권 읽기 |
 | POST | `/fphps/passport/run-auto-read` | 자동 전자여권 읽기 |
+| POST | `/fphps/passport/verify-pa-v2` | PA 전체 검증 (API Gateway) |
+| POST | `/fphps/passport/pa-lookup` | PA 간편 조회 (DSC Trust Chain Lookup) |
+| POST | `/fphps/passport/verify-face` | 얼굴 검증 (InsightFace) |
+| POST | `/fphps/passport/export-data` | 여권 데이터 내보내기 |
 | GET | `/fphps/idcard/manual-read` | 신분증 읽기 |
 | GET | `/fphps/barcode/manual-read` | 바코드 읽기 |
 
@@ -426,6 +438,94 @@ cd ../../..
 ---
 
 ## 작업 이력
+
+### 2026-02-14: PA Lookup (간편 조회) 기능 구현 및 UI 개선
+
+**구현 내용**:
+- PA API 서버의 간편 조회 API (`POST /api/certificates/pa-lookup`)를 통한 DSC Trust Chain 경량 검증 기능 구현
+- 기존 전체 검증(Verify PA: SOD/DG 전송, 100-500ms) 대비 경량 조회(5-20ms) 방식 추가
+- DSC Subject DN 또는 SHA-256 Fingerprint만으로 PKD에 등록된 Trust Chain 검증 결과를 즉시 조회
+- API 응답 분석 후 Lookup 모드 특화 클라이언트 사이드 렌더링 개선
+
+**주요 변경사항**:
+
+1. **DTO 생성** (신규 3개):
+   - `PaLookupRequest.java`: 요청 DTO (`subjectDn`, `fingerprint`)
+   - `PaLookupResponse.java`: 응답 래퍼 DTO (`success`, `validation`, `message`)
+   - `PaLookupValidation.java`: 검증 결과 DTO (21개 필드 - validationStatus, trustChainValid, cscaFound 등)
+
+2. **Service 메서드 추가** (`PassiveAuthenticationService.java`):
+   - `paLookup(DocumentReadResponse)` 메서드 추가
+   - `ParsedSODInfo`에서 DSC 인증서 정보 추출
+   - SHA-256 Fingerprint 형식 변환: `"AA:BB:CC:..."` → `"aabbcc..."` (콜론 제거, 소문자)
+   - `POST /api/certificates/pa-lookup`으로 요청 전송
+
+3. **Controller 엔드포인트** (`FPHPSController.java`):
+   - `POST /passport/pa-lookup` 추가
+   - 반환 타입: `Map<String, Object>` (API 응답 + `requestFingerprint`)
+   - API가 fingerprint를 null로 반환하므로 요청에 사용한 값을 함께 전달
+
+4. **UI 버튼 추가** (`pa_tab_content.html`):
+   - "Verify PA" 옆에 indigo 색상 "PA Lookup" 버튼 추가
+   - 별도 spinner/text 요소
+   - `onclick="paLookup(...)"`
+
+5. **JavaScript 렌더링 개선** (`pa-verification.js`):
+   - `paLookup()` 함수: API 호출 및 에러 처리
+   - `parseLookupDate()`: 비표준 날짜 형식 파싱 (`"2020-03-13 08:05:47+00"` → ISO 변환)
+   - `deriveValidityFromDates()`: Lookup 모드에서 `validityPeriodValid` 플래그(항상 false) 대신 날짜로 직접 유효기간 판단
+   - `renderLookupStatusCard()`: 상태 헤더 (VALID/EXPIRED_VALID/INVALID/PENDING/ERROR)
+   - `renderLookupCertInfoCard()`: Subject DN, Issuer DN, 유효기간(Valid/Expired 배지), Fingerprint
+   - `renderLookupTrustChainCard()`: Trust Chain 검증 결과, signatureValid "Not Checked" 처리
+   - `renderLookupRevocationCard()`: null → "NOT_CHECKED" 처리
+   - `renderLookupInfoNote()`: 간편 검증 안내 노트
+
+**Lookup 모드 클라이언트 사이드 처리**:
+
+Lookup API는 전체 검증과 달리 일부 필드를 검증하지 않아 false/null로 반환. 클라이언트에서 이를 적절히 표시:
+
+| 필드 | API 반환값 | 처리 방식 |
+|------|-----------|----------|
+| `validityPeriodValid` | `false` (미검증) | `notBefore`/`notAfter` 날짜로 클라이언트에서 직접 판단 + Valid/Expired 배지 |
+| `signatureValid` | `false` (미검증) | `signatureAlgorithm`이 null이면 "Not Checked" 회색 배지 |
+| `signatureAlgorithm` | `null` | "Not Checked" 이탤릭 회색 텍스트 |
+| `fingerprintSha256` | `null` | Controller에서 요청에 사용한 값(`requestFingerprint`)을 함께 반환 |
+| `revocationStatus` | `null` | "NOT_CHECKED" 회색 스타일 (기존 "unknown" 노란색과 구분) |
+| `trustChainPath` | `""` (빈 문자열) | 행 자체를 숨김 (기존 "N/A" 표시 대신) |
+| 날짜 형식 | `"2020-03-13 08:05:47+00"` | `parseLookupDate()`로 비표준 형식 파싱 (space→T, +00→+00:00) |
+
+**수정된 파일**:
+
+**신규:**
+- `dto/pa/PaLookupRequest.java` - PA Lookup 요청 DTO
+- `dto/pa/PaLookupResponse.java` - PA Lookup 응답 래퍼 DTO
+- `dto/pa/PaLookupValidation.java` - PA Lookup 검증 결과 DTO (21개 필드)
+
+**수정:**
+- `Services/PassiveAuthenticationService.java` - `paLookup()` 메서드 추가
+- `Controllers/FPHPSController.java` - `POST /passport/pa-lookup` 엔드포인트 + `requestFingerprint` 전달
+- `templates/fragments/pa_tab_content.html` - "PA Lookup" 버튼 추가 (indigo 색상)
+- `static/js/pa-verification.js` - PA Lookup 호출/렌더링 함수 + Lookup 모드 클라이언트 처리
+- `static/sw.js` - 캐시 v30 → v32
+
+**PA API 관련 기존 코드 개선** (동일 커밋):
+- `dto/pa/CertificateChainValidation.java` - CRL 상세 필드 추가
+- `dto/pa/DataGroupDetail.java`, `DataGroupValidation.java`, `PaError.java`, `PaVerificationData.java`, `SodSignatureValidation.java` - `@JsonIgnoreProperties` 추가
+- `config/PaApiClientConfig.java` - HTTP 클라이언트 설정 개선
+- `application.properties` - PA API 설정 업데이트
+- `templates/layouts/default.html` - 레이아웃 미세 조정
+- `static/js/passport-tabs.js` - CRL 상태 렌더링 개선
+
+**테스트 결과**:
+- ✅ `gradlew build -x test` 빌드 성공
+- ✅ PA Lookup API 호출 정상 (DSC Subject DN 기반)
+- ✅ Trust Chain 검증 결과 표시 확인
+- ✅ Lookup 모드 특화 표시: Validity 날짜 판단, Not Checked 배지, NOT_CHECKED 상태
+- ✅ SHA-256 Fingerprint 표시 (Controller에서 요청 값 전달)
+- ✅ 간편 검증 안내 노트 표시
+- ✅ 기존 Verify PA 정상 동작 확인
+
+---
 
 ### 2026-02-10: VIZ/Chip MRZ 비교 표시 및 Composite Check Digit 버그 수정
 
@@ -1630,6 +1730,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2026-01-15
+**최종 업데이트**: 2026-02-14
 **분석 도구**: Claude Code (Anthropic)
 **현재 브랜치**: `feature/face-verification`

@@ -146,10 +146,10 @@ function renderCertificateChain(cert) {
             <dd class="mt-1 text-sm text-gray-900 font-mono break-all">${cert.cscaSubject || 'N/A'}</dd>
           </div>
           <div class="bg-gray-50 rounded-lg p-3">
-            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Valid Period</dt>
-            <dd class="mt-1 text-sm text-gray-900">
-              ${cert.notBefore ? new Date(cert.notBefore).toLocaleDateString() : 'N/A'} -
-              ${cert.notAfter ? new Date(cert.notAfter).toLocaleDateString() : 'N/A'}
+            <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">CRL Valid Period</dt>
+            <dd class="mt-1 text-sm ${cert.crlNextUpdate && new Date(cert.crlNextUpdate) < new Date() ? 'text-red-600 font-semibold' : 'text-gray-900'}">
+              ${cert.crlThisUpdate ? new Date(cert.crlThisUpdate).toLocaleDateString() : 'N/A'} -
+              ${cert.crlNextUpdate ? new Date(cert.crlNextUpdate).toLocaleDateString() : 'N/A'}
             </dd>
           </div>
           <div class="bg-gray-50 rounded-lg p-3">

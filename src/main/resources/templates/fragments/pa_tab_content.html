@@ -15,9 +15,8 @@
           <p class="text-sm text-gray-500">Verify passport authenticity using ICAO Local PKD</p>
         </div>
       </div>
-      <!-- Button Group -->
+      <!-- Verify PA & PA Lookup Buttons -->
       <div class="flex items-center gap-2">
-        <!-- V1 Button (Option 1) -->
         <button
           th:id="${btnId}"
           type="button"
@@ -33,22 +32,20 @@
           </svg>
           <span th:id="${btnId + '-text'}">Verify PA</span>
         </button>
-        <!-- V2 Button (Option 2 - API Gateway) -->
         <button
-          th:id="${btnId + '-v2'}"
+          th:id="${prefix + '-lookup-btn'}"
           type="button"
-          th:data-btn-id="${btnId + '-v2'}"
+          th:data-btn-id="${prefix + '-lookup-btn'}"
           th:data-container-id="${containerId}"
           th:data-empty-state-id="${emptyStateId}"
-          onclick="verifyPassportPAV2(this.dataset.btnId, this.dataset.containerId, this.dataset.emptyStateId)"
+          onclick="paLookup(this.dataset.btnId, this.dataset.containerId, this.dataset.emptyStateId)"
           class="inline-flex items-center justify-center gap-x-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none transition-all shrink-0"
-          title="Verify using API Gateway (Option 2)"
         >
-          <svg th:id="${btnId + '-v2-spinner'}" class="hidden animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <svg th:id="${prefix + '-lookup-btn-spinner'}" class="hidden animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span th:id="${btnId + '-v2-text'}">Verify PA (V2)</span>
+          <span th:id="${prefix + '-lookup-btn-text'}">PA Lookup</span>
         </button>
       </div>
     </div>
@@ -60,7 +57,7 @@
         <svg class="size-16 text-gray-300 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
         </svg>
-        <p class="text-sm text-gray-500">Click "Verify PA" button to authenticate the passport</p>
+        <p class="text-sm text-gray-500">Click "Verify PA" or "PA Lookup" to authenticate the passport</p>
         <p class="text-xs text-gray-400 mt-1">Verification results will appear here</p>
       </div>
     </div>

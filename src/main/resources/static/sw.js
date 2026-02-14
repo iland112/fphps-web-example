@@ -3,9 +3,9 @@
  * Handles caching strategies for offline support
  */
 
-const CACHE_NAME = 'fastpass-pwa-v25';
-const STATIC_CACHE = 'fastpass-static-v25';
-const DYNAMIC_CACHE = 'fastpass-dynamic-v25';
+const CACHE_NAME = 'fastpass-pwa-v32';
+const STATIC_CACHE = 'fastpass-static-v32';
+const DYNAMIC_CACHE = 'fastpass-dynamic-v32';
 
 // Static assets to cache on install
 const STATIC_ASSETS = [
@@ -17,9 +17,7 @@ const STATIC_ASSETS = [
   '/image/fastpass-p1.png',
   '/image/favicon.png',
   '/manifest.json',
-  '/offline.html',
-  // External CDN resources
-  'https://cdn.jsdelivr.net/npm/preline@3.0.1/dist/preline.min.js'
+  '/offline.html'
 ];
 
 // Network-first routes (always try network, fallback to cache)
@@ -113,6 +111,11 @@ self.addEventListener('fetch', (event) => {
 
   // Skip chrome-extension and other non-http(s) requests
   if (!url.protocol.startsWith('http')) {
+    return;
+  }
+
+  // Skip cross-origin requests (flagcdn.com, external CDNs, etc.)
+  if (url.origin !== self.location.origin) {
     return;
   }
 
@@ -218,8 +221,7 @@ async function staleWhileRevalidate(request) {
       }
       return networkResponse;
     })
-    .catch((error) => {
-      console.log('[SW] Network request failed:', error);
+    .catch(() => {
       return cachedResponse;
     });
 
