@@ -268,6 +268,18 @@ public class PassiveAuthenticationService {
     }
 
     /**
+     * PA API 서버 헬스 체크
+     * /api/health 엔드포인트로 연결 상태 확인
+     */
+    public void healthCheck() {
+        try {
+            paApiRestTemplate.getForEntity("/api/health", String.class);
+        } catch (Exception e) {
+            throw new PaVerificationException("PA API server is not reachable: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * PA 검증 예외
      */
     public static class PaVerificationException extends RuntimeException {

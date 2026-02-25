@@ -353,6 +353,11 @@
         selectedTab.classList.remove('border-transparent', 'text-gray-500');
         selectedTab.classList.add('border-blue-500', 'text-blue-600');
       }
+
+      // PA 탭 선택 시 API 서버 연결 상태 확인
+      if (tabName === 'pa') {
+        checkPaApiHealth('auto');
+      }
     }
 
     // WebSocket connection setup - Use current host and port

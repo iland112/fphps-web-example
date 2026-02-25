@@ -4,6 +4,81 @@
  */
 
 /**
+ * PA API 서버 연결 상태 확인
+ * PA 탭 선택 시 호출되어 연결 상태를 배너로 표시
+ * @param {string} prefix - 'manual' 또는 'auto'
+ */
+function checkPaApiHealth(prefix) {
+  const bannerId = prefix + '-pa-connection-banner';
+  const existingBanner = document.getElementById(bannerId);
+
+  // 이전 배너 제거
+  if (existingBanner) {
+    existingBanner.remove();
+  }
+
+  const wrapper = document.querySelector('#content-pa .pa-tab-wrapper');
+  if (!wrapper) return;
+
+  // 체크 중 배너
+  const banner = document.createElement('div');
+  banner.id = bannerId;
+  banner.className = 'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-gray-50 border border-gray-200 text-gray-500';
+  banner.innerHTML = `
+    <svg class="animate-spin size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    <span>Checking PA API server connection...</span>
+  `;
+  wrapper.insertBefore(banner, wrapper.firstChild);
+
+  fetch('/passport/pa-health')
+    .then(resp => resp.json())
+    .then(data => {
+      const b = document.getElementById(bannerId);
+      if (!b) return;
+
+      if (data.connected) {
+        b.className = 'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-emerald-50 border border-emerald-200 text-emerald-700';
+        b.innerHTML = `
+          <svg class="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>PA API server connected</span>
+        `;
+        // 성공 시 3초 후 fade out
+        setTimeout(() => {
+          if (b) {
+            b.style.transition = 'opacity 0.5s';
+            b.style.opacity = '0';
+            setTimeout(() => b.remove(), 500);
+          }
+        }, 3000);
+      } else {
+        b.className = 'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700';
+        b.innerHTML = `
+          <svg class="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          <span>PA API server is not reachable. Verify PA and PA Lookup features are unavailable.</span>
+        `;
+      }
+    })
+    .catch(() => {
+      const b = document.getElementById(bannerId);
+      if (!b) return;
+      b.className = 'flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700';
+      b.innerHTML = `
+        <svg class="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+        </svg>
+        <span>PA API server is not reachable. Verify PA and PA Lookup features are unavailable.</span>
+      `;
+    });
+}
+
+/**
  * HTML 특수문자 이스케이프 (XSS 방지)
  * @param {string} text - 이스케이프할 텍스트
  * @returns {string} - 이스케이프된 텍스트
@@ -678,7 +753,7 @@ function renderMrzContent(mrz) {
       <div class="mt-3 pt-3 border-t border-gray-100">
         <dt class="text-xs font-medium text-gray-500 mb-2">MRZ Lines</dt>
         <div class="overflow-x-auto">
-          <dd class="font-mono text-xs text-gray-700 bg-gray-50 p-2 rounded whitespace-nowrap" style="min-width: max-content;">
+          <dd class="font-mono text-sm text-gray-700 bg-gray-50 p-2 rounded whitespace-nowrap" style="min-width: max-content;">
             ${mrz.mrzLine1 ? `<div>${escapeHtml(mrz.mrzLine1)}</div>` : ''}
             ${mrz.mrzLine2 ? `<div>${escapeHtml(mrz.mrzLine2)}</div>` : ''}
           </dd>

@@ -133,6 +133,7 @@ FPHPS_WEB_Example/
 ├── docs/
 │   ├── api_documentation.md                    # API 문서
 │   ├── user_manual.md                          # 사용자 매뉴얼
+│   ├── API_CLIENT_USER_GUIDE.md                # PA API 외부 클라이언트 연동 가이드
 │   └── analysis/
 │       └── 20251220_task_analysis.md           # 태스크 분석
 │
@@ -165,6 +166,7 @@ FPHPS_WEB_Example/
 | POST | `/fphps/passport/run-auto-read` | 자동 전자여권 읽기 |
 | POST | `/fphps/passport/verify-pa-v2` | PA 전체 검증 (API Gateway) |
 | POST | `/fphps/passport/pa-lookup` | PA 간편 조회 (DSC Trust Chain Lookup) |
+| GET | `/fphps/passport/pa-health` | PA API 서버 연결 상태 확인 |
 | POST | `/fphps/passport/verify-face` | 얼굴 검증 (InsightFace) |
 | POST | `/fphps/passport/export-data` | 여권 데이터 내보내기 |
 | GET | `/fphps/idcard/manual-read` | 신분증 읽기 |
@@ -433,11 +435,69 @@ cd ../../..
 
 ### 접속
 
-**기본 URL**: `http://localhost:8080`
+**기본 URL**: `http://localhost:50000`
 
 ---
 
 ## 작업 이력
+
+### 2026-02-25: PA API Key 인증, Health Check, 사용자 매뉴얼 작성
+
+**구현 내용**:
+- PA API 서버에 API Key 인증(`X-API-Key` 헤더) 자동 전송 기능 추가
+- PA 탭 선택 시 PA API 서버 연결 상태 자동 확인 (Health Check) 기능 추가
+- 사용자 매뉴얼 전면 작성 (플레이스홀더 → 13개 섹션 완전 문서화)
+- PA API 외부 클라이언트 연동 가이드 문서 추가
+
+**주요 변경사항**:
+
+1. **PA API Key 인증** (`PaApiClientConfig.java`, `application.properties`):
+   - `pa-api.api-key` 프로퍼티 추가
+   - RestTemplate에 `ClientHttpRequestInterceptor` 추가하여 모든 PA API 요청에 `X-API-Key` 헤더 자동 포함
+   - API Key 미설정 시 경고 로그 출력
+   - `pa-api.base-url`을 `http://pkd.smartcoreinc.com`으로 업데이트
+
+2. **PA Health Check** (`PassiveAuthenticationService.java`, `FPHPSController.java`, `pa-verification.js`):
+   - `PassiveAuthenticationService.healthCheck()` 메서드 추가 (`GET /api/health`)
+   - `GET /passport/pa-health` 엔드포인트 추가 (컨트롤러)
+   - `checkPaApiHealth(prefix)` JavaScript 함수 추가
+   - PA 탭 선택 시 자동 호출 (Manual Read: `switchTab('pa')`, Auto Read: `switchTabAuto('pa')`)
+   - 상태 배너: 체크 중(회색+스피너) → 성공(녹색, 3초 후 fade out) → 실패(빨간색, 유지)
+
+3. **MRZ Lines 폰트 크기 증가** (`pa-verification.js`):
+   - DG1 MRZ Data 카드의 MRZ Lines 폰트: `text-xs`(12px) → `text-sm`(14px)
+
+4. **사용자 매뉴얼 전면 작성** (`docs/user_manual.md`):
+   - 13개 섹션: 개요, 시스템 요구사항, 설치/실행, 설정, 화면 구성, 전자여권(5탭 상세), 신분증, 바코드, 스캔, 디바이스 설정, 외부 서비스, PWA, 트러블슈팅
+   - 최근 추가 기능 모두 반영 (PA Lookup, Health Check, API Key, MRZ Validation, Face Bounding Box 등)
+
+5. **PA API 외부 클라이언트 가이드** (`docs/API_CLIENT_USER_GUIDE.md`):
+   - API Key 인증 흐름, Base URL, 엔드포인트 목록
+   - curl, Python, Java, C# 연동 예제
+   - Rate Limiting, 에러 코드, 트러블슈팅
+
+**수정된 파일**:
+
+**신규:**
+- `docs/API_CLIENT_USER_GUIDE.md` - PA API 외부 클라이언트 연동 가이드
+
+**수정:**
+- `config/PaApiClientConfig.java` - API Key 인터셉터, `pa-api.api-key` 프로퍼티 주입
+- `application.properties` - `pa-api.api-key`, `pa-api.base-url` 업데이트
+- `Services/PassiveAuthenticationService.java` - `healthCheck()` 메서드 추가
+- `Controllers/FPHPSController.java` - `GET /passport/pa-health` 엔드포인트 추가
+- `static/js/pa-verification.js` - `checkPaApiHealth()` 함수, MRZ Lines 폰트 크기
+- `templates/fragments/epassport_manual_read.html` - `switchTab('pa')` 시 헬스 체크 호출
+- `templates/fragments/epassport_auto_read.html` - `switchTabAuto('pa')` 시 헬스 체크 호출
+- `docs/user_manual.md` - 전면 작성 (13개 섹션)
+
+**테스트 결과**:
+- ✅ `gradlew build -x test` 빌드 성공
+- ✅ PA API Key 헤더 자동 전송 확인
+- ✅ PA Health Check 배너 표시 (연결 성공/실패)
+- ✅ MRZ Lines 폰트 크기 증가 확인
+
+---
 
 ### 2026-02-14: PA Lookup (간편 조회) 기능 구현 및 UI 개선
 
@@ -1725,11 +1785,12 @@ WSL2 Ubuntu 20.04
 - [GEMINI.md](GEMINI.md): Gemini를 통한 상세 프로젝트 분석
 - [docs/api_documentation.md](docs/api_documentation.md): API 레퍼런스
 - [docs/user_manual.md](docs/user_manual.md): 사용자 매뉴얼
+- [docs/API_CLIENT_USER_GUIDE.md](docs/API_CLIENT_USER_GUIDE.md): PA API 외부 클라이언트 연동 가이드
 - [docs/analysis/20251220_task_analysis.md](docs/analysis/20251220_task_analysis.md): 태스크 분석 보고서
 
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2026-02-14
+**최종 업데이트**: 2026-02-25
 **분석 도구**: Claude Code (Anthropic)
-**현재 브랜치**: `feature/face-verification`
+**현재 브랜치**: `main`

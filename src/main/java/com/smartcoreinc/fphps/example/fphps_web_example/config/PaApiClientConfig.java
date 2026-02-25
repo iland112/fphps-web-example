@@ -10,9 +10,12 @@ import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+
+import java.util.ArrayList;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,6 +30,9 @@ public class PaApiClientConfig {
 
     @Value("${pa-api.base-url:http://localhost:8080}")
     private String baseUrl;
+
+    @Value("${pa-api.api-key:}")
+    private String apiKey;
 
     /**
      * PA API 전용 RestTemplate 빈 생성
@@ -69,6 +75,19 @@ public class PaApiClientConfig {
 
         RestTemplate restTemplate = new RestTemplate(factory);
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(baseUrl));
+
+        // API Key 인터셉터 설정
+        if (apiKey != null && !apiKey.isBlank()) {
+            var interceptors = new ArrayList<>(restTemplate.getInterceptors());
+            interceptors.add((request, body, execution) -> {
+                request.getHeaders().set("X-API-Key", apiKey);
+                return execution.execute(request, body);
+            });
+            restTemplate.setInterceptors(interceptors);
+            log.info("PA API Key configured (prefix: {}...)", apiKey.substring(0, Math.min(15, apiKey.length())));
+        } else {
+            log.warn("PA API Key is not configured. Set 'pa-api.api-key' in application.properties");
+        }
 
         log.info("PA API RestTemplate initialized successfully with Apache HttpClient 5");
         return restTemplate;

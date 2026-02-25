@@ -284,6 +284,24 @@ public class FPHPSController {
     }
 
     /**
+     * PA API 서버 연결 상태 확인 (헬스 체크)
+     */
+    @GetMapping("/passport/pa-health")
+    @ResponseBody
+    public Map<String, Object> checkPaHealth() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            paService.healthCheck();
+            result.put("connected", true);
+        } catch (Exception e) {
+            log.warn("PA API health check failed: {}", e.getMessage());
+            result.put("connected", false);
+            result.put("message", e.getMessage());
+        }
+        return result;
+    }
+
+    /**
      * PA 검증 결과를 Thymeleaf 프래그먼트로 렌더링
      */
     @GetMapping("/passport/pa-result")

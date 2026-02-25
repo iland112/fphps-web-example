@@ -252,6 +252,11 @@
       const activeContent = document.getElementById('content-' + tabName);
       activeContent.classList.remove('hidden');
       activeContent.classList.add('block');
+
+      // PA 탭 선택 시 API 서버 연결 상태 확인
+      if (tabName === 'pa') {
+        checkPaApiHealth('manual');
+      }
     }
     </script>
   </div>
