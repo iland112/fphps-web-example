@@ -455,7 +455,7 @@ cd ../../..
    - `pa-api.api-key` 프로퍼티 추가
    - RestTemplate에 `ClientHttpRequestInterceptor` 추가하여 모든 PA API 요청에 `X-API-Key` 헤더 자동 포함
    - API Key 미설정 시 경고 로그 출력
-   - `pa-api.base-url`을 `http://pkd.smartcoreinc.com`으로 업데이트
+   - `pa-api.base-url`을 `https://pkd.smartcoreinc.com`으로 업데이트 (Private CA 인증서 Java truststore 등록)
 
 2. **PA Health Check** (`PassiveAuthenticationService.java`, `FPHPSController.java`, `pa-verification.js`):
    - `PassiveAuthenticationService.healthCheck()` 메서드 추가 (`GET /api/health`)
