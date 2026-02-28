@@ -139,6 +139,16 @@
             }
         })();
 
+        // Cleanup: Unregister any previously registered Service Workers
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                registrations.forEach(function(registration) {
+                    registration.unregister();
+                    console.log('[Cleanup] Service Worker unregistered');
+                });
+            });
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             try { window.HSStaticMethods.autoInit(); } catch(e) { /* Preline init - some components may not exist on current page */ }
 
