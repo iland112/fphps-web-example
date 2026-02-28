@@ -1,0 +1,40 @@
+<service>
+  <id>FastPassWeb</id>
+  <name>FastPass Web Application</name>
+  <description>SMARTCORE FastPass E-Passport Reader Web Service</description>
+
+  <!-- Java executable from bundled JRE -->
+  <executable>%BASE%\jre\bin\java.exe</executable>
+  <arguments>-Xms256m -Xmx512m -Dfile.encoding=UTF-8 -jar "%BASE%\fphps_web_example.jar"</arguments>
+
+  <!-- Working directory -->
+  <workingdirectory>%BASE%</workingdirectory>
+
+  <!-- Startup type: Automatic -->
+  <startmode>Automatic</startmode>
+
+  <!-- Delayed start to wait for network -->
+  <delayedAutoStart>true</delayedAutoStart>
+
+  <!-- Stop timeout (graceful shutdown) -->
+  <stoptimeout>30 sec</stoptimeout>
+
+  <!-- Log configuration -->
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
+  <logpath>%BASE%\log</logpath>
+
+  <!-- Failure recovery actions -->
+  <onfailure action="restart" delay="60 sec"/>
+  <onfailure action="restart" delay="120 sec"/>
+  <onfailure action="none"/>
+  <resetfailure>1 day</resetfailure>
+
+  <!-- Environment variables -->
+  <env name="JAVA_HOME" value="%BASE%\jre"/>
+
+  <!-- Priority -->
+  <priority>Normal</priority>
+</service>

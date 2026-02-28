@@ -55,3 +55,9 @@ nul
 
 ### Node modules ###
 node_modules/
+
+### Installer build artifacts ###
+installer/staging/
+installer/jre/
+installer/output/
+installer/winsw/WinSW-x64.exe

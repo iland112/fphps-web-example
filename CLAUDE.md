@@ -132,10 +132,21 @@ FPHPS_WEB_Example/
 │
 ├── docs/
 │   ├── api_documentation.md                    # API 문서
+│   ├── deployment.md                           # 배포 가이드
 │   ├── user_manual.md                          # 사용자 매뉴얼
 │   ├── API_CLIENT_USER_GUIDE.md                # PA API 외부 클라이언트 연동 가이드
 │   └── analysis/
 │       └── 20251220_task_analysis.md           # 태스크 분석
+│
+├── installer/                                  # Windows 설치 프로그램
+│   ├── build-installer.bat                     # 전체 빌드 자동화
+│   ├── create-jre.bat                          # jlink 커스텀 JRE 생성
+│   ├── fastpass-setup.iss                      # Inno Setup 스크립트
+│   ├── winsw/
+│   │   └── fastpass-service.xml                # WinSW 서비스 설정
+│   └── scripts/
+│       ├── install-service.bat                 # 서비스 설치
+│       └── uninstall-service.bat               # 서비스 제거
 │
 ├── build.gradle                                # Gradle 빌드 설정
 ├── settings.gradle                             # Gradle 프로젝트 설정
@@ -440,6 +451,84 @@ cd ../../..
 ---
 
 ## 작업 이력
+
+### 2026-02-27: Windows 설치 프로그램 구현
+
+**구현 내용**:
+- Java 미설치 PC에서도 동작하는 Windows 설치 프로그램(.exe) 생성 파이프라인 구현
+- jlink로 최소 JRE 번들링 (62MB), WinSW로 Windows 서비스 자동 등록, Inno Setup으로 전문 인스톨러 생성
+- 설치 시 방화벽 규칙 자동 추가, 바탕화면 바로가기 생성, 서비스 자동 시작
+- 제거 시 서비스 중지/제거, 방화벽 규칙 삭제
+
+**주요 변경사항**:
+
+1. **jlink 커스텀 JRE** (`installer/create-jre.bat`):
+   - JDK 21에서 Spring Boot 실행에 필요한 24개 모듈만 포함한 최소 JRE 생성
+   - 압축 옵션 (`--compress zip-6`, `--strip-debug`, `--no-man-pages`) 적용
+   - 결과: ~62MB (전체 JDK ~300MB 대비 약 80% 감소)
+
+2. **WinSW 서비스 래퍼** (`installer/winsw/fastpass-service.xml`):
+   - Service ID: `FastPassWeb`, Display Name: `FastPass Web Application`
+   - 번들 JRE 경로로 java.exe 실행 (`%BASE%\jre\bin\java.exe`)
+   - 자동 시작 (Delayed Auto Start), 실패 시 재시작 (60초/120초 후)
+   - 로그: roll-by-size (10MB, 8파일)
+
+3. **서비스 관리 스크립트** (`installer/scripts/`):
+   - `install-service.bat`: 기존 서비스 존재 시 제거 후 재설치, 서비스 시작
+   - `uninstall-service.bat`: 서비스 중지 및 제거
+
+4. **Inno Setup 스크립트** (`installer/fastpass-setup.iss`):
+   - 관리자 권한 필요, x64 전용
+   - 기본 설치 경로: `C:\Program Files\SMARTCORE\FastPass Web`
+   - 한국어/영어 다국어 지원
+   - PostInstall: 서비스 설치, 방화벽 규칙 추가, 브라우저 열기 옵션
+   - 언인스톨: 서비스 제거, 방화벽 규칙 삭제
+
+5. **전체 빌드 자동화** (`installer/build-installer.bat`):
+   - 사전 조건 체크 (JAVA_HOME, Gradle, WinSW, Inno Setup)
+   - 4단계 빌드: JAR → JRE → Staging → Inno Setup 컴파일
+   - 출력: `installer/output/FastPassSetup-x.x.x.exe` (~131MB)
+
+**설치 결과 디렉토리 구조**:
+```
+C:\Program Files\SMARTCORE\FastPass Web\
+├── fastpass-service.exe          # WinSW (서비스 래퍼)
+├── fastpass-service.xml          # WinSW 설정
+├── fphps_web_example.jar         # Spring Boot JAR
+├── application.properties        # 앱 설정
+├── jre/                          # 번들 JRE (jlink, Java 21)
+├── data/                         # SQLite DB (자동 생성)
+├── log/                          # 로그 (자동 생성)
+└── unins000.exe                  # 언인스톨러
+```
+
+**빌드 PC 사전 조건**:
+- JDK 21 (`JAVA_HOME` 설정)
+- Inno Setup 6 설치
+- WinSW-x64.exe (`installer/winsw/`에 배치)
+
+**수정된 파일**:
+
+**신규:**
+- `installer/build-installer.bat` - 전체 빌드 자동화 스크립트
+- `installer/create-jre.bat` - jlink JRE 생성 스크립트
+- `installer/fastpass-setup.iss` - Inno Setup 스크립트
+- `installer/winsw/fastpass-service.xml` - WinSW 서비스 설정
+- `installer/scripts/install-service.bat` - 서비스 설치 스크립트
+- `installer/scripts/uninstall-service.bat` - 서비스 제거 스크립트
+
+**수정:**
+- `.gitignore` - installer 빌드 산출물 제외 (staging/, jre/, output/, WinSW-x64.exe)
+- `docs/deployment.md` - Windows 설치 프로그램 빌드 가이드 추가
+- `docs/user_manual.md` - Windows 설치 프로그램 설치 가이드 추가
+
+**테스트 결과**:
+- ✅ jlink JRE 생성 성공 (Java 21.0.7, 62MB)
+- ✅ Gradle bootJar 빌드 성공
+- ✅ Inno Setup 컴파일 성공 (`FastPassSetup-1.0.0.exe`, 131MB)
+- ✅ WinSW 서비스 설정 파일 정상
+
+---
 
 ### 2026-02-25: PA API Key 인증, Health Check, 사용자 매뉴얼 작성
 
@@ -1784,6 +1873,7 @@ WSL2 Ubuntu 20.04
 - [README.md](README.md): 빠른 시작 가이드
 - [GEMINI.md](GEMINI.md): Gemini를 통한 상세 프로젝트 분석
 - [docs/api_documentation.md](docs/api_documentation.md): API 레퍼런스
+- [docs/deployment.md](docs/deployment.md): 배포 가이드 (Windows 설치 프로그램 포함)
 - [docs/user_manual.md](docs/user_manual.md): 사용자 매뉴얼
 - [docs/API_CLIENT_USER_GUIDE.md](docs/API_CLIENT_USER_GUIDE.md): PA API 외부 클라이언트 연동 가이드
 - [docs/analysis/20251220_task_analysis.md](docs/analysis/20251220_task_analysis.md): 태스크 분석 보고서
@@ -1791,6 +1881,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2026-02-25
+**최종 업데이트**: 2026-02-27
 **분석 도구**: Claude Code (Anthropic)
 **현재 브랜치**: `main`

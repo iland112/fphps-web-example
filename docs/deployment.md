@@ -5,8 +5,9 @@
 2. [빌드 방법](#빌드-방법)
 3. [실행 방법](#실행-방법)
 4. [배포 방법](#배포-방법)
-5. [설정 옵션](#설정-옵션)
-6. [문제 해결](#문제-해결)
+5. [Windows 설치 프로그램](#windows-설치-프로그램)
+6. [설정 옵션](#설정-옵션)
+7. [문제 해결](#문제-해결)
 
 ---
 
@@ -171,11 +172,11 @@ fastpass-web/
    start.bat
    ```
 
-### 2. Windows 서비스 등록
+### 2. Windows 서비스 등록 (수동)
 
-[NSSM](https://nssm.cc/) 또는 [WinSW](https://github.com/winsw/winsw)를 사용하여 Windows 서비스로 등록할 수 있습니다.
+[WinSW](https://github.com/winsw/winsw)를 사용하여 수동으로 Windows 서비스를 등록할 수 있습니다.
 
-**WinSW 예시:**
+> **Note**: [Windows 설치 프로그램](#windows-설치-프로그램)을 사용하면 JRE 번들링과 서비스 등록이 자동으로 처리됩니다.
 
 `fastpass-service.xml`:
 ```xml
@@ -207,26 +208,175 @@ winsw start fastpass-service.xml
 
 ---
 
+## Windows 설치 프로그램
+
+Java가 설치되지 않은 PC에서도 동작하는 Windows 설치 프로그램(.exe)을 생성합니다.
+설치 시 JRE 번들링, Windows 서비스 자동 등록, 방화벽 규칙 추가가 자동으로 처리됩니다.
+
+### 구성 요소
+
+| 도구 | 용도 | 버전 |
+|------|------|------|
+| **jlink** | JDK 21에서 최소 JRE 생성 (~62MB) | JDK 21 내장 |
+| **WinSW** | Spring Boot JAR을 Windows 서비스로 등록 | v3.0.0-alpha.11 |
+| **Inno Setup** | 전문 Windows 설치 프로그램 생성 | 6.7+ |
+
+### 빌드 PC 사전 조건
+
+1. **JDK 21** 설치 및 `JAVA_HOME` 환경변수 설정
+2. **Inno Setup 6** 설치 ([다운로드](https://jrsoftware.org/isdl.php))
+3. **WinSW-x64.exe** 다운로드 후 `installer/winsw/` 에 배치
+   - [GitHub Release](https://github.com/winsw/winsw/releases) 에서 `WinSW-x64.exe` 다운로드
+
+### 인스톨러 빌드
+
+```cmd
+cd installer
+build-installer.bat
+```
+
+빌드 과정:
+1. `gradlew.bat clean bootJar -x test` → Spring Boot JAR 빌드
+2. `create-jre.bat` → jlink 커스텀 JRE 생성 (24개 모듈, ~62MB)
+3. Staging 디렉토리 구성 (JAR + JRE + WinSW + 설정파일)
+4. Inno Setup 컴파일 → `installer/output/FastPassSetup-x.x.x.exe` 생성
+
+### 빌드 결과
+
+```
+installer/output/FastPassSetup-1.0.0.exe    (~131MB)
+```
+
+포함 내용:
+- Spring Boot JAR (~93MB)
+- 번들 JRE - Java 21 jlink (~62MB)
+- WinSW 서비스 래퍼 (~17MB)
+- application.properties
+- 서비스 관리 스크립트
+
+### 설치 프로그램 기능
+
+#### 설치 (Install)
+1. 환영 화면 → 설치 경로 선택 (기본: `C:\Program Files\SMARTCORE\FastPass Web`)
+2. 파일 복사: JAR, JRE, WinSW, 설정파일
+3. Windows 서비스 자동 등록 (`FastPassWeb`)
+4. 방화벽 인바운드 규칙 추가 (포트 50000)
+5. 바탕화면/시작메뉴 바로가기 생성 (선택)
+6. 서비스 시작 → 브라우저 열기 옵션
+
+#### 제거 (Uninstall)
+1. 서비스 중지 및 제거
+2. 방화벽 규칙 삭제
+3. 파일 삭제
+
+### 설치 후 디렉토리 구조
+
+```
+C:\Program Files\SMARTCORE\FastPass Web\
+├── fastpass-service.exe          # WinSW (서비스 래퍼)
+├── fastpass-service.xml          # WinSW 설정
+├── fphps_web_example.jar         # Spring Boot JAR
+├── application.properties        # 앱 설정 (수정 가능)
+├── jre/                          # 번들 JRE (Java 21)
+│   ├── bin/java.exe
+│   └── ...
+├── data/                         # SQLite DB (자동 생성)
+├── log/                          # 서비스 로그 (자동 생성)
+├── scripts/
+│   ├── install-service.bat       # 서비스 재설치 시 사용
+│   └── uninstall-service.bat     # 서비스 수동 제거 시 사용
+└── unins000.exe                  # 언인스톨러
+```
+
+### 서비스 관리
+
+```cmd
+:: 서비스 상태 확인
+sc query FastPassWeb
+
+:: 서비스 중지
+net stop FastPassWeb
+
+:: 서비스 시작
+net start FastPassWeb
+
+:: 서비스 재시작
+net stop FastPassWeb && net start FastPassWeb
+```
+
+Windows `services.msc`에서 "FastPass Web Application" 서비스를 GUI로 관리할 수도 있습니다.
+
+### 설정 변경
+
+설치 후 `application.properties`를 직접 편집하여 설정을 변경할 수 있습니다:
+
+```cmd
+:: 설정 파일 편집
+notepad "C:\Program Files\SMARTCORE\FastPass Web\application.properties"
+
+:: 변경사항 적용을 위해 서비스 재시작
+net stop FastPassWeb && net start FastPassWeb
+```
+
+### 인스톨러 파일 구조
+
+```
+installer/
+├── build-installer.bat              # 전체 빌드 자동화 스크립트
+├── create-jre.bat                   # jlink JRE 생성 스크립트
+├── fastpass-setup.iss               # Inno Setup 스크립트
+├── winsw/
+│   ├── fastpass-service.xml         # WinSW 서비스 설정
+│   └── WinSW-x64.exe               # WinSW 실행 파일 (.gitignore)
+├── scripts/
+│   ├── install-service.bat          # 서비스 설치 (설치 시 자동 호출)
+│   └── uninstall-service.bat        # 서비스 제거 (제거 시 자동 호출)
+├── staging/                         # 빌드 임시 디렉토리 (.gitignore)
+├── jre/                             # jlink JRE 출력 (.gitignore)
+└── output/                          # 설치 프로그램 출력 (.gitignore)
+```
+
+### 버전 업데이트
+
+설치 프로그램 버전을 변경하려면 `installer/fastpass-setup.iss`의 상단을 수정합니다:
+
+```iss
+#define MyAppVersion "1.0.0"
+```
+
+> **Note**: FastPass SDK (FPHPS.dll)는 설치 프로그램에 포함되지 않습니다.
+> SDK는 별도의 SMARTCORE FastPass SDK 설치 프로그램으로 설치해야 하며, 시스템 PATH에 등록되어야 합니다.
+
+---
+
 ## 설정 옵션
 
 ### application.properties
 
 ```properties
 # 서버 설정
-server.port=8080
+server.port=50000
 server.servlet.encoding.charset=UTF-8
 server.servlet.encoding.force=true
 
 # 로깅 설정
-logging.level.com.smartcoreinc=DEBUG
+logging.level.com.smartcoreinc=INFO
 logging.file.name=log/application.log
-logging.logback.rollingpolicy.max-file-size=1MB
-logging.logback.rollingpolicy.max-history=7
+logging.logback.rollingpolicy.max-file-size=5MB
+logging.logback.rollingpolicy.max-history=3
+logging.logback.rollingpolicy.total-size-cap=15MB
 logging.charset.file=UTF-8
 logging.charset.console=UTF-8
 
 # PA API 설정 (Passive Authentication)
-pa-api.base-url=http://192.168.100.11:8081
+pa-api.base-url=https://pkd.smartcoreinc.com
+pa-api.api-key=icao_XXXXXXXX_YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+
+# Face Verification API 설정
+face-api.base-url=http://localhost:10100
+
+# 데이터 내보내기 설정
+document-export.base-dir=D:/passport_exports
 ```
 
 ### 외부 설정 파일 사용
@@ -324,6 +474,7 @@ Get-Content log\application.log -Wait -Tail 50
 | 버전 | 날짜 | 변경사항 |
 |------|------|----------|
 | 0.0.1-SNAPSHOT | 2025-12 | 초기 버전, PWA 지원 추가 |
+| 1.0.0 | 2026-02 | Windows 설치 프로그램, jlink JRE 번들링, WinSW 서비스 래퍼 |
 
 ---
 
