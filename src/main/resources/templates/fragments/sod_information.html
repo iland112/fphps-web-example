@@ -3,110 +3,110 @@
   <div id="sod-section" th:fragment="sodInformation(sodInfo)" class="space-y-4">
     <th:block th:if="${sodInfo != null}">
       <!-- SOD 헤더 -->
-      <div class="flex items-center gap-3 pb-3 border-b border-gray-200">
-        <div class="flex size-10 items-center justify-center rounded-lg bg-indigo-100">
-          <svg class="size-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="flex items-center gap-3 pb-3 border-b border-gray-200 dark:border-neutral-700">
+        <div class="flex size-10 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
+          <svg class="size-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
           </svg>
         </div>
         <div>
-          <h3 class="text-lg font-semibold text-gray-900">Security Object Document (SOD)</h3>
-          <p class="text-sm text-gray-500">E-Passport chip security and integrity information</p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-neutral-100">Security Object Document (SOD)</h3>
+          <p class="text-sm text-gray-500 dark:text-neutral-400">E-Passport chip security and integrity information</p>
         </div>
       </div>
 
       <!-- 다이제스트 알고리즘 정보 -->
-      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 class="text-sm font-semibold text-blue-900 mb-2">Digest Algorithm</h4>
+      <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">Digest Algorithm</h4>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <dt class="text-xs font-medium text-blue-700">Algorithm Name</dt>
-            <dd class="mt-1 text-sm font-semibold text-blue-900" th:text="${sodInfo.digestAlgorithmName}">SHA-256</dd>
+            <dt class="text-xs font-medium text-blue-700 dark:text-blue-300">Algorithm Name</dt>
+            <dd class="mt-1 text-sm font-semibold text-blue-900 dark:text-blue-200" th:text="${sodInfo.digestAlgorithmName}">SHA-256</dd>
           </div>
           <div>
-            <dt class="text-xs font-medium text-blue-700">OID</dt>
-            <dd class="mt-1 text-sm font-mono text-blue-800" th:text="${sodInfo.digestAlgorithmOid}">2.16.840.1.101.3.4.2.1</dd>
+            <dt class="text-xs font-medium text-blue-700 dark:text-blue-300">OID</dt>
+            <dd class="mt-1 text-sm font-mono text-blue-800 dark:text-blue-300" th:text="${sodInfo.digestAlgorithmOid}">2.16.840.1.101.3.4.2.1</dd>
           </div>
         </div>
       </div>
 
       <!-- DSC Certificate 정보 -->
-      <div th:if="${sodInfo.dscCertificate != null}" th:object="${sodInfo.dscCertificate}" class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-          <h4 class="text-sm font-semibold text-gray-900">Document Signer Certificate (DSC)</h4>
+      <div th:if="${sodInfo.dscCertificate != null}" th:object="${sodInfo.dscCertificate}" class="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 dark:bg-neutral-700/50 px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Document Signer Certificate (DSC)</h4>
         </div>
         <div class="p-4 space-y-3">
           <!-- Subject -->
-          <div class="bg-gray-50 rounded-lg p-3">
-            <dt class="text-xs font-medium text-gray-500 uppercase">Subject</dt>
-            <dd class="mt-1 text-sm font-mono text-gray-900 break-all" th:text="*{subject}">CN=Country Signing CA, O=Government, C=XX</dd>
+          <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+            <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Subject</dt>
+            <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-neutral-100 break-all" th:text="*{subject}">CN=Country Signing CA, O=Government, C=XX</dd>
           </div>
 
           <!-- Issuer -->
-          <div class="bg-gray-50 rounded-lg p-3">
-            <dt class="text-xs font-medium text-gray-500 uppercase">Issuer</dt>
-            <dd class="mt-1 text-sm font-mono text-gray-900 break-all" th:text="*{issuer}">CN=Country Root CA, O=Government, C=XX</dd>
+          <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+            <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Issuer</dt>
+            <dd class="mt-1 text-sm font-mono text-gray-900 dark:text-neutral-100 break-all" th:text="*{issuer}">CN=Country Root CA, O=Government, C=XX</dd>
           </div>
 
           <!-- 유효기간 -->
           <div class="grid grid-cols-2 gap-3">
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">Valid From</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{notBefore}">2024-01-01 00:00:00</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Valid From</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100" th:text="*{notBefore}">2024-01-01 00:00:00</dd>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">Valid Until</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{notAfter}">2034-01-01 00:00:00</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Valid Until</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100" th:text="*{notAfter}">2034-01-01 00:00:00</dd>
             </div>
           </div>
 
           <!-- 유효성 상태 -->
           <div class="rounded-lg p-4"
-               th:classappend="${sodInfo.dscCertificate.validationStatus == 'VALID'} ? 'bg-green-50 border border-green-200' :
-                              (${sodInfo.dscCertificate.validationStatus == 'EXPIRED'} ? 'bg-red-50 border border-red-200' :
-                              (${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'} ? 'bg-amber-50 border border-amber-200' : 'bg-red-50 border border-red-200'))">
+               th:classappend="${sodInfo.dscCertificate.validationStatus == 'VALID'} ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' :
+                              (${sodInfo.dscCertificate.validationStatus == 'EXPIRED'} ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' :
+                              (${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'} ? 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'))">
             <div class="flex items-start gap-3">
               <!-- VALID 아이콘 -->
-              <div th:if="${sodInfo.dscCertificate.validationStatus == 'VALID'}" class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg bg-green-100">
-                <svg class="size-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <div th:if="${sodInfo.dscCertificate.validationStatus == 'VALID'}" class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
+                <svg class="size-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
                 </svg>
               </div>
               <!-- EXPIRED 아이콘 -->
-              <div th:if="${sodInfo.dscCertificate.validationStatus == 'EXPIRED'}" class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg bg-red-100">
-                <svg class="size-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <div th:if="${sodInfo.dscCertificate.validationStatus == 'EXPIRED'}" class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                <svg class="size-5 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/>
                 </svg>
               </div>
               <!-- NOT_YET_VALID 아이콘 -->
-              <div th:if="${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'}" class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg bg-amber-100">
-                <svg class="size-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+              <div th:if="${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'}" class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
+                <svg class="size-5 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                 </svg>
               </div>
               <!-- 기타 상태 아이콘 (fallback) -->
-              <div th:if="${sodInfo.dscCertificate.validationStatus != 'VALID' and sodInfo.dscCertificate.validationStatus != 'EXPIRED' and sodInfo.dscCertificate.validationStatus != 'NOT_YET_VALID'}" class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg bg-red-100">
-                <svg class="size-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+              <div th:if="${sodInfo.dscCertificate.validationStatus != 'VALID' and sodInfo.dscCertificate.validationStatus != 'EXPIRED' and sodInfo.dscCertificate.validationStatus != 'NOT_YET_VALID'}" class="flex-shrink-0 flex size-10 items-center justify-center rounded-lg bg-red-100 dark:bg-red-900/30">
+                <svg class="size-5 text-red-600 dark:text-red-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
                 </svg>
               </div>
               <div class="flex-1 min-w-0">
                 <h5 class="text-sm font-semibold"
-                    th:classappend="${sodInfo.dscCertificate.validationStatus == 'VALID'} ? 'text-green-800' :
-                                   (${sodInfo.dscCertificate.validationStatus == 'EXPIRED'} ? 'text-red-800' :
-                                   (${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'} ? 'text-amber-800' : 'text-red-800'))"
+                    th:classappend="${sodInfo.dscCertificate.validationStatus == 'VALID'} ? 'text-green-800 dark:text-green-300' :
+                                   (${sodInfo.dscCertificate.validationStatus == 'EXPIRED'} ? 'text-red-800 dark:text-red-300' :
+                                   (${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'} ? 'text-amber-800 dark:text-amber-300' : 'text-red-800 dark:text-red-300'))"
                     th:text="${sodInfo.dscCertificate.validationMessage}">Certificate Status</h5>
                 <p class="mt-1 text-sm"
-                   th:classappend="${sodInfo.dscCertificate.validationStatus == 'VALID'} ? 'text-green-700' :
-                                  (${sodInfo.dscCertificate.validationStatus == 'EXPIRED'} ? 'text-red-700' :
-                                  (${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'} ? 'text-amber-700' : 'text-red-700'))"
+                   th:classappend="${sodInfo.dscCertificate.validationStatus == 'VALID'} ? 'text-green-700 dark:text-green-300' :
+                                  (${sodInfo.dscCertificate.validationStatus == 'EXPIRED'} ? 'text-red-700 dark:text-red-300' :
+                                  (${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'} ? 'text-amber-700 dark:text-amber-300' : 'text-red-700 dark:text-red-300'))"
                    th:text="${sodInfo.dscCertificate.validationDescription}">Certificate description</p>
                 <!-- 만료된 경우 추가 안내 메시지 -->
-                <p th:if="${sodInfo.dscCertificate.validationStatus == 'EXPIRED'}" class="mt-2 text-xs text-red-600">
+                <p th:if="${sodInfo.dscCertificate.validationStatus == 'EXPIRED'}" class="mt-2 text-xs text-red-600 dark:text-red-400">
                   The passport was signed with an expired DSC certificate.
                 </p>
                 <!-- 아직 유효하지 않은 경우 추가 안내 메시지 -->
-                <p th:if="${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'}" class="mt-2 text-xs text-amber-600">
+                <p th:if="${sodInfo.dscCertificate.validationStatus == 'NOT_YET_VALID'}" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
                   The certificate's validity period has not started yet.
                 </p>
               </div>
@@ -115,29 +115,29 @@
 
           <!-- 공개키 정보 -->
           <div class="grid grid-cols-3 gap-3">
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{publicKeyAlgorithm}">RSA</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Algorithm</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100" th:text="*{publicKeyAlgorithm}">RSA</dd>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">Key Size</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{publicKeySize} + ' bits'">2048 bits</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Key Size</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100" th:text="*{publicKeySize} + ' bits'">2048 bits</dd>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">Signature</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{signatureAlgorithm}">SHA256withRSA</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Signature</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100" th:text="*{signatureAlgorithm}">SHA256withRSA</dd>
             </div>
           </div>
 
           <!-- 지문 (Fingerprints) -->
           <div class="space-y-2">
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">SHA-1 Fingerprint</dt>
-              <dd class="mt-1 text-xs font-mono text-gray-700 break-all" th:text="*{sha1Fingerprint}">A1:B2:C3:D4:E5:F6:...</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">SHA-1 Fingerprint</dt>
+              <dd class="mt-1 text-xs font-mono text-gray-700 dark:text-neutral-300 break-all" th:text="*{sha1Fingerprint}">A1:B2:C3:D4:E5:F6:...</dd>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">SHA-256 Fingerprint</dt>
-              <dd class="mt-1 text-xs font-mono text-gray-700 break-all" th:text="*{sha256Fingerprint}">A1:B2:C3:D4:E5:F6:...</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">SHA-256 Fingerprint</dt>
+              <dd class="mt-1 text-xs font-mono text-gray-700 dark:text-neutral-300 break-all" th:text="*{sha256Fingerprint}">A1:B2:C3:D4:E5:F6:...</dd>
             </div>
           </div>
         </div>
@@ -147,46 +147,46 @@
       <div
         th:if="${sodInfo.signerInfo != null}"
         th:object="${sodInfo.signerInfo}"
-        class="bg-white border border-gray-200 rounded-lg overflow-hidden"
+        class="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden"
       >
-        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-          <h4 class="text-sm font-semibold text-gray-900">Signer Information</h4>
+        <div class="bg-gray-50 dark:bg-neutral-700/50 px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Signer Information</h4>
         </div>
         <div class="p-4 space-y-3">
           <div class="grid grid-cols-2 gap-3">
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">Digest Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{digestAlgorithmName} ?: *{digestAlgorithm}">SHA-256</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Digest Algorithm</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100" th:text="*{digestAlgorithmName} ?: *{digestAlgorithm}">SHA-256</dd>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3">
-              <dt class="text-xs font-medium text-gray-500 uppercase">Encryption Algorithm</dt>
-              <dd class="mt-1 text-sm text-gray-900" th:text="*{encryptionAlgorithmName} ?: *{encryptionAlgorithm}">RSA</dd>
+            <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+              <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Encryption Algorithm</dt>
+              <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100" th:text="*{encryptionAlgorithmName} ?: *{encryptionAlgorithm}">RSA</dd>
             </div>
           </div>
-          <div class="bg-gray-50 rounded-lg p-3">
-            <dt class="text-xs font-medium text-gray-500 uppercase">Digital Signature</dt>
+          <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+            <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase">Digital Signature</dt>
             <details class="mt-2">
-              <summary class="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
+              <summary class="cursor-pointer text-xs text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-300">
                 Show signature (click to expand)
               </summary>
-              <code class="mt-2 block break-all rounded bg-gray-100 p-2 font-mono text-xs text-gray-700" th:text="*{signature}">A1B2C3D4E5F6...</code>
+              <code class="mt-2 block break-all rounded bg-gray-100 dark:bg-neutral-700 p-2 font-mono text-xs text-gray-700 dark:text-neutral-300" th:text="*{signature}">A1B2C3D4E5F6...</code>
             </details>
           </div>
         </div>
       </div>
 
       <!-- Data Group Hashes -->
-      <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200">
-          <h4 class="text-sm font-semibold text-gray-900">Data Group Hashes</h4>
-          <p class="text-xs text-gray-500 mt-0.5">Hash values stored in the SOD for each Data Group</p>
+      <div class="bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-lg overflow-hidden">
+        <div class="bg-gray-50 dark:bg-neutral-700/50 px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+          <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Data Group Hashes</h4>
+          <p class="text-xs text-gray-500 dark:text-neutral-400 mt-0.5">Hash values stored in the SOD for each Data Group</p>
         </div>
         <div class="p-4">
           <div class="space-y-2">
             <th:block th:each="dgHash : ${sodInfo.dataGroupHashes}" th:object="${dgHash}">
-              <div class="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-                <span class="inline-flex items-center justify-center w-14 rounded bg-indigo-100 px-2 py-1 text-xs font-bold text-indigo-800" th:text="*{dgName}">DG01</span>
-                <code class="flex-1 text-xs font-mono text-gray-700 break-all" th:text="*{hashValue}">A1B2C3D4E5F6...</code>
+              <div class="flex items-center gap-3 bg-gray-50 dark:bg-neutral-700/50 rounded-lg p-3">
+                <span class="inline-flex items-center justify-center w-14 rounded bg-indigo-100 dark:bg-indigo-900/30 px-2 py-1 text-xs font-bold text-indigo-800 dark:text-indigo-300" th:text="*{dgName}">DG01</span>
+                <code class="flex-1 text-xs font-mono text-gray-700 dark:text-neutral-300 break-all" th:text="*{hashValue}">A1B2C3D4E5F6...</code>
               </div>
             </th:block>
           </div>
@@ -200,7 +200,7 @@
         <svg class="size-16 text-yellow-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
         </svg>
-        <p class="text-sm text-gray-500">No SOD data available</p>
+        <p class="text-sm text-gray-500 dark:text-neutral-400">No SOD data available</p>
       </div>
     </th:block>
   </div>

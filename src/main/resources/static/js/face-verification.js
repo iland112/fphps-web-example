@@ -95,7 +95,7 @@ function renderFaceVerificationResult(data, container) {
       '<div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-white/5 rounded-bl-full"></div>' +
       '<div class="relative flex items-center justify-between">' +
         '<div class="flex items-center gap-4">' +
-          '<div class="flex size-14 items-center justify-center rounded-full bg-white shadow-sm group-hover:shadow-md transition-shadow">' +
+          '<div class="flex size-14 items-center justify-center rounded-full bg-white dark:bg-neutral-800 shadow-sm dark:shadow-neutral-900/30 group-hover:shadow-md transition-shadow">' +
             '<span class="text-3xl">' + statusIcon + '</span>' +
           '</div>' +
           '<div>' +
@@ -112,25 +112,25 @@ function renderFaceVerificationResult(data, container) {
     '</div>' +
 
     // Visual Match Score Bar - Consistent design
-    '<div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-6 h-fit">' +
+    '<div class="group relative bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-2xl shadow-sm dark:shadow-neutral-900/30 hover:shadow-lg transition-all duration-300 overflow-hidden p-6 h-fit">' +
       '<div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-500/10 to-blue-500/10 rounded-bl-full"></div>' +
       '<div class="relative">' +
         '<div class="flex items-center gap-2 mb-4">' +
-          '<div class="flex size-8 items-center justify-center rounded-lg bg-indigo-100 group-hover:bg-indigo-200 transition-colors">' +
+          '<div class="flex size-8 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-900/50 transition-colors">' +
             '<svg class="size-4 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">' +
               '<path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />' +
             '</svg>' +
           '</div>' +
-          '<h4 class="text-sm font-semibold text-gray-900">Similarity Analysis</h4>' +
-          '<span class="ml-auto text-xs px-2 py-1 rounded-full ' + (isPassed ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') + '">' +
+          '<h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Similarity Analysis</h4>' +
+          '<span class="ml-auto text-xs px-2 py-1 rounded-full ' + (isPassed ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300') + '">' +
             (isPassed ? 'PASSED' : 'FAILED') + ' (Threshold: ' + thresholdPercent + '%)' +
           '</span>' +
         '</div>' +
         '<div class="relative">' +
           // Progress Bar Background
-          '<div class="w-full bg-gray-100 rounded-full h-10 relative overflow-hidden">' +
+          '<div class="w-full bg-gray-100 dark:bg-neutral-700 rounded-full h-10 relative overflow-hidden">' +
             // Threshold Marker
-            '<div class="absolute top-0 bottom-0 border-l-2 border-dashed border-gray-400" style="left: ' + thresholdPercent + '%"></div>' +
+            '<div class="absolute top-0 bottom-0 border-l-2 border-dashed border-gray-400 dark:border-neutral-500" style="left: ' + thresholdPercent + '%"></div>' +
             // Match Score Bar
             '<div class="bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 h-10 rounded-full transition-all duration-700 flex items-center justify-center" style="width: ' + scorePercent + '%">' +
               '<span class="text-sm font-bold text-white px-3">' + scorePercent + '%</span>' +
@@ -138,9 +138,9 @@ function renderFaceVerificationResult(data, container) {
           '</div>' +
           // Labels
           '<div class="flex justify-between mt-2 px-1">' +
-            '<span class="text-sm text-gray-500">0%</span>' +
-            '<span class="text-sm text-gray-600 font-medium">← Threshold: ' + thresholdPercent + '%</span>' +
-            '<span class="text-sm text-gray-500">100%</span>' +
+            '<span class="text-sm text-gray-500 dark:text-neutral-400">0%</span>' +
+            '<span class="text-sm text-gray-600 dark:text-neutral-400 font-medium">&larr; Threshold: ' + thresholdPercent + '%</span>' +
+            '<span class="text-sm text-gray-500 dark:text-neutral-400">100%</span>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -149,56 +149,56 @@ function renderFaceVerificationResult(data, container) {
     // Photo Quality Cards - Consistent design with other tabs
     '<div class="grid grid-cols-2 gap-4">' +
       // Document Photo Quality: Text | Image
-      '<div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-fit">' +
+      '<div class="group relative bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-2xl shadow-sm dark:shadow-neutral-900/30 hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-fit">' +
         '<div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-bl-full"></div>' +
         '<div class="relative">' +
           '<div class="flex items-center gap-2 mb-4">' +
-            '<div class="flex size-8 items-center justify-center rounded-lg bg-purple-100 group-hover:bg-purple-200 transition-colors">' +
+            '<div class="flex size-8 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">' +
               '<svg class="size-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">' +
                 '<path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />' +
               '</svg>' +
             '</div>' +
-            '<h4 class="text-sm font-semibold text-gray-900">Document Photo Quality</h4>' +
+            '<h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Document Photo Quality</h4>' +
           '</div>' +
           '<div class="flex gap-3">' +
             '<div class="flex-1">' + renderQualityMetrics(docQuality) + '</div>' +
             '<div class="flex flex-col items-center gap-2">' +
               (docImage ?
-                '<div class="relative border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-2">' +
-                  '<img id="doc-photo-img" src="' + docImage + '" alt="Document Photo" class="w-36 h-44 object-contain bg-white rounded-lg shadow-sm" style="display:block;">' +
+                '<div class="relative border border-gray-200 dark:border-neutral-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-neutral-700/50 p-2">' +
+                  '<img id="doc-photo-img" src="' + docImage + '" alt="Document Photo" class="w-36 h-44 object-contain bg-white dark:bg-neutral-800 rounded-lg shadow-sm dark:shadow-neutral-900/30" style="display:block;">' +
                   '<canvas id="doc-photo-canvas" class="absolute top-2 left-2 rounded-lg" style="display:none; pointer-events:none;"></canvas>' +
                 '</div>' +
-                '<button onclick="toggleFaceBox(\'doc\')" class="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">' +
+                '<button onclick="toggleFaceBox(\'doc\')" class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">' +
                   '<span id="doc-toggle-text">Show Face Box</span>' +
                 '</button>'
-                : '<div class="w-36 h-44 bg-gray-100 rounded flex items-center justify-center"><span class="text-gray-400 text-sm">No image</span></div>') +
+                : '<div class="w-36 h-44 bg-gray-100 dark:bg-neutral-700 rounded flex items-center justify-center"><span class="text-gray-400 dark:text-neutral-500 text-sm">No image</span></div>') +
             '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
       // Chip Photo Quality: Image | Text
-      '<div class="group relative bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-fit">' +
+      '<div class="group relative bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-2xl shadow-sm dark:shadow-neutral-900/30 hover:shadow-lg transition-all duration-300 overflow-hidden p-5 h-fit">' +
         '<div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-bl-full"></div>' +
         '<div class="relative">' +
           '<div class="flex items-center gap-2 mb-4">' +
-            '<div class="flex size-8 items-center justify-center rounded-lg bg-cyan-100 group-hover:bg-cyan-200 transition-colors">' +
+            '<div class="flex size-8 items-center justify-center rounded-lg bg-cyan-100 dark:bg-cyan-900/30 group-hover:bg-cyan-200 dark:group-hover:bg-cyan-900/50 transition-colors">' +
               '<svg class="size-4 text-cyan-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">' +
                 '<path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" />' +
               '</svg>' +
             '</div>' +
-            '<h4 class="text-sm font-semibold text-gray-900">Chip Photo Quality</h4>' +
+            '<h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Chip Photo Quality</h4>' +
           '</div>' +
           '<div class="flex gap-3">' +
             '<div class="flex flex-col items-center gap-2">' +
               (chipImage ?
-                '<div class="relative border border-gray-200 rounded-xl overflow-hidden bg-gray-50 p-2">' +
-                  '<img id="chip-photo-img" src="' + chipImage + '" alt="Chip Photo" class="w-36 h-44 object-contain bg-white rounded-lg shadow-sm" style="display:block;">' +
+                '<div class="relative border border-gray-200 dark:border-neutral-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-neutral-700/50 p-2">' +
+                  '<img id="chip-photo-img" src="' + chipImage + '" alt="Chip Photo" class="w-36 h-44 object-contain bg-white dark:bg-neutral-800 rounded-lg shadow-sm dark:shadow-neutral-900/30" style="display:block;">' +
                   '<canvas id="chip-photo-canvas" class="absolute top-2 left-2 rounded-lg" style="display:none; pointer-events:none;"></canvas>' +
                 '</div>' +
-                '<button onclick="toggleFaceBox(\'chip\')" class="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">' +
+                '<button onclick="toggleFaceBox(\'chip\')" class="px-3 py-1 text-xs font-medium text-gray-700 dark:text-neutral-300 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-700 transition-colors">' +
                   '<span id="chip-toggle-text">Show Face Box</span>' +
                 '</button>'
-                : '<div class="w-36 h-44 bg-gray-100 rounded flex items-center justify-center"><span class="text-gray-400 text-sm">No image</span></div>') +
+                : '<div class="w-36 h-44 bg-gray-100 dark:bg-neutral-700 rounded flex items-center justify-center"><span class="text-gray-400 dark:text-neutral-500 text-sm">No image</span></div>') +
             '</div>' +
             '<div class="flex-1">' + renderQualityMetrics(chipQuality) + '</div>' +
           '</div>' +
@@ -242,13 +242,13 @@ function getQualityGradient(score) {
 function getOverallQualityBadge(avgScore) {
   let badgeClass, badgeText;
   if (avgScore >= 0.70) {
-    badgeClass = 'bg-green-100 text-green-800 border-green-200';
+    badgeClass = 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-200 dark:border-green-800';
     badgeText = '✓ Good';
   } else if (avgScore >= 0.40) {
-    badgeClass = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    badgeClass = 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800';
     badgeText = '⚠ Fair';
   } else {
-    badgeClass = 'bg-red-100 text-red-800 border-red-200';
+    badgeClass = 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-200 dark:border-red-800';
     badgeText = '✗ Poor';
   }
   return '<div class="inline-flex items-center px-3 py-1.5 rounded-full text-base font-semibold border ' + badgeClass + '">' + badgeText + '</div>';
@@ -261,10 +261,10 @@ function renderQualityBar(label, score, icon) {
 
   return '<div class="mb-3">' +
     '<div class="flex items-center justify-between mb-1.5">' +
-      '<span class="text-base font-medium text-gray-700">' + icon + ' ' + label + '</span>' +
+      '<span class="text-base font-medium text-gray-700 dark:text-neutral-300">' + icon + ' ' + label + '</span>' +
       '<span class="text-base font-bold text-' + color + '-700">' + percent + '%</span>' +
     '</div>' +
-    '<div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">' +
+    '<div class="w-full bg-gray-200 dark:bg-neutral-600 rounded-full h-2.5 overflow-hidden">' +
       '<div class="bg-gradient-to-r ' + gradient + ' h-2.5 rounded-full transition-all duration-500" style="width: ' + percent + '%"></div>' +
     '</div>' +
   '</div>';
@@ -272,7 +272,7 @@ function renderQualityBar(label, score, icon) {
 
 function renderQualityMetrics(quality) {
   if (!quality) {
-    return '<p class="text-xs text-gray-500">Quality metrics not available</p>';
+    return '<p class="text-xs text-gray-500 dark:text-neutral-400">Quality metrics not available</p>';
   }
 
   // Handle both snake_case and camelCase
@@ -316,25 +316,25 @@ function renderQualityMetrics(quality) {
 }
 
 function renderFaceErrors(errors) {
-  return '<div class="bg-red-50 border border-red-200 rounded-lg p-4">' +
-    '<h4 class="text-sm font-semibold text-red-900 mb-2">Errors</h4>' +
-    '<ul class="list-disc list-inside text-xs text-red-700 space-y-1">' +
+  return '<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">' +
+    '<h4 class="text-sm font-semibold text-red-900 dark:text-red-200 mb-2">Errors</h4>' +
+    '<ul class="list-disc list-inside text-xs text-red-700 dark:text-red-300 space-y-1">' +
       errors.map(function(err) { return '<li>' + escapeHtml(err) + '</li>'; }).join('') +
     '</ul>' +
   '</div>';
 }
 
 function renderFaceErrorCard(title, message) {
-  return '<div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-lg">' +
+  return '<div class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 dark:border-red-500 p-4 rounded-lg">' +
     '<div class="flex items-center">' +
       '<div class="flex-shrink-0">' +
-        '<svg class="size-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">' +
+        '<svg class="size-5 text-red-400 dark:text-red-500" fill="currentColor" viewBox="0 0 20 20">' +
           '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>' +
         '</svg>' +
       '</div>' +
       '<div class="ml-3">' +
-        '<h3 class="text-sm font-medium text-red-800">' + escapeHtml(title) + '</h3>' +
-        '<p class="mt-1 text-sm text-red-700">' + escapeHtml(message) + '</p>' +
+        '<h3 class="text-sm font-medium text-red-800 dark:text-red-300">' + escapeHtml(title) + '</h3>' +
+        '<p class="mt-1 text-sm text-red-700 dark:text-red-300">' + escapeHtml(message) + '</p>' +
       '</div>' +
     '</div>' +
   '</div>';

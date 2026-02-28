@@ -73,22 +73,22 @@
 
     <!-- Chip Read Failure Warning (Hidden by default) -->
     <div id="chip-failure-warning" class="hidden px-4 sm:px-0 mb-4">
-      <div class="rounded-xl bg-amber-50 border border-amber-200 p-4">
+      <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4">
         <div class="flex items-start gap-3">
           <div class="flex-shrink-0">
-            <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100">
+            <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
               <svg class="size-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
               </svg>
             </div>
           </div>
           <div class="flex-1 min-w-0">
-            <h3 class="text-sm font-semibold text-amber-800">Chip Data Read Failed</h3>
-            <p class="mt-1 text-sm text-amber-700">
+            <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-300">Chip Data Read Failed</h3>
+            <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
               VIZ (Visual Inspection Zone) data was successfully read, but the chip (RFID) data could not be retrieved.
               The passport may not be positioned correctly, or the chip may be damaged.
             </p>
-            <p class="mt-2 text-sm text-amber-700 font-medium" id="chip-error-details">
+            <p class="mt-2 text-sm text-amber-700 dark:text-amber-300 font-medium" id="chip-error-details">
               Showing available VIZ data below. Chip-specific features (e-Passport photo, Data Groups, SOD) are not available.
             </p>
           </div>
@@ -108,7 +108,7 @@
 
     <!-- Tab Navigation -->
     <div class="px-4 sm:px-0 mb-2">
-      <div class="border-b border-gray-200">
+      <div class="border-b border-gray-200 dark:border-neutral-700">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
           <button
             onclick="switchTabAuto('emrtd')"
@@ -120,35 +120,35 @@
           <button
             onclick="switchTabAuto('mrz-validation')"
             id="tab-mrz-validation"
-            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+            class="tab-button-auto border-transparent text-gray-500 dark:text-neutral-400 hover:border-gray-300 dark:hover:border-neutral-600 hover:text-gray-700 dark:hover:text-neutral-300 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
           >
             MRZ Validation
           </button>
           <button
             onclick="switchTabAuto('sod')"
             id="tab-sod"
-            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+            class="tab-button-auto border-transparent text-gray-500 dark:text-neutral-400 hover:border-gray-300 dark:hover:border-neutral-600 hover:text-gray-700 dark:hover:text-neutral-300 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
           >
             SOD Information
           </button>
           <button
             onclick="switchTabAuto('pa')"
             id="tab-pa"
-            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+            class="tab-button-auto border-transparent text-gray-500 dark:text-neutral-400 hover:border-gray-300 dark:hover:border-neutral-600 hover:text-gray-700 dark:hover:text-neutral-300 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
           >
             Passive Authentication
           </button>
           <button
             onclick="switchTabAuto('face')"
             id="tab-face"
-            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+            class="tab-button-auto border-transparent text-gray-500 dark:text-neutral-400 hover:border-gray-300 dark:hover:border-neutral-600 hover:text-gray-700 dark:hover:text-neutral-300 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
           >
             Face Verification
           </button>
           <button
             onclick="switchTabAuto('log')"
             id="tab-log"
-            class="tab-button-auto border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+            class="tab-button-auto border-transparent text-gray-500 dark:text-neutral-400 hover:border-gray-300 dark:hover:border-neutral-600 hover:text-gray-700 dark:hover:text-neutral-300 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
           >
             Event Log
           </button>
@@ -252,11 +252,11 @@
       <!-- Event Log Tab Content -->
       <div id="content-log" class="tab-content-auto hidden">
         <!-- Log Messages Section -->
-        <div class="border rounded-lg border-gray-200 bg-white shadow-sm">
+        <div class="border rounded-lg border-gray-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm dark:shadow-neutral-900/30">
           <!-- Log Header with Clear Button -->
-          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <h4 class="font-semibold text-gray-900 flex items-center gap-2">
-              <svg class="size-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-neutral-700">
+            <h4 class="font-semibold text-gray-900 dark:text-neutral-100 flex items-center gap-2">
+              <svg class="size-5 text-gray-500 dark:text-neutral-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
               </svg>
               Event Log
@@ -265,7 +265,7 @@
               <button
                 id="log-auto-scroll-toggle"
                 type="button"
-                class="inline-flex items-center gap-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
+                class="inline-flex items-center gap-x-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-colors"
                 title="Toggle auto-scroll"
               >
                 <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -288,16 +288,16 @@
           </div>
 
           <!-- Log Content with Auto-scroll -->
-          <div id="log-scroll-container" class="overflow-y-auto bg-gray-50" style="max-height: 400px;">
-            <div id="notifications" class="p-3 font-mono text-xs text-gray-700 space-y-1">
-              <div class="text-gray-400 italic">Waiting for events...</div>
+          <div id="log-scroll-container" class="overflow-y-auto bg-gray-50 dark:bg-neutral-700/50" style="max-height: 400px;">
+            <div id="notifications" class="p-3 font-mono text-xs text-gray-700 dark:text-neutral-300 space-y-1">
+              <div class="text-gray-400 dark:text-neutral-500 italic">Waiting for events...</div>
             </div>
           </div>
 
           <!-- Log Footer with Stats -->
-          <div class="px-4 py-2 border-t border-gray-200 bg-gray-50">
-            <div class="flex items-center justify-between text-xs text-gray-500">
-              <span>Total events: <span id="log-event-count" class="font-semibold text-gray-700">0</span></span>
+          <div class="px-4 py-2 border-t border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-700/50">
+            <div class="flex items-center justify-between text-xs text-gray-500 dark:text-neutral-400">
+              <span>Total events: <span id="log-event-count" class="font-semibold text-gray-700 dark:text-neutral-300">0</span></span>
               <span id="log-last-update">No events yet</span>
             </div>
           </div>
@@ -338,7 +338,7 @@
       const tabButtons = document.querySelectorAll('.tab-button-auto');
       tabButtons.forEach(button => {
         button.classList.remove('border-blue-500', 'text-blue-600');
-        button.classList.add('border-transparent', 'text-gray-500');
+        button.classList.add('border-transparent', 'text-gray-500', 'dark:text-neutral-400');
       });
 
       // Show selected tab content
@@ -350,7 +350,7 @@
       // Add active styling to selected tab
       const selectedTab = document.getElementById(`tab-${tabName}`);
       if (selectedTab) {
-        selectedTab.classList.remove('border-transparent', 'text-gray-500');
+        selectedTab.classList.remove('border-transparent', 'text-gray-500', 'dark:text-neutral-400');
         selectedTab.classList.add('border-blue-500', 'text-blue-600');
       }
 
@@ -612,7 +612,7 @@
       const timestamp = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 });
 
       const logEntry = document.createElement('div');
-      logEntry.className = 'flex gap-2 items-start py-1 border-b border-gray-100 last:border-0';
+      logEntry.className = 'flex gap-2 items-start py-1 border-b border-gray-100 dark:border-neutral-700 last:border-0';
 
       let colorClass = 'text-blue-600';
       let icon = '●';
@@ -629,9 +629,9 @@
 
       logEntry.innerHTML = `
         <span class="${colorClass} font-bold">${icon}</span>
-        <span class="text-gray-400">[${timestamp}]</span>
-        <span class="font-semibold text-gray-700">${eventName}:</span>
-        <span class="text-gray-600">${message}</span>
+        <span class="text-gray-400 dark:text-neutral-500">[${timestamp}]</span>
+        <span class="font-semibold text-gray-700 dark:text-neutral-300">${eventName}:</span>
+        <span class="text-gray-600 dark:text-neutral-400">${message}</span>
       `;
 
       logContainer.appendChild(logEntry);
@@ -650,7 +650,7 @@
     // Clear log
     function clearLog() {
       const logContainer = document.getElementById('notifications');
-      logContainer.innerHTML = '<div class="text-gray-400 italic">Log cleared. Waiting for events...</div>';
+      logContainer.innerHTML = '<div class="text-gray-400 dark:text-neutral-500 italic">Log cleared. Waiting for events...</div>';
       eventCount = 0;
       document.getElementById('log-event-count').textContent = '0';
       document.getElementById('log-last-update').textContent = 'No events yet';
@@ -662,6 +662,7 @@
       const statusSpan = document.getElementById('auto-scroll-status');
       statusSpan.textContent = `Auto-scroll: ${autoScrollEnabled ? 'ON' : 'OFF'}`;
       this.classList.toggle('bg-gray-100', autoScrollEnabled);
+      this.classList.toggle('dark:bg-neutral-700', autoScrollEnabled);
     });
 
     // Update read progress

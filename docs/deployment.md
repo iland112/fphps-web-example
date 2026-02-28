@@ -244,7 +244,7 @@ build-installer.bat
 ### 빌드 결과
 
 ```
-installer/output/FastPassSetup-1.0.0.exe    (~131MB)
+installer/output/FastPassSetup-1.1.0.exe    (~131MB)
 ```
 
 포함 내용:
@@ -341,7 +341,7 @@ installer/
 설치 프로그램 버전을 변경하려면 `installer/fastpass-setup.iss`의 상단을 수정합니다:
 
 ```iss
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 ```
 
 > **Note**: FastPass SDK (FPHPS.dll)는 설치 프로그램에 포함되지 않습니다.
@@ -475,6 +475,7 @@ Get-Content log\application.log -Wait -Tail 50
 |------|------|----------|
 | 0.0.1-SNAPSHOT | 2025-12 | 초기 버전, PWA 지원 추가 |
 | 1.0.0 | 2026-02 | Windows 설치 프로그램, jlink JRE 번들링, WinSW 서비스 래퍼 |
+| 1.1.0 | 2026-02 | 다크 모드 콘텐츠 영역 전체 적용, Tailwind CSS v4 @source 디렉티브 |
 
 ---
 

@@ -4,8 +4,8 @@
     <div class="px-4 sm:px-0 mb-2">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-2xl font-semibold text-gray-900">Passport Information</h3>
-          <p class="mt-1 text-sm text-gray-500">
+          <h3 class="text-2xl font-semibold text-gray-900 dark:text-neutral-100">Passport Information</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
             Data details after reading the passport/e-passport
           </p>
         </div>
@@ -28,12 +28,12 @@
             <span id="manual-export-data-text">Export Data</span>
           </button>
           <!-- Status Badge -->
-          <div class="p-3 bg-green-50 rounded-lg border border-green-200">
+          <div class="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
             <div class="flex items-center gap-2">
               <svg class="size-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span class="text-sm font-semibold text-green-800">Read Success</span>
+              <span class="text-sm font-semibold text-green-800 dark:text-green-300">Read Success</span>
             </div>
           </div>
         </div>
@@ -45,22 +45,22 @@
     >
       <!-- Chip Read Failure Warning -->
       <div th:if="${response.ePassResults == null}" class="px-4 sm:px-0 mb-4">
-        <div class="rounded-xl bg-amber-50 border border-amber-200 p-4">
+        <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-4">
           <div class="flex items-start gap-3">
             <div class="flex-shrink-0">
-              <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100">
+              <div class="flex size-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/30">
                 <svg class="size-5 text-amber-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
               </div>
             </div>
             <div class="flex-1 min-w-0">
-              <h3 class="text-sm font-semibold text-amber-800">Chip Data Read Failed</h3>
-              <p class="mt-1 text-sm text-amber-700">
+              <h3 class="text-sm font-semibold text-amber-800 dark:text-amber-300">Chip Data Read Failed</h3>
+              <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
                 VIZ (Visual Inspection Zone) data was successfully read, but the chip (RFID) data could not be retrieved.
                 The passport may not be positioned correctly, or the chip may be damaged.
               </p>
-              <p class="mt-2 text-sm text-amber-700 font-medium">
+              <p class="mt-2 text-sm text-amber-700 dark:text-amber-300 font-medium">
                 Showing available VIZ data below. Chip-specific features (e-Passport photo, Data Groups, SOD) are not available.
               </p>
             </div>
@@ -79,25 +79,25 @@
 
       <!-- Tabs for E-MRTD / SOD / PA -->
       <div class="mt-4 px-4 sm:px-0">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-white dark:bg-neutral-800 rounded-lg shadow-sm dark:shadow-neutral-900/30 border border-gray-200 dark:border-neutral-700 overflow-hidden">
           <!-- Tab Navigation -->
-          <nav class="flex border-b border-gray-200 bg-gray-50" aria-label="Tabs">
-            <button type="button" onclick="switchTab('emrtd')" id="tab-emrtd" class="passport-tab group relative min-w-0 flex-1 overflow-hidden bg-white px-4 py-4 text-center text-sm font-medium text-gray-900 hover:bg-gray-50 focus:z-10 border-b-2 border-blue-500">
+          <nav class="flex border-b border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-700/50" aria-label="Tabs">
+            <button type="button" onclick="switchTab('emrtd')" id="tab-emrtd" class="passport-tab group relative min-w-0 flex-1 overflow-hidden bg-white dark:bg-neutral-800 px-4 py-4 text-center text-sm font-medium text-gray-900 dark:text-neutral-100 hover:bg-gray-50 dark:hover:bg-neutral-700/50 focus:z-10 border-b-2 border-blue-500">
               <span>E-MRTD Data</span>
             </button>
             <!-- MRZ Validation tab: always show if MRZ data is available -->
-            <button th:if="${response.mrzInfo != null}" type="button" onclick="switchTab('mrz-validation')" id="tab-mrz-validation" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+            <button th:if="${response.mrzInfo != null}" type="button" onclick="switchTab('mrz-validation')" id="tab-mrz-validation" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-700/50 hover:text-gray-700 dark:hover:text-neutral-300 focus:z-10">
               <span>MRZ Validation</span>
             </button>
             <!-- Chip-only tabs: only show if ePassResults is available -->
             <th:block th:if="${response.ePassResults != null}">
-              <button type="button" onclick="switchTab('sod')" id="tab-sod" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+              <button type="button" onclick="switchTab('sod')" id="tab-sod" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-700/50 hover:text-gray-700 dark:hover:text-neutral-300 focus:z-10">
                 <span>SOD Information</span>
               </button>
-              <button type="button" onclick="switchTab('pa')" id="tab-pa" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+              <button type="button" onclick="switchTab('pa')" id="tab-pa" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-700/50 hover:text-gray-700 dark:hover:text-neutral-300 focus:z-10">
                 <span>Passive Authentication</span>
               </button>
-              <button type="button" onclick="switchTab('face')" id="tab-face" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-700 focus:z-10">
+              <button type="button" onclick="switchTab('face')" id="tab-face" class="passport-tab group relative min-w-0 flex-1 overflow-hidden px-4 py-4 text-center text-sm font-medium text-gray-500 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-700/50 hover:text-gray-700 dark:hover:text-neutral-300 focus:z-10">
                 <span>Face Verification</span>
               </button>
             </th:block>
@@ -201,19 +201,19 @@
 
     </th:block>
     <!-- Empty State: No Passport Data -->
-    <div th:if="${response == null or response.mrzInfo == null}" class="rounded-xl bg-blue-50 border border-blue-200 p-6">
+    <div th:if="${response == null or response.mrzInfo == null}" class="rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-6">
       <div class="flex items-start gap-4">
         <div class="flex-shrink-0">
-          <div class="flex size-12 items-center justify-center rounded-xl bg-blue-100">
+          <div class="flex size-12 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
             <svg class="size-6 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
             </svg>
           </div>
         </div>
         <div class="flex-1 min-w-0">
-          <h3 class="text-base font-semibold text-blue-800">Passport Data Required</h3>
-          <p class="mt-2 text-sm text-blue-700">Please read a passport first to view the data.</p>
-          <div class="mt-4 flex items-center gap-2 text-sm text-blue-700">
+          <h3 class="text-base font-semibold text-blue-800 dark:text-blue-300">Passport Data Required</h3>
+          <p class="mt-2 text-sm text-blue-700 dark:text-blue-300">Please read a passport first to view the data.</p>
+          <div class="mt-4 flex items-center gap-2 text-sm text-blue-700 dark:text-blue-300">
             <svg class="size-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
@@ -235,13 +235,13 @@
     function switchTab(tabName) {
       // Update tab buttons
       document.querySelectorAll('.passport-tab').forEach(tab => {
-        tab.classList.remove('bg-white', 'text-gray-900', 'border-b-2', 'border-blue-500');
-        tab.classList.add('text-gray-500');
+        tab.classList.remove('bg-white', 'dark:bg-neutral-800', 'text-gray-900', 'dark:text-neutral-100', 'border-b-2', 'border-blue-500');
+        tab.classList.add('text-gray-500', 'dark:text-neutral-400');
       });
 
       const activeTab = document.getElementById('tab-' + tabName);
-      activeTab.classList.add('bg-white', 'text-gray-900', 'border-b-2', 'border-blue-500');
-      activeTab.classList.remove('text-gray-500');
+      activeTab.classList.add('bg-white', 'dark:bg-neutral-800', 'text-gray-900', 'dark:text-neutral-100', 'border-b-2', 'border-blue-500');
+      activeTab.classList.remove('text-gray-500', 'dark:text-neutral-400');
 
       // Update content visibility
       document.querySelectorAll('.tab-content').forEach(content => {

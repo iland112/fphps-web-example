@@ -530,6 +530,95 @@ C:\Program Files\SMARTCORE\FastPass Web\
 
 ---
 
+### 2026-02-27: 다크 모드 콘텐츠 영역 전체 적용
+
+**구현 내용**:
+- 헤더/사이드바만 적용되어 있던 다크 모드를 콘텐츠 영역 전체로 확장
+- Thymeleaf 템플릿 7개, JavaScript 동적 렌더링 3개 파일에 `dark:` Tailwind CSS 클래스 추가
+- 홈 페이지 Quick Start Guide 카드 및 Feature 카드 다크 모드 적용
+- Tailwind CSS v4 `@source` 디렉티브 추가로 콘텐츠 스캐닝 보장
+
+**주요 변경사항**:
+
+1. **Tailwind CSS v4 콘텐츠 스캐닝 수정** (`input.css`):
+   - `@source "../resources/templates/**/*.html"` 추가
+   - `@source "../resources/static/js/**/*.js"` 추가
+   - Tailwind v4는 `tailwind.config.js`의 `content` 외에 `input.css`의 `@source` 디렉티브도 필요
+
+2. **Thymeleaf 템플릿 다크 모드 적용** (7개 파일):
+   - `epassport_manual_read.html` - 탭 네비게이션, 탭 콘텐츠 컨테이너
+   - `epassport_auto_read.html` - 탭 네비게이션, 이벤트 로그
+   - `passport_cards.html` - MRZ, Photo, Auth 등 6개 카드
+   - `pa_tab_content.html` - PA 헤더, 버튼, 결과 컨테이너
+   - `sod_information.html` - SOD 정보 카드, 인증서 상세
+   - `mrz_validation.html` - MRZ 검증 결과, 상태 배지
+   - `face_verification_tab_content.html` - Face 탭 헤더, 결과 컨테이너
+
+3. **JavaScript 동적 렌더링 다크 모드 적용** (3개 파일):
+   - `pa-verification.js` - PA Health Check 배너, 에러 카드, PA Verify/Lookup 결과 렌더링 (13개 함수)
+   - `passport-tabs.js` - SOD 렌더링, CRL 상태, MRZ Validation 렌더링 (11개 함수, 30+ 수정)
+   - `face-verification.js` - Face Verification 결과, Quality Metrics 렌더링
+
+4. **홈 페이지 다크 모드** (`home_content.html`):
+   - Quick Start Guide 카드 컨테이너
+   - 3개 Step 카드 (Connect → Choose → Execute) 그라데이션 배경
+   - 5개 Feature 카드 아이콘 및 배지 (E-Passport, ID Card, Barcode, Scan, Settings)
+   - Step 2/3 텍스트 대비 향상: 그라데이션 opacity `/20` → `/30`, 텍스트 `dark:text-white`
+
+5. **SW 캐시 버전 업데이트** (`sw.js`):
+   - 캐시 버전: v32 → v34
+   - 브라우저 캐시 무효화로 최신 CSS/JS 적용
+
+**색상 매핑 규칙**:
+
+| Light Mode | Dark Mode |
+|-----------|-----------|
+| `bg-white` | `dark:bg-neutral-800` |
+| `bg-gray-50` | `dark:bg-neutral-700/50` |
+| `border-gray-200` | `dark:border-neutral-700` |
+| `text-gray-900` | `dark:text-neutral-100` |
+| `text-gray-600` | `dark:text-neutral-400` |
+| `bg-blue-50` | `dark:bg-blue-900/20` |
+| `shadow-sm` | `dark:shadow-neutral-900/30` |
+
+**수정된 파일**:
+
+**프론트엔드 빌드:**
+- `src/main/frontend/input.css` - `@source` 디렉티브 추가
+
+**Thymeleaf 템플릿 (7개):**
+- `templates/fragments/epassport_manual_read.html` - 탭 네비게이션, 컨테이너
+- `templates/fragments/epassport_auto_read.html` - 탭 네비게이션, 이벤트 로그
+- `templates/fragments/passport_cards.html` - 6개 카드 프래그먼트
+- `templates/fragments/pa_tab_content.html` - PA 헤더, 결과 컨테이너
+- `templates/fragments/sod_information.html` - SOD 정보 카드
+- `templates/fragments/mrz_validation.html` - MRZ 검증 결과
+- `templates/fragments/face_verification_tab_content.html` - Face 탭
+
+**JavaScript (3개):**
+- `static/js/pa-verification.js` - PA 관련 동적 렌더링
+- `static/js/passport-tabs.js` - SOD/MRZ 동적 렌더링
+- `static/js/face-verification.js` - Face 결과 렌더링
+
+**CSS/캐시:**
+- `static/css/main.css` - Tailwind CSS 재빌드 (dark: 클래스 포함)
+- `static/sw.js` - 캐시 v32 → v34
+
+**홈 페이지:**
+- `templates/fragments/home_content.html` - Quick Start + Feature 카드
+
+**테스트 결과**:
+- ✅ `gradlew.bat build -x test` 빌드 성공
+- ✅ 다크 모드 토글 시 콘텐츠 영역 전체 어두운 배경 적용
+- ✅ MRZ Validation 탭 다크 모드 정상
+- ✅ PA Verification 결과 다크 모드 정상
+- ✅ SOD Information 다크 모드 정상
+- ✅ Face Verification 결과 다크 모드 정상
+- ✅ 홈 페이지 Quick Start / Feature 카드 다크 모드 정상
+- ✅ Tailwind CSS v4 `@source` 디렉티브로 dark: 클래스 정상 생성
+
+---
+
 ### 2026-02-25: PA API Key 인증, Health Check, 사용자 매뉴얼 작성
 
 **구현 내용**:

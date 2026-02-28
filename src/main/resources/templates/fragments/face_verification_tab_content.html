@@ -3,17 +3,17 @@
   <div th:fragment="faceVerificationTabContent(btnId, containerId, emptyStateId, prefix)" 
        class="face-verification-wrapper space-y-4">
     <!-- Header Section -->
-    <div class="flex items-center justify-between pb-3 border-b border-gray-200">
+    <div class="flex items-center justify-between pb-3 border-b border-gray-200 dark:border-neutral-700">
       <div class="flex items-center gap-3">
-        <div class="flex size-10 items-center justify-center rounded-lg bg-purple-100">
-          <svg class="size-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex size-10 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
+          <svg class="size-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                   d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/>
           </svg>
         </div>
         <div>
-          <h3 class="text-lg font-semibold text-gray-900">Face Verification</h3>
-          <p class="text-sm text-gray-500">Compare document photo with chip photo using InsightFace</p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-neutral-100">Face Verification</h3>
+          <p class="text-sm text-gray-500 dark:text-neutral-400">Compare document photo with chip photo using InsightFace</p>
         </div>
       </div>
       <!-- Verify Button -->
@@ -37,16 +37,16 @@
     </div>
 
     <!-- Results Container -->
-    <div th:id="${containerId}" class="bg-gray-50 border border-gray-200 rounded-lg p-6 min-h-[200px]">
+    <div th:id="${containerId}" class="bg-gray-50 dark:bg-neutral-700/50 border border-gray-200 dark:border-neutral-700 rounded-lg p-6 min-h-[200px]">
       <!-- Initial Empty State -->
       <div th:id="${emptyStateId}" class="flex flex-col items-center justify-center py-12">
-        <svg class="size-16 text-gray-300 mb-4" xmlns="http://www.w3.org/2000/svg" 
+        <svg class="size-16 text-gray-300 dark:text-neutral-600 mb-4" xmlns="http://www.w3.org/2000/svg"
              fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" 
+          <path stroke-linecap="round" stroke-linejoin="round"
                 d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/>
         </svg>
-        <p class="text-sm text-gray-500">Click "Verify Face" button to compare photos</p>
-        <p class="text-xs text-gray-400 mt-1">Verification results will appear here</p>
+        <p class="text-sm text-gray-500 dark:text-neutral-400">Click "Verify Face" button to compare photos</p>
+        <p class="text-xs text-gray-400 dark:text-neutral-500 mt-1">Verification results will appear here</p>
       </div>
     </div>
   </div>
