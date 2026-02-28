@@ -530,6 +530,53 @@ C:\Program Files\SMARTCORE\FastPass Web\
 
 ---
 
+### 2026-02-27: PWA (Progressive Web App) 인프라 제거
+
+**구현 내용**:
+- localhost 전용 Windows 데스크톱 앱에서 실익 없는 PWA 인프라 전체 제거
+- Service Worker, 매니페스트, 오프라인 페이지, PWA 아이콘 삭제
+- 캐시 버전 관리 부담 해소 (v2 → v34까지 올라온 SW 캐시 제거)
+
+**주요 변경사항**:
+
+1. **삭제된 파일** (12개):
+   - `static/sw.js` - Service Worker (288줄, 캐시 전략)
+   - `static/manifest.json` - PWA 매니페스트 (80줄)
+   - `static/offline.html` - 오프라인 폴백 페이지 (172줄)
+   - `static/image/icons/` - PWA 아이콘 디렉토리 (8개 PNG + 1개 SVG)
+
+2. **`layouts/default.html` 정리**:
+   - PWA 메타 태그 제거 (manifest 링크, theme-color, apple-mobile-web-app-*, msapplication-*)
+   - Apple Touch Icon 링크 8개 제거
+   - Service Worker 등록 코드 제거
+   - PWA Install Prompt 코드 제거
+   - PWA Update Notification 코드 제거
+   - `<meta name="description">`, favicon 링크는 유지
+
+**제거 이유**:
+- 물리 장치(USB 전자여권 판독기) 의존, Windows 전용 네이티브 DLL 앱
+- localhost에서만 동작하므로 "오프라인 지원" 무의미
+- Inno Setup 인스톨러 + 바탕화면 바로가기가 PWA 설치보다 우월
+- CSS/JS 변경마다 SW 캐시 버전을 bump해야 하는 유지보수 부담
+
+**수정된 파일**:
+
+**삭제:**
+- `static/sw.js`
+- `static/manifest.json`
+- `static/offline.html`
+- `static/image/icons/` (디렉토리 전체)
+
+**수정:**
+- `templates/layouts/default.html` - PWA 메타 태그 및 JavaScript 제거
+
+**테스트 결과**:
+- ✅ `gradlew.bat build -x test` 빌드 성공
+- ✅ 페이지 정상 로드
+- ✅ 다크 모드, 사이드바 토글, 브레드크럼 정상 동작
+
+---
+
 ### 2026-02-27: 다크 모드 콘텐츠 영역 전체 적용
 
 **구현 내용**:
