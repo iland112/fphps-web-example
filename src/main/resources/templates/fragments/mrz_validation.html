@@ -58,7 +58,8 @@
                 <svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>
                 MATCH
               </span>
-              <span th:unless="${validationResult.mrzLine1 == ePassMrzLines.line1 && validationResult.mrzLine2 == ePassMrzLines.line2}"
+              <span id="manual-mismatch-badge"
+                    th:unless="${validationResult.mrzLine1 == ePassMrzLines.line1 && validationResult.mrzLine2 == ePassMrzLines.line2}"
                     class="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2.5 py-0.5 text-[10px] font-semibold">
                 <svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
                 MISMATCH
@@ -66,7 +67,12 @@
             </th:block>
           </div>
         </div>
-        <div class="p-4" th:classappend="${ePassMrzLines != null && ePassMrzLines.line1 != null} ? 'grid grid-cols-1 lg:grid-cols-2 gap-3' : ''">
+        <div id="manual-mrz-lines-container" class="p-4"
+             th:classappend="${ePassMrzLines != null && ePassMrzLines.line1 != null} ? 'grid grid-cols-1 lg:grid-cols-2 gap-3' : ''"
+             th:data-viz-line1="${validationResult.mrzLine1}"
+             th:data-viz-line2="${validationResult.mrzLine2}"
+             th:data-chip-line1="${ePassMrzLines != null ? ePassMrzLines.line1 : ''}"
+             th:data-chip-line2="${ePassMrzLines != null ? ePassMrzLines.line2 : ''}">
           <!-- VIZ MRZ -->
           <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
             <p class="text-[10px] text-gray-400 mb-1.5 font-semibold uppercase tracking-wider"
@@ -74,11 +80,11 @@
             <div class="font-mono text-sm text-green-400 tracking-wider leading-relaxed">
               <div th:if="${validationResult.mrzLine1 != null}">
                 <span class="text-gray-500 text-xs mr-2">L1</span>
-                <span th:text="${validationResult.mrzLine1}">Line 1</span>
+                <span id="manual-viz-l1"></span>
               </div>
               <div th:if="${validationResult.mrzLine2 != null}">
                 <span class="text-gray-500 text-xs mr-2">L2</span>
-                <span th:text="${validationResult.mrzLine2}">Line 2</span>
+                <span id="manual-viz-l2"></span>
               </div>
             </div>
           </div>
@@ -89,11 +95,11 @@
             <div class="font-mono text-sm text-cyan-400 tracking-wider leading-relaxed">
               <div th:if="${ePassMrzLines.line1 != null}">
                 <span class="text-gray-500 text-xs mr-2">L1</span>
-                <span th:text="${ePassMrzLines.line1}">Line 1</span>
+                <span id="manual-chip-l1"></span>
               </div>
               <div th:if="${ePassMrzLines.line2 != null}">
                 <span class="text-gray-500 text-xs mr-2">L2</span>
-                <span th:text="${ePassMrzLines.line2}">Line 2</span>
+                <span id="manual-chip-l2"></span>
               </div>
             </div>
           </div>
@@ -250,5 +256,41 @@
         <p class="text-sm text-gray-500 dark:text-neutral-400">No MRZ validation data available</p>
       </div>
     </th:block>
+
+    <!-- MRZ diff rendering for Manual Read -->
+    <script th:if="${validationResult != null}">
+      (function() {
+        var c = document.getElementById('manual-mrz-lines-container');
+        if (!c) return;
+        var vl1 = c.dataset.vizLine1 || '';
+        var vl2 = c.dataset.vizLine2 || '';
+        var cl1 = c.dataset.chipLine1 || '';
+        var cl2 = c.dataset.chipLine2 || '';
+        var hasChip = cl1.length > 0;
+        var isMismatch = hasChip && (vl1 !== cl1 || vl2 !== cl2);
+
+        // VIZ lines
+        var vizL1 = document.getElementById('manual-viz-l1');
+        var vizL2 = document.getElementById('manual-viz-l2');
+        if (vizL1) vizL1.innerHTML = isMismatch ? renderMrzCharsWithDiff(vl1, cl1) : escapeHtmlMrz(vl1);
+        if (vizL2) vizL2.innerHTML = isMismatch ? renderMrzCharsWithDiff(vl2, cl2) : escapeHtmlMrz(vl2);
+
+        // Chip lines
+        var chipL1 = document.getElementById('manual-chip-l1');
+        var chipL2 = document.getElementById('manual-chip-l2');
+        if (chipL1) chipL1.innerHTML = isMismatch ? renderMrzCharsWithDiff(cl1, vl1) : escapeHtmlMrz(cl1);
+        if (chipL2) chipL2.innerHTML = isMismatch ? renderMrzCharsWithDiff(cl2, vl2) : escapeHtmlMrz(cl2);
+
+        // Update MISMATCH badge with diff count
+        if (isMismatch) {
+          var badge = document.getElementById('manual-mismatch-badge');
+          if (badge) {
+            var diffCount = countMrzDiffs(vl1, vl2, cl1, cl2);
+            var textNode = badge.lastChild;
+            if (textNode) textNode.textContent = ' MISMATCH (' + diffCount + ' char' + (diffCount > 1 ? 's' : '') + ')';
+          }
+        }
+      })();
+    </script>
   </div>
 </html>

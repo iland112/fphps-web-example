@@ -760,11 +760,15 @@ function renderMrzValidation(validationResult, containerId = 'auto-mrz-validatio
   if (line1 || line2) {
     // Match/Mismatch badge
     let matchBadge = '';
+    let isMatch = false;
     if (hasChipMrz) {
-      const isMatch = line1 === ePassMrzLines.line1 && line2 === ePassMrzLines.line2;
-      matchBadge = isMatch
-        ? `<span class="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2.5 py-0.5 text-[10px] font-semibold"><svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>MATCH</span>`
-        : `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2.5 py-0.5 text-[10px] font-semibold"><svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>MISMATCH</span>`;
+      isMatch = line1 === ePassMrzLines.line1 && line2 === ePassMrzLines.line2;
+      if (isMatch) {
+        matchBadge = `<span class="inline-flex items-center gap-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 px-2.5 py-0.5 text-[10px] font-semibold"><svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg>MATCH</span>`;
+      } else {
+        const diffCount = countMrzDiffs(line1, line2, ePassMrzLines.line1, ePassMrzLines.line2);
+        matchBadge = `<span class="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 px-2.5 py-0.5 text-[10px] font-semibold"><svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>MISMATCH (${diffCount} char${diffCount > 1 ? 's' : ''})</span>`;
+      }
     }
 
     html += `
@@ -780,11 +784,14 @@ function renderMrzValidation(validationResult, containerId = 'auto-mrz-validatio
             <p class="text-[10px] text-gray-400 mb-1.5 font-semibold uppercase tracking-wider">${hasChipMrz ? 'VIZ (OCR)' : 'VIZ MRZ'}</p>
             <div class="font-mono text-sm text-green-400 tracking-wider leading-relaxed">
     `;
+    const useDiff = hasChipMrz && !isMatch;
     if (line1) {
-      html += `<div><span class="text-gray-500 text-xs mr-2">L1</span><span>${escapeHtmlMrz(line1)}</span></div>`;
+      const l1Html = useDiff ? renderMrzCharsWithDiff(line1, ePassMrzLines.line1) : escapeHtmlMrz(line1);
+      html += `<div><span class="text-gray-500 text-xs mr-2">L1</span><span>${l1Html}</span></div>`;
     }
     if (line2) {
-      html += `<div><span class="text-gray-500 text-xs mr-2">L2</span><span>${escapeHtmlMrz(line2)}</span></div>`;
+      const l2Html = useDiff ? renderMrzCharsWithDiff(line2, ePassMrzLines.line2) : escapeHtmlMrz(line2);
+      html += `<div><span class="text-gray-500 text-xs mr-2">L2</span><span>${l2Html}</span></div>`;
     }
     html += `</div></div>`;
 
@@ -796,10 +803,12 @@ function renderMrzValidation(validationResult, containerId = 'auto-mrz-validatio
             <div class="font-mono text-sm text-cyan-400 tracking-wider leading-relaxed">
       `;
       if (ePassMrzLines.line1) {
-        html += `<div><span class="text-gray-500 text-xs mr-2">L1</span><span>${escapeHtmlMrz(ePassMrzLines.line1)}</span></div>`;
+        const cl1Html = useDiff ? renderMrzCharsWithDiff(ePassMrzLines.line1, line1) : escapeHtmlMrz(ePassMrzLines.line1);
+        html += `<div><span class="text-gray-500 text-xs mr-2">L1</span><span>${cl1Html}</span></div>`;
       }
       if (ePassMrzLines.line2) {
-        html += `<div><span class="text-gray-500 text-xs mr-2">L2</span><span>${escapeHtmlMrz(ePassMrzLines.line2)}</span></div>`;
+        const cl2Html = useDiff ? renderMrzCharsWithDiff(ePassMrzLines.line2, line2) : escapeHtmlMrz(ePassMrzLines.line2);
+        html += `<div><span class="text-gray-500 text-xs mr-2">L2</span><span>${cl2Html}</span></div>`;
       }
       html += `</div></div>`;
     }
@@ -928,4 +937,47 @@ function renderMrzValidation(validationResult, containerId = 'auto-mrz-validatio
 function escapeHtmlMrz(text) {
   if (!text) return '';
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/**
+ * Render MRZ text with character-level diff highlighting.
+ * Differing characters are wrapped in a red box span.
+ * @param {string} text - The MRZ text to render
+ * @param {string} compareText - The MRZ text to compare against
+ * @returns {string} HTML string with diff highlights
+ */
+function renderMrzCharsWithDiff(text, compareText) {
+  if (!text) return '';
+  let html = '';
+  for (let i = 0; i < text.length; i++) {
+    const char = escapeHtmlMrz(text[i]);
+    const isDiff = compareText && i < compareText.length && text[i] !== compareText[i];
+    if (isDiff) {
+      html += `<span class="bg-red-500/30 border border-red-500 rounded-sm px-px">${char}</span>`;
+    } else {
+      html += char;
+    }
+  }
+  return html;
+}
+
+/**
+ * Count character differences between two MRZ lines.
+ * @returns {number} total diff count across both lines
+ */
+function countMrzDiffs(vizLine1, vizLine2, chipLine1, chipLine2) {
+  let count = 0;
+  if (vizLine1 && chipLine1) {
+    const len = Math.max(vizLine1.length, chipLine1.length);
+    for (let i = 0; i < len; i++) {
+      if (vizLine1[i] !== chipLine1[i]) count++;
+    }
+  }
+  if (vizLine2 && chipLine2) {
+    const len = Math.max(vizLine2.length, chipLine2.length);
+    for (let i = 0; i < len; i++) {
+      if (vizLine2[i] !== chipLine2[i]) count++;
+    }
+  }
+  return count;
 }
