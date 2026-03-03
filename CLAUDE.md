@@ -452,6 +452,68 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-03-03: MRZ Diff 시각화, Installer 안정성 개선, Private CA 인증서 번들링
+
+**구현 내용**:
+- MRZ Validation 탭에 VIZ(OCR)와 Chip(DG1) MRZ 문자 단위 diff 비교 시각화 기능 추가
+- HTMX WebJars 경로를 jlink JRE 호환 버전 명시 경로로 수정
+- 재설치 시 기존 서비스 자동 중지로 파일 잠금 문제 해결
+- MRZ diff 인라인 스크립트 로딩 순서 문제 해결 (setInterval 재시도)
+- PA API HTTPS용 Private CA 인증서를 jlink JRE cacerts에 자동 임포트
+
+**주요 변경사항**:
+
+1. **MRZ 문자 단위 Diff 시각화** (`passport-tabs.js`, `mrz_validation.html`):
+   - `renderMrzCharsWithDiff(text, compareText)`: 문자별 비교 후 다른 문자에 빨간 박스 하이라이트
+   - `countMrzDiffs()`: 차이 문자 수 카운트
+   - MISMATCH 배지에 차이 문자 수 표시: `"MISMATCH (N chars)"`
+   - Manual Read: Thymeleaf `th:text` → `data-*` 속성 + JavaScript 렌더링으로 전환
+   - Auto Read: 기존 JavaScript 렌더링에 diff 로직 통합
+   - 스타일: `bg-red-500/30 border border-red-500 rounded-sm px-px`
+
+2. **HTMX WebJars 경로 수정** (`default.html`):
+   - **문제**: jlink JRE에서 WebJars Locator 자동 버전 해석 실패 → HTML 에러 페이지 반환 → `Unexpected token '<'`
+   - **수정**: `/webjars/htmx.org/dist/htmx.min.js` → `/webjars/htmx.org/2.0.4/dist/htmx.min.js`
+
+3. **Installer 재설치 파일 잠금 해결** (`fastpass-setup.iss`):
+   - **문제**: 재설치 시 Windows 서비스가 JAR 파일을 잠그고 있어 `DeleteFile 실패; 코드 32` 발생
+   - **해결**: `PrepareToInstall()` + `StopExistingService()` 추가하여 파일 교체 전 서비스 자동 중지
+   - 서비스 중지 후 3초 대기 (파일 핸들 해제)
+
+4. **MRZ diff 스크립트 로딩 순서 수정** (`mrz_validation.html`):
+   - **문제**: HTMX 프래그먼트에서 mrz_validation 인라인 스크립트가 passport-tabs.js보다 먼저 실행 → `escapeHtmlMrz is not defined`
+   - **해결**: `typeof escapeHtmlMrz === 'function'` 체크 + `setInterval` 재시도 (50ms 간격, 5초 타임아웃)
+
+5. **Private CA 인증서 jlink JRE 번들링** (`create-jre.bat`, `installer/certs/`):
+   - **문제**: PA API 서버(`pkd.smartcoreinc.com`)가 Private CA 인증서 사용 → jlink JRE cacerts에 없어 `PKIX path building failed`
+   - **해결**: `installer/certs/pkd-private-ca.crt` 파일 추가, `create-jre.bat`에서 JRE 생성 후 `keytool -importcert` 자동 임포트
+   - 인증서: `CN=ICAO Local PKD Private CA, O=SmartCore Inc.` (10년 유효)
+
+**수정된 파일**:
+
+**신규:**
+- `installer/certs/pkd-private-ca.crt` - PA API Private CA 인증서
+
+**수정:**
+- `src/main/resources/static/js/passport-tabs.js` - MRZ diff 렌더링 함수 추가
+- `src/main/resources/templates/fragments/mrz_validation.html` - data 속성 기반 diff 렌더링, 스크립트 재시도 로직
+- `src/main/resources/templates/layouts/default.html` - HTMX 버전 명시 경로
+- `src/main/resources/static/css/main.css` - Tailwind CSS 재빌드 (diff 스타일 포함)
+- `src/main/resources/application.properties` - PA API 키 업데이트
+- `installer/fastpass-setup.iss` - PrepareToInstall 서비스 중지 로직
+- `installer/create-jre.bat` - CA 인증서 자동 임포트 단계 추가
+
+**테스트 결과**:
+- ✅ MRZ diff 시각화: 다른 문자에 빨간 박스 표시 (Manual/Auto Read)
+- ✅ MISMATCH 배지에 차이 문자 수 표시
+- ✅ HTMX 정상 로드 (installer 환경)
+- ✅ 재설치 시 파일 잠금 없이 정상 업그레이드
+- ✅ MRZ diff 스크립트 로딩 순서 문제 해결
+- ✅ PA API HTTPS 연결 성공 (Private CA 인증서 신뢰)
+- ✅ Installer 빌드 성공 (FastPassSetup-1.1.0.exe, 131MB)
+
+---
+
 ### 2026-02-27: Windows 설치 프로그램 구현
 
 **구현 내용**:

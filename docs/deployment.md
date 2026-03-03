@@ -318,6 +318,25 @@ notepad "C:\Program Files\SMARTCORE\FastPass Web\application.properties"
 net stop FastPassWeb && net start FastPassWeb
 ```
 
+### Private CA 인증서 관리
+
+PA API 서버(`pkd.smartcoreinc.com`)는 Private CA 인증서를 사용합니다. jlink JRE의 cacerts에는 이 인증서가 포함되어 있지 않으므로, 빌드 과정에서 자동으로 임포트합니다.
+
+**인증서 파일 위치**: `installer/certs/pkd-private-ca.crt`
+
+- `create-jre.bat` 실행 시 jlink JRE 생성 후 `keytool -importcert`로 자동 임포트
+- 인증서 발급자: `CN=ICAO Local PKD Private CA, O=SmartCore Inc.`
+- 유효기간: 2026-02-27 ~ 2036-02-25
+
+**인증서 갱신 시**:
+1. 새 CA 인증서를 `installer/certs/pkd-private-ca.crt`에 덮어쓰기
+2. `build-installer.bat` 재실행 (JRE 재생성 + 인증서 재임포트)
+
+**개발 JDK에 인증서 추가** (로컬 개발 환경):
+```cmd
+keytool -importcert -keystore "%JAVA_HOME%\lib\security\cacerts" -storepass changeit -alias pkd-ca -file installer\certs\pkd-private-ca.crt -noprompt
+```
+
 ### 인스톨러 파일 구조
 
 ```
@@ -325,6 +344,8 @@ installer/
 ├── build-installer.bat              # 전체 빌드 자동화 스크립트
 ├── create-jre.bat                   # jlink JRE 생성 스크립트
 ├── fastpass-setup.iss               # Inno Setup 스크립트
+├── certs/
+│   └── pkd-private-ca.crt           # PA API Private CA 인증서
 ├── winsw/
 │   ├── fastpass-service.xml         # WinSW 서비스 설정
 │   └── WinSW-x64.exe               # WinSW 실행 파일 (.gitignore)
@@ -455,7 +476,23 @@ set JAVA_OPTS=-Xms512m -Xmx1024m
 start.bat
 ```
 
-### 5. 로그 파일 위치
+### 5. PA API 인증서 오류 (PKIX path building failed)
+
+```
+PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException:
+unable to find valid certification path to requested target
+```
+
+**해결:**
+PA API 서버의 Private CA 인증서가 JRE cacerts에 등록되지 않은 경우 발생합니다.
+
+- **Installer 환경**: `build-installer.bat`를 재실행하여 최신 인증서가 포함된 JRE를 번들링
+- **개발 환경**: 개발 JDK cacerts에 인증서 임포트
+  ```cmd
+  keytool -importcert -keystore "%JAVA_HOME%\lib\security\cacerts" -storepass changeit -alias pkd-ca -file installer\certs\pkd-private-ca.crt -noprompt
+  ```
+
+### 6. 로그 파일 위치
 
 로그 파일은 `log/application.log`에 생성됩니다.
 
@@ -476,6 +513,7 @@ Get-Content log\application.log -Wait -Tail 50
 | 0.0.1-SNAPSHOT | 2025-12 | 초기 버전, PWA 지원 추가 |
 | 1.0.0 | 2026-02 | Windows 설치 프로그램, jlink JRE 번들링, WinSW 서비스 래퍼 |
 | 1.1.0 | 2026-02 | 다크 모드 콘텐츠 영역 전체 적용, Tailwind CSS v4 @source 디렉티브 |
+| 1.1.0 | 2026-03 | MRZ diff 시각화, Installer 안정성 개선, Private CA 인증서 번들링 |
 
 ---
 
