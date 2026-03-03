@@ -91,6 +91,26 @@ for /f "tokens=3" %%a in ('dir /s "%OUTPUT_DIR%" 2^>nul ^| findstr /c:"File(s)" 
 )
 echo [INFO] Size: %SIZE% bytes
 
+REM Import custom CA certificates into JRE cacerts
+set CERTS_DIR=%~dp0certs
+set KEYTOOL=%OUTPUT_DIR%\bin\keytool.exe
+set CACERTS=%OUTPUT_DIR%\lib\security\cacerts
+
+if exist "%CERTS_DIR%\pkd-private-ca.crt" (
+    echo [INFO] Importing PKD Private CA certificate...
+    "%KEYTOOL%" -importcert -keystore "%CACERTS%" -storepass changeit -alias pkd-ca -file "%CERTS_DIR%\pkd-private-ca.crt" -noprompt
+    if !ERRORLEVEL! equ 0 (
+        echo [INFO] PKD Private CA certificate imported successfully.
+    ) else (
+        echo [WARN] Failed to import PKD Private CA certificate.
+    )
+) else (
+    echo [WARN] PKD Private CA certificate not found at: %CERTS_DIR%\pkd-private-ca.crt
+    echo         PA API HTTPS connections may fail.
+)
+
+echo.
+
 REM Verify java.exe
 "%OUTPUT_DIR%\bin\java.exe" -version 2>&1
 echo.

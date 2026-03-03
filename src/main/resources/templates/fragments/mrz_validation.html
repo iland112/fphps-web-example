@@ -260,35 +260,52 @@
     <!-- MRZ diff rendering for Manual Read -->
     <script th:if="${validationResult != null}">
       (function() {
-        var c = document.getElementById('manual-mrz-lines-container');
-        if (!c) return;
-        var vl1 = c.dataset.vizLine1 || '';
-        var vl2 = c.dataset.vizLine2 || '';
-        var cl1 = c.dataset.chipLine1 || '';
-        var cl2 = c.dataset.chipLine2 || '';
-        var hasChip = cl1.length > 0;
-        var isMismatch = hasChip && (vl1 !== cl1 || vl2 !== cl2);
+        function applyMrzDiff() {
+          var c = document.getElementById('manual-mrz-lines-container');
+          if (!c) return;
+          var vl1 = c.dataset.vizLine1 || '';
+          var vl2 = c.dataset.vizLine2 || '';
+          var cl1 = c.dataset.chipLine1 || '';
+          var cl2 = c.dataset.chipLine2 || '';
+          var hasChip = cl1.length > 0;
+          var isMismatch = hasChip && (vl1 !== cl1 || vl2 !== cl2);
 
-        // VIZ lines
-        var vizL1 = document.getElementById('manual-viz-l1');
-        var vizL2 = document.getElementById('manual-viz-l2');
-        if (vizL1) vizL1.innerHTML = isMismatch ? renderMrzCharsWithDiff(vl1, cl1) : escapeHtmlMrz(vl1);
-        if (vizL2) vizL2.innerHTML = isMismatch ? renderMrzCharsWithDiff(vl2, cl2) : escapeHtmlMrz(vl2);
+          // VIZ lines
+          var vizL1 = document.getElementById('manual-viz-l1');
+          var vizL2 = document.getElementById('manual-viz-l2');
+          if (vizL1) vizL1.innerHTML = isMismatch ? renderMrzCharsWithDiff(vl1, cl1) : escapeHtmlMrz(vl1);
+          if (vizL2) vizL2.innerHTML = isMismatch ? renderMrzCharsWithDiff(vl2, cl2) : escapeHtmlMrz(vl2);
 
-        // Chip lines
-        var chipL1 = document.getElementById('manual-chip-l1');
-        var chipL2 = document.getElementById('manual-chip-l2');
-        if (chipL1) chipL1.innerHTML = isMismatch ? renderMrzCharsWithDiff(cl1, vl1) : escapeHtmlMrz(cl1);
-        if (chipL2) chipL2.innerHTML = isMismatch ? renderMrzCharsWithDiff(cl2, vl2) : escapeHtmlMrz(cl2);
+          // Chip lines
+          var chipL1 = document.getElementById('manual-chip-l1');
+          var chipL2 = document.getElementById('manual-chip-l2');
+          if (chipL1) chipL1.innerHTML = isMismatch ? renderMrzCharsWithDiff(cl1, vl1) : escapeHtmlMrz(cl1);
+          if (chipL2) chipL2.innerHTML = isMismatch ? renderMrzCharsWithDiff(cl2, vl2) : escapeHtmlMrz(cl2);
 
-        // Update MISMATCH badge with diff count
-        if (isMismatch) {
-          var badge = document.getElementById('manual-mismatch-badge');
-          if (badge) {
-            var diffCount = countMrzDiffs(vl1, vl2, cl1, cl2);
-            var textNode = badge.lastChild;
-            if (textNode) textNode.textContent = ' MISMATCH (' + diffCount + ' char' + (diffCount > 1 ? 's' : '') + ')';
+          // Update MISMATCH badge with diff count
+          if (isMismatch) {
+            var badge = document.getElementById('manual-mismatch-badge');
+            if (badge) {
+              var diffCount = countMrzDiffs(vl1, vl2, cl1, cl2);
+              var textNode = badge.lastChild;
+              if (textNode) textNode.textContent = ' MISMATCH (' + diffCount + ' char' + (diffCount > 1 ? 's' : '') + ')';
+            }
           }
+        }
+
+        // passport-tabs.js may load after this inline script (HTMX fragment order)
+        if (typeof escapeHtmlMrz === 'function') {
+          applyMrzDiff();
+        } else {
+          // Retry after passport-tabs.js loads
+          var timer = setInterval(function() {
+            if (typeof escapeHtmlMrz === 'function') {
+              clearInterval(timer);
+              applyMrzDiff();
+            }
+          }, 50);
+          // Safety timeout: stop after 5 seconds
+          setTimeout(function() { clearInterval(timer); }, 5000);
         }
       })();
     </script>
