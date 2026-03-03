@@ -117,6 +117,29 @@ begin
   SaveStringToFile(FileName, '@echo off' + #13#10 + 'start http://localhost:50000' + #13#10, False);
 end;
 
+// Stop existing service before file installation
+procedure StopExistingService();
+var
+  ResultCode: Integer;
+  ServiceExe: String;
+begin
+  ServiceExe := ExpandConstant('{app}\fastpass-service.exe');
+  if FileExists(ServiceExe) then
+  begin
+    Log('Stopping existing FastPass service...');
+    Exec(ServiceExe, 'stop', ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Log('Service stop result: ' + IntToStr(ResultCode));
+    // Wait for service to fully stop and release file handles
+    Sleep(3000);
+  end;
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+begin
+  Result := '';
+  StopExistingService();
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
