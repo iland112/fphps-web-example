@@ -65,6 +65,7 @@ FPHPS_WEB_Example/
 │   │   ├── FPHPSService.java                   # 핵심 디바이스 관리 서비스
 │   │   ├── DevicePropertiesService.java        # 디바이스 속성 상태 관리
 │   │   ├── PassiveAuthenticationService.java   # PA 검증/Lookup 서비스 (외부 API 연동)
+│   │   ├── PaApiSettingsService.java           # PA API 설정 관리 (런타임 변경, SQLite 저장)
 │   │   └── FaceVerificationService.java        # 얼굴 검증 서비스 (InsightFace 연동)
 │   │
 │   ├── strategies/                             # 전략 패턴 구현
@@ -93,6 +94,12 @@ FPHPS_WEB_Example/
 │   │   │   └── BoundingBox.java                # 얼굴 영역 좌표
 │   │   ├── CertificateInfo.java                # X509 인증서 정보
 │   │   └── ParsedSODInfo.java                  # SOD 파싱 정보
+│   │
+│   ├── entity/                                 # JPA 엔티티
+│   │   └── PaApiSettings.java                  # PA API 설정 (SQLite 영구 저장)
+│   │
+│   ├── repository/                             # JPA 리포지토리
+│   │   └── PaApiSettingsRepository.java        # PA API 설정 리포지토리
 │   │
 │   ├── exceptions/
 │   │   └── DeviceOperationException.java       # 커스텀 예외
@@ -178,6 +185,7 @@ FPHPS_WEB_Example/
 | POST | `/fphps/passport/verify-pa-v2` | PA 전체 검증 (API Gateway) |
 | POST | `/fphps/passport/pa-lookup` | PA 간편 조회 (DSC Trust Chain Lookup) |
 | GET | `/fphps/passport/pa-health` | PA API 서버 연결 상태 확인 |
+| GET/POST | `/fphps/pa-api-settings` | PA API 설정 조회/저장 (JSON) |
 | POST | `/fphps/passport/verify-face` | 얼굴 검증 (InsightFace) |
 | POST | `/fphps/passport/export-data` | 여권 데이터 내보내기 |
 | GET | `/fphps/idcard/manual-read` | 신분증 읽기 |
@@ -451,6 +459,76 @@ cd ../../..
 ---
 
 ## 작업 이력
+
+### 2026-03-10: PA API Settings UI 구현 (런타임 설정 변경 및 SQLite 영구 저장)
+
+**구현 내용**:
+- Device Settings 페이지에 PA API Base URL 및 API Key 설정 섹션 추가
+- 런타임에 RestTemplate의 Base URL과 API Key 인터셉터를 재설정하여 앱 재시작 없이 PA API 서버 변경 가능
+- SQLite에 설정을 영구 저장하여 앱 재시작 후에도 설정 유지
+- Test Connection 기능으로 PA API 서버 연결 상태 즉시 확인
+
+**주요 변경사항**:
+
+1. **JPA Entity** (`entity/PaApiSettings.java`, 신규):
+   - `pa_api_settings` 테이블: `id`, `base_url`, `api_key` 컬럼
+   - `spring.jpa.hibernate.ddl-auto=update`로 테이블 자동 생성
+   - Lombok `@Builder` 패턴 적용
+
+2. **JPA Repository** (`repository/PaApiSettingsRepository.java`, 신규):
+   - `findTopByOrderByIdDesc()`: 가장 최근 설정 조회
+   - Spring Data JPA 자동 구현
+
+3. **설정 관리 서비스** (`Services/PaApiSettingsService.java`, 신규):
+   - `@PostConstruct init()`: DB에서 설정 로드, 없으면 `application.properties` 기본값 사용
+   - `updateSettings()`: 설정 저장 + RestTemplate 재설정
+   - `reconfigureRestTemplate()`: `DefaultUriBuilderFactory`로 Base URL 변경, API Key 인터셉터 교체
+   - `@Qualifier("paApiRestTemplate")`로 PA API 전용 RestTemplate 주입
+
+4. **REST 엔드포인트** (`Controllers/FPHPSController.java`, 수정):
+   - `GET /fphps/pa-api-settings`: 현재 설정 조회 (JSON)
+   - `POST /fphps/pa-api-settings`: 설정 저장 (JSON 요청)
+
+5. **UI 구현** (`device_setting_form.html`, `settings_form.html`, 수정):
+   - 디바이스 설정 폼 하단에 PA API Settings 카드 추가
+   - Base URL 입력 필드 (URL 타입)
+   - API Key 입력 필드 (비밀번호 타입 + 보기/숨기기 토글)
+   - "Save Settings" 버튼: AJAX로 설정 저장
+   - "Test Connection" 버튼: PA API Health Check 호출
+   - 상태 메시지: 성공(녹색), 실패(빨강) 3초 자동 숨김
+   - 다크 모드 지원 (`dark:` Tailwind 클래스)
+   - 시안(Cyan) 색상 테마 (PA 검증 탭과 일관성)
+
+**기술적 세부사항**:
+
+| 항목 | 구현 방식 |
+|------|----------|
+| 설정 저장 | JPA + SQLite (단일 행 upsert) |
+| RestTemplate 재설정 | `setUriTemplateHandler()` + `setInterceptors()` |
+| API Key 전송 | `X-API-Key` HTTP 헤더 (인터셉터) |
+| 초기 로드 | `@PostConstruct` → DB 조회 → 없으면 properties 기본값 |
+| UI 통신 | `fetch()` API + JSON (디바이스 설정 form POST와 분리) |
+
+**수정된 파일**:
+
+**신규:**
+- `entity/PaApiSettings.java` - JPA 엔티티
+- `repository/PaApiSettingsRepository.java` - JPA 리포지토리
+- `Services/PaApiSettingsService.java` - 설정 관리 서비스
+
+**수정:**
+- `Controllers/FPHPSController.java` - PA API 설정 조회/저장 엔드포인트
+- `templates/fragments/device_setting_form.html` - PA API Settings UI 카드
+- `templates/settings_form.html` - PA API Settings UI 카드 (HTMX 로드 버전)
+
+**테스트 결과**:
+- ✅ `gradlew.bat build -x test` 빌드 성공
+- ✅ PA API 설정 저장 및 로드 정상
+- ✅ RestTemplate 런타임 재설정 정상
+- ✅ Test Connection 동작 확인
+- ✅ 앱 재시작 후 SQLite에서 설정 복원
+
+---
 
 ### 2026-03-03: MRZ Diff 시각화, Installer 안정성 개선, Private CA 인증서 번들링
 
@@ -2079,6 +2157,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2026-02-27
+**최종 업데이트**: 2026-03-10
 **분석 도구**: Claude Code (Anthropic)
 **현재 브랜치**: `main`

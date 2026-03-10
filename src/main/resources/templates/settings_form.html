@@ -341,5 +341,138 @@
         </button>
       </div>
     </form>
+
+    <!-- PA API Settings Card (separate from device settings form) -->
+    <div class="group relative bg-white dark:bg-neutral-800 border border-gray-200 dark:border-neutral-700 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-bl-full"></div>
+      <div class="relative p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="flex size-10 items-center justify-center rounded-xl bg-cyan-100 dark:bg-cyan-900/30 group-hover:bg-cyan-200 dark:group-hover:bg-cyan-900/50 transition-colors">
+            <svg class="size-5 text-cyan-600 dark:text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-neutral-100">PA API Settings</h3>
+            <p class="text-sm text-gray-500 dark:text-neutral-400">Configure Passive Authentication API connection</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <!-- Base URL -->
+          <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-xl p-4 border border-gray-100 dark:border-neutral-600">
+            <label for="pa-base-url" class="block text-xs font-semibold text-gray-700 dark:text-neutral-300 uppercase tracking-wider mb-2">PA API Base URL</label>
+            <input type="url" id="pa-base-url" placeholder="https://pkd.smartcoreinc.com"
+                   class="w-full px-3 py-2.5 text-sm border border-gray-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 focus:ring-2 focus:ring-cyan-500 focus:border-transparent placeholder-gray-400 dark:placeholder-neutral-500"/>
+          </div>
+
+          <!-- API Key -->
+          <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-xl p-4 border border-gray-100 dark:border-neutral-600">
+            <label for="pa-api-key" class="block text-xs font-semibold text-gray-700 dark:text-neutral-300 uppercase tracking-wider mb-2">API Key</label>
+            <div class="relative">
+              <input type="password" id="pa-api-key" placeholder="Enter API Key"
+                     class="w-full px-3 py-2.5 pr-10 text-sm border border-gray-200 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-gray-900 dark:text-neutral-100 focus:ring-2 focus:ring-cyan-500 focus:border-transparent placeholder-gray-400 dark:placeholder-neutral-500 font-mono"/>
+              <button type="button" onclick="toggleApiKeyVisibility()" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-neutral-300">
+                <svg id="pa-key-eye-icon" class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Status Message -->
+          <div id="pa-settings-status" class="hidden rounded-lg p-3 text-sm"></div>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-3 pt-2">
+            <button type="button" onclick="savePaApiSettings()"
+                    class="inline-flex items-center gap-x-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:from-cyan-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg">
+              <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span id="pa-save-text">Save Settings</span>
+            </button>
+            <button type="button" onclick="testPaConnection()"
+                    class="inline-flex items-center gap-x-2 rounded-xl border border-cyan-300 dark:border-cyan-700 bg-white dark:bg-neutral-800 px-5 py-2.5 text-sm font-semibold text-cyan-700 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 transition-all duration-200">
+              <svg id="pa-test-spinner" class="hidden size-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <svg id="pa-test-icon" class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              <span id="pa-test-text">Test Connection</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        fetch('/pa-api-settings')
+          .then(function(resp) { return resp.json(); })
+          .then(function(data) {
+            document.getElementById('pa-base-url').value = data.baseUrl || '';
+            document.getElementById('pa-api-key').value = data.apiKey || '';
+          })
+          .catch(function(err) { console.warn('Failed to load PA API settings:', err); });
+      })();
+
+      function toggleApiKeyVisibility() {
+        var input = document.getElementById('pa-api-key');
+        input.type = input.type === 'password' ? 'text' : 'password';
+      }
+
+      function showPaStatus(message, type) {
+        var el = document.getElementById('pa-settings-status');
+        el.className = 'rounded-lg p-3 text-sm';
+        if (type === 'success') el.className += ' bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800';
+        else if (type === 'error') el.className += ' bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800';
+        else el.className += ' bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
+        el.textContent = message;
+        el.classList.remove('hidden');
+        if (type === 'success') setTimeout(function() { el.classList.add('hidden'); }, 5000);
+      }
+
+      function savePaApiSettings() {
+        var baseUrl = document.getElementById('pa-base-url').value.trim();
+        var apiKey = document.getElementById('pa-api-key').value.trim();
+        var saveText = document.getElementById('pa-save-text');
+        if (!baseUrl) { showPaStatus('Base URL is required.', 'error'); return; }
+        saveText.textContent = 'Saving...';
+        fetch('/pa-api-settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ baseUrl: baseUrl, apiKey: apiKey })
+        })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+          saveText.textContent = 'Save Settings';
+          if (data.success) showPaStatus('PA API settings saved successfully. Changes take effect immediately.', 'success');
+          else showPaStatus('Failed to save: ' + (data.message || 'Unknown error'), 'error');
+        })
+        .catch(function(err) { saveText.textContent = 'Save Settings'; showPaStatus('Error: ' + err.message, 'error'); });
+      }
+
+      function testPaConnection() {
+        var spinner = document.getElementById('pa-test-spinner');
+        var icon = document.getElementById('pa-test-icon');
+        var text = document.getElementById('pa-test-text');
+        spinner.classList.remove('hidden'); icon.classList.add('hidden'); text.textContent = 'Testing...';
+        fetch('/passport/pa-health')
+          .then(function(resp) { return resp.json(); })
+          .then(function(data) {
+            spinner.classList.add('hidden'); icon.classList.remove('hidden'); text.textContent = 'Test Connection';
+            if (data.connected) showPaStatus('PA API server is reachable and responding.', 'success');
+            else showPaStatus('Connection failed: ' + (data.message || 'Server not reachable'), 'error');
+          })
+          .catch(function(err) {
+            spinner.classList.add('hidden'); icon.classList.remove('hidden'); text.textContent = 'Test Connection';
+            showPaStatus('Connection test failed: ' + err.message, 'error');
+          });
+      }
+    </script>
   </div>
 </html>

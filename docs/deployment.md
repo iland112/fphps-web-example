@@ -390,6 +390,8 @@ logging.charset.file=UTF-8
 logging.charset.console=UTF-8
 
 # PA API 설정 (Passive Authentication)
+# 아래 값은 기본값이며, 웹 UI의 Device Settings > PA API Settings에서 런타임 변경 가능
+# UI에서 변경한 설정은 SQLite에 저장되어 앱 재시작 후에도 유지됨
 pa-api.base-url=https://pkd.smartcoreinc.com
 pa-api.api-key=icao_XXXXXXXX_YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
 

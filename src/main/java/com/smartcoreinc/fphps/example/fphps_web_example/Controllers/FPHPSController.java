@@ -7,6 +7,7 @@ import com.smartcoreinc.fphps.dto.FPHPSImage;
 import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.DevicePropertiesService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FPHPSService;
+import com.smartcoreinc.fphps.example.fphps_web_example.Services.PaApiSettingsService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.PassiveAuthenticationService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FaceVerificationService;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.DevSettingsForm;
@@ -30,6 +31,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.nio.file.Path;
@@ -46,15 +48,19 @@ public class FPHPSController {
     private final DevicePropertiesService devicePropertiesService;
     private final PassiveAuthenticationService paService;
     private final FaceVerificationService faceService;
+    private final PaApiSettingsService paApiSettingsService;
 
     @Value("${document-export.base-dir}")
     private String exportBaseDir;
 
-    public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService, PassiveAuthenticationService paService, FaceVerificationService faceService) {
+    public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService,
+                           PassiveAuthenticationService paService, FaceVerificationService faceService,
+                           PaApiSettingsService paApiSettingsService) {
         this.fphpsService = fphpsService;
         this.devicePropertiesService = devicePropertiesService;
         this.paService = paService;
         this.faceService = faceService;
+        this.paApiSettingsService = paApiSettingsService;
     }
 
     @ModelAttribute("deviceProperties")
@@ -310,6 +316,37 @@ public class FPHPSController {
         // 프론트엔드에서 JavaScript로 PA 검증 후 결과를 전달받아 사용합니다.
         // 현재는 프래그먼트만 반환하고, 실제 데이터는 HTMX 요청 시 함께 전달됩니다.
         return "fragments/pa_verification_result :: paResult";
+    }
+
+    /**
+     * PA API 설정 조회
+     */
+    @GetMapping("/pa-api-settings")
+    @ResponseBody
+    public Map<String, String> getPaApiSettings() {
+        Map<String, String> settings = new HashMap<>();
+        settings.put("baseUrl", paApiSettingsService.getBaseUrl());
+        settings.put("apiKey", paApiSettingsService.getApiKey());
+        return settings;
+    }
+
+    /**
+     * PA API 설정 저장 및 RestTemplate 재설정
+     */
+    @PostMapping("/pa-api-settings")
+    @ResponseBody
+    public Map<String, Object> savePaApiSettings(@RequestBody Map<String, String> settings) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            paApiSettingsService.updateSettings(settings.get("baseUrl"), settings.get("apiKey"));
+            result.put("success", true);
+            result.put("message", "PA API settings saved successfully");
+        } catch (Exception e) {
+            log.error("Failed to save PA API settings", e);
+            result.put("success", false);
+            result.put("message", "Failed to save: " + e.getMessage());
+        }
+        return result;
     }
 
     @GetMapping("/idcard/manual-read")
