@@ -460,6 +460,76 @@ cd ../../..
 
 ## 작업 이력
 
+### 2026-03-11: 디바이스 미연결 경고 모달 및 재연결 기능 구현 (i18n 지원)
+
+**구현 내용**:
+- 디바이스 미연결 시 경고 모달 표시 및 재연결 기능 구현
+- 디바이스 없이도 웹 애플리케이션이 정상 기동되도록 초기화 로직 개선
+- 브라우저 로케일(`navigator.language`) 기반 한글/영문 자동 전환 (i18n)
+- 서버 응답 메시지도 `Accept-Language` 헤더 기반 로컬라이징
+
+**주요 변경사항**:
+
+1. **디바이스 미연결 시 Graceful 기동** (`Services/FPHPSService.java`):
+   - `deviceAvailable` 플래그 추가 (초기값 `false`)
+   - `@PostConstruct init()`: 디바이스 초기화 실패 시 exception 대신 `deviceAvailable = false`로 설정, 앱 정상 기동
+   - `isDeviceAvailable()`: 디바이스 연결 상태 조회
+   - `reconnectDevice()`: 디바이스 재연결 시도 (디바이스 열기 → 설정 적용/로드 → 닫기)
+   - `getDeviceInfo()`, `executeWithDevice()`, `executeWithDeviceVoid()`: 디바이스 미연결 시 `DeviceOperationException` 발생
+
+2. **경고 모달 UI** (`templates/index.html`):
+   - Amber/Orange 그라데이션 헤더 + 경고 아이콘
+   - 연결 안내 (3단계: USB 연결 → Windows 인식 → 재연결 버튼 클릭)
+   - "Dismiss" 버튼 (모달 닫기)
+   - "Retry Connection" 버튼 (스피너 + 상태 메시지)
+   - 성공 시 녹색 메시지 + 1.5초 후 페이지 새로고침
+   - 실패 시 빨간색 에러 메시지
+   - 다크 모드 지원
+
+3. **i18n (한글/영문 자동 전환)** (`templates/index.html`):
+   - `navigator.language`로 브라우저 로케일 감지 (`/^ko\b/i` 매칭)
+   - `_i18n` 객체에 모든 UI 텍스트 정의 (타이틀, 설명, 안내 단계, 버튼, 상태 메시지)
+   - 페이지 로드 시 DOM 요소에 로케일 텍스트 적용
+   - `fetch` 요청 시 `Accept-Language: navigator.language` 헤더 전송
+
+4. **컨트롤러 업데이트** (`Controllers/FPHPSController.java`):
+   - `index()`, `getHomeContent()`, `getDevice()`: `deviceAvailable` 모델 속성 추가, 디바이스 미연결 시 안전 처리
+   - `GET /device-status`: 디바이스 상태 JSON 조회 엔드포인트
+   - `POST /device-reconnect`: `Locale` 파라미터 기반 한글/영문 응답 메시지
+
+5. **Installer 버전 업데이트** (`installer/fastpass-setup.iss`):
+   - 버전: `1.1.0` → `1.2.0`
+
+**i18n 메시지 매핑**:
+
+| 항목 | 한글 (ko) | 영문 (en) |
+|------|----------|----------|
+| 타이틀 | 장치 미연결 | Device Not Connected |
+| 부제 | FastPass 판독기가 감지되지 않았습니다 | FastPass reader is not detected |
+| 닫기 버튼 | 닫기 | Dismiss |
+| 재연결 버튼 | 재연결 | Retry Connection |
+| 연결 중 | 연결 중... | Connecting... |
+| 성공 메시지 | 장치가 성공적으로 연결되었습니다. | Device connected successfully. |
+| 실패 메시지 | 연결 실패. | Connection failed. |
+
+**수정된 파일**:
+
+**수정:**
+- `Services/FPHPSService.java` - Graceful 기동, `deviceAvailable` 플래그, `reconnectDevice()`
+- `Controllers/FPHPSController.java` - 디바이스 상태 엔드포인트, i18n 응답 메시지
+- `templates/index.html` - 경고 모달 UI, i18n JavaScript
+- `static/css/main.css` - Tailwind CSS 재빌드
+- `installer/fastpass-setup.iss` - 버전 1.2.0
+
+**테스트 결과**:
+- ✅ 디바이스 미연결 시 앱 정상 기동 (exception 없이)
+- ✅ 경고 모달 표시 (한글 로케일에서 한글, 영문 로케일에서 영문)
+- ✅ 재연결 성공/실패 상태 메시지 로컬라이징
+- ✅ `gradlew build -x test` 빌드 성공
+- ✅ Installer 빌드 성공 (`FastPassSetup-1.2.0.exe`)
+
+---
+
 ### 2026-03-10: PA API Settings UI 구현 (런타임 설정 변경 및 SQLite 영구 저장)
 
 **구현 내용**:
@@ -2157,6 +2227,6 @@ WSL2 Ubuntu 20.04
 ---
 
 **문서 작성일**: 2025-12-20
-**최종 업데이트**: 2026-03-10
+**최종 업데이트**: 2026-03-11
 **분석 도구**: Claude Code (Anthropic)
 **현재 브랜치**: `main`

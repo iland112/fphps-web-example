@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -68,33 +69,68 @@ public class FPHPSController {
         return devicePropertiesService.getProperties();
     }
 
-    @GetMapping({"", "/"})  
+    @GetMapping({"", "/"})
     public String index(Model model) {
-        DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
-        model.addAttribute("device", deviceInfo);
-        
+        model.addAttribute("deviceAvailable", fphpsService.isDeviceAvailable());
+        if (fphpsService.isDeviceAvailable()) {
+            DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
+            model.addAttribute("device", deviceInfo);
+        }
+
         FPHPSDeviceProperties deviceProperties = devicePropertiesService.getProperties();
-        log.debug("Rendering index with properties: RF={}, IDCard={}, Barcode={}", 
-                  deviceProperties.getEnableRF(), 
-                  deviceProperties.getEnableIDCard(), 
+        log.debug("Rendering index with properties: RF={}, IDCard={}, Barcode={}",
+                  deviceProperties.getEnableRF(),
+                  deviceProperties.getEnableIDCard(),
                   deviceProperties.getEnableBarcode());
         model.addAttribute("deviceProperties", deviceProperties);
-        
+
         return "index";
     }
 
     @GetMapping("/home")
     public String getHomeContent(Model model) {
-        DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
-        model.addAttribute("device", deviceInfo);
+        model.addAttribute("deviceAvailable", fphpsService.isDeviceAvailable());
+        if (fphpsService.isDeviceAvailable()) {
+            DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
+            model.addAttribute("device", deviceInfo);
+        }
         return "fragments/home_content";
     }
 
     @GetMapping("/device")
     public String getDevice(Model model) {
-        DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
-        model.addAttribute("deviceInfo", deviceInfo);
+        model.addAttribute("deviceAvailable", fphpsService.isDeviceAvailable());
+        if (fphpsService.isDeviceAvailable()) {
+            DeviceInfo deviceInfo = fphpsService.getDeviceInfo();
+            model.addAttribute("deviceInfo", deviceInfo);
+        }
         return "fragments/device_info";
+    }
+
+    @GetMapping("/device-status")
+    @ResponseBody
+    public Map<String, Object> getDeviceStatus() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("available", fphpsService.isDeviceAvailable());
+        return result;
+    }
+
+    @PostMapping("/device-reconnect")
+    @ResponseBody
+    public Map<String, Object> reconnectDevice(Locale locale) {
+        boolean isKo = locale != null && locale.getLanguage().equals("ko");
+        Map<String, Object> result = new HashMap<>();
+        try {
+            fphpsService.reconnectDevice();
+            result.put("success", true);
+            result.put("message", isKo ? "장치가 성공적으로 연결되었습니다."
+                                       : "Device connected successfully.");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", isKo ? "장치를 찾을 수 없습니다. FastPass 장치를 연결한 후 다시 시도해 주세요."
+                                       : "Device not found. Please connect the FastPass device and try again.");
+        }
+        return result;
     }
 
     @GetMapping("/scan-page")

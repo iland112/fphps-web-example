@@ -32,6 +32,151 @@
       </svg>
       Loading...
     </div>
+
+    <!-- Device Not Connected Warning Modal -->
+    <div th:if="${deviceAvailable != null && !deviceAvailable}" id="device-warning-modal"
+         class="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div class="bg-white dark:bg-neutral-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5">
+          <div class="flex items-center gap-3">
+            <div class="bg-white/20 backdrop-blur-sm rounded-xl p-2.5">
+              <svg class="size-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 id="modal-title" class="text-lg font-bold text-white"></h3>
+              <p id="modal-subtitle" class="text-amber-100 text-sm"></p>
+            </div>
+          </div>
+        </div>
+        <!-- Body -->
+        <div class="px-6 py-5">
+          <p id="modal-description" class="text-gray-700 dark:text-neutral-300 mb-4"></p>
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm">
+            <div class="flex items-start gap-2">
+              <svg class="size-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div class="text-amber-800 dark:text-amber-300">
+                <p id="modal-howto-label" class="font-medium mb-1"></p>
+                <ol class="list-decimal list-inside space-y-0.5 text-amber-700 dark:text-amber-400">
+                  <li id="modal-step1"></li>
+                  <li id="modal-step2"></li>
+                  <li id="modal-step3"></li>
+                </ol>
+              </div>
+            </div>
+          </div>
+          <!-- Status message area -->
+          <div id="device-reconnect-status" class="hidden mt-3 rounded-lg p-3 text-sm"></div>
+        </div>
+        <!-- Footer -->
+        <div class="px-6 py-4 bg-gray-50 dark:bg-neutral-700/50 flex items-center justify-end gap-3">
+          <button type="button" onclick="dismissDeviceWarning()"
+                  id="btn-dismiss"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-gray-300 dark:border-neutral-600 rounded-lg hover:bg-gray-50 dark:hover:bg-neutral-600 transition-colors">
+          </button>
+          <button type="button" onclick="retryDeviceConnection(this)"
+                  class="inline-flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all">
+            <svg id="retry-icon" class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <svg id="retry-spinner" class="hidden size-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span id="retry-text"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <script th:if="${deviceAvailable != null && !deviceAvailable}">
+      var _isKo = /^ko\b/i.test(navigator.language);
+      var _i18n = {
+        title:            _isKo ? '장치 미연결'                                           : 'Device Not Connected',
+        subtitle:         _isKo ? 'FastPass 판독기가 감지되지 않았습니다'                  : 'FastPass reader is not detected',
+        description:      _isKo ? 'FastPass 전자여권 판독기가 이 컴퓨터에 연결되어 있지 않습니다. 장치를 연결한 후 <strong>재시도</strong> 버튼을 클릭하세요.'
+                                : 'FastPass e-passport reader device is not connected to this computer. Please connect the device and click <strong>Retry</strong>.',
+        howToLabel:        _isKo ? '연결 방법:'                                            : 'How to connect:',
+        step1:             _isKo ? 'FastPass 장치를 USB로 연결하세요'                      : 'Connect the FastPass device via USB',
+        step2:             _isKo ? 'Windows가 장치를 인식할 때까지 잠시 기다리세요'        : 'Wait for Windows to recognize the device',
+        step3:             _isKo ? '아래 <strong>재연결</strong> 버튼을 클릭하세요'        : 'Click the <strong>Retry Connection</strong> button below',
+        dismiss:           _isKo ? '닫기'                                                  : 'Dismiss',
+        retry:             _isKo ? '재연결'                                                : 'Retry Connection',
+        connecting:        _isKo ? '연결 중...'                                            : 'Connecting...',
+        connected:         _isKo ? '연결 완료!'                                            : 'Connected!',
+        successMsg:        _isKo ? '<strong>장치가 성공적으로 연결되었습니다.</strong> 페이지를 새로고침합니다...'
+                                : '<strong>Device connected successfully.</strong> Reloading page...',
+        failMsg:           _isKo ? '<strong>연결 실패.</strong> '                          : '<strong>Connection failed.</strong> ',
+        failDefault:       _isKo ? '장치 연결 상태를 확인해 주세요.'                       : 'Please check the device connection.',
+        errorLabel:        _isKo ? '<strong>오류:</strong> '                               : '<strong>Error:</strong> '
+      };
+
+      // Apply locale text to modal
+      document.getElementById('modal-title').textContent = _i18n.title;
+      document.getElementById('modal-subtitle').textContent = _i18n.subtitle;
+      document.getElementById('modal-description').innerHTML = _i18n.description;
+      document.getElementById('modal-howto-label').textContent = _i18n.howToLabel;
+      document.getElementById('modal-step1').innerHTML = _i18n.step1;
+      document.getElementById('modal-step2').textContent = _i18n.step2;
+      document.getElementById('modal-step3').innerHTML = _i18n.step3;
+      document.getElementById('btn-dismiss').textContent = _i18n.dismiss;
+      document.getElementById('retry-text').textContent = _i18n.retry;
+
+      function dismissDeviceWarning() {
+        var modal = document.getElementById('device-warning-modal');
+        if (modal) modal.remove();
+      }
+      function retryDeviceConnection(btn) {
+        var icon = document.getElementById('retry-icon');
+        var spinner = document.getElementById('retry-spinner');
+        var text = document.getElementById('retry-text');
+        var status = document.getElementById('device-reconnect-status');
+        icon.classList.add('hidden');
+        spinner.classList.remove('hidden');
+        text.textContent = _i18n.connecting;
+        btn.disabled = true;
+        status.classList.add('hidden');
+
+        fetch('/device-reconnect', {
+          method: 'POST',
+          headers: { 'Accept-Language': navigator.language }
+        })
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            icon.classList.remove('hidden');
+            spinner.classList.add('hidden');
+            btn.disabled = false;
+            if (data.success) {
+              text.textContent = _i18n.connected;
+              status.className = 'mt-3 rounded-lg p-3 text-sm bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300';
+              status.innerHTML = _i18n.successMsg;
+              status.classList.remove('hidden');
+              setTimeout(function() { window.location.reload(); }, 1500);
+            } else {
+              text.textContent = _i18n.retry;
+              status.className = 'mt-3 rounded-lg p-3 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300';
+              status.innerHTML = _i18n.failMsg + (data.message || _i18n.failDefault);
+              status.classList.remove('hidden');
+            }
+          })
+          .catch(function(err) {
+            icon.classList.remove('hidden');
+            spinner.classList.add('hidden');
+            text.textContent = _i18n.retry;
+            btn.disabled = false;
+            status.className = 'mt-3 rounded-lg p-3 text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300';
+            status.innerHTML = _i18n.errorLabel + err.message;
+            status.classList.remove('hidden');
+          });
+      }
+    </script>
+
     <section>
       <div th:replace="~{fragments/home_content :: #response}"></div>
     </section>

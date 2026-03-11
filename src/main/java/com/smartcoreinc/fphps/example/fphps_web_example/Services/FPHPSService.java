@@ -29,6 +29,7 @@ public class FPHPSService {
     private final List<DocumentReadStrategy> strategies;
     private final DevicePropertiesService devicePropertiesService;
     private FPHPSDevice device;
+    private boolean deviceAvailable = false;
 
     // Auto-read의 마지막 읽기 결과 저장
     private volatile DocumentReadResponse lastReadResponse;
@@ -67,12 +68,57 @@ public class FPHPSService {
                     this.device.closeDevice();
                 }
             }
+            this.deviceAvailable = true;
+            log.info("FPHPS device initialized successfully.");
         } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
-            log.error("Failed to initialize FPHPS devices: {}", e.getMessage(), e);
-            throw new DeviceOperationException("Failed to initialize FPHPS devices: " + e.getMessage(), e);
+            log.warn("FPHPS device not available: {}. Web application will start without device.", e.getMessage());
+            this.deviceAvailable = false;
         } catch (Exception e) {
-            log.error("An unexpected error during device initialization: {}", e.getMessage(), e);
-            throw new DeviceOperationException("An unexpected error occurred during device initialization: " + e.getMessage(), e);
+            log.warn("FPHPS device initialization failed: {}. Web application will start without device.", e.getMessage());
+            this.deviceAvailable = false;
+        }
+    }
+
+    /**
+     * 디바이스 연결 상태 확인
+     */
+    public boolean isDeviceAvailable() {
+        return deviceAvailable;
+    }
+
+    /**
+     * 디바이스 재연결 시도
+     */
+    public void reconnectDevice() {
+        try {
+            initDevices();
+            FPHPSDeviceProperties savedProperties = this.devicePropertiesService.getProperties();
+            boolean hasSavedSettings = savedProperties != null &&
+                (savedProperties.getBatchModeProperties() != null ||
+                 savedProperties.getEPassportDGProperties() != null ||
+                 savedProperties.getEPassportAuthProperties() != null);
+
+            try {
+                this.device.openDevice();
+                if (hasSavedSettings) {
+                    this.device.setDeviceProperties(savedProperties);
+                    log.info("Applied saved settings from database to reconnected device.");
+                } else {
+                    FPHPSDeviceProperties initialProperties = this.device.getDeviceProperties();
+                    this.devicePropertiesService.setProperties(initialProperties);
+                    log.info("Loaded initial properties from reconnected device.");
+                }
+            } finally {
+                if (this.device.isDeviceOpened()) {
+                    this.device.closeDevice();
+                }
+            }
+            this.deviceAvailable = true;
+            log.info("FPHPS device reconnected successfully.");
+        } catch (Exception e) {
+            log.warn("FPHPS device reconnect failed: {}", e.getMessage());
+            this.deviceAvailable = false;
+            throw new DeviceOperationException("Device not found. Please connect the FastPass device and try again.");
         }
     }
 
@@ -82,10 +128,16 @@ public class FPHPSService {
     }
 
     public DeviceInfo getDeviceInfo() {
+        if (!deviceAvailable || device == null) {
+            throw new DeviceOperationException("Device not connected. Please connect the FastPass device.");
+        }
         return device.getDeviceInfo();
     }
 
     private synchronized <R> R executeWithDevice(Function<FPHPSDevice, R> action) {
+        if (!deviceAvailable || device == null) {
+            throw new DeviceOperationException("Device not connected. Please connect the FastPass device and try again.");
+        }
         try {
             device.openDevice();
             try {
@@ -104,7 +156,10 @@ public class FPHPSService {
         }
     }
 
-    private synchronized void executeWithDevice(Consumer<FPHPSDevice> action) {
+    private synchronized void executeWithDeviceVoid(Consumer<FPHPSDevice> action) {
+        if (!deviceAvailable || device == null) {
+            throw new DeviceOperationException("Device not connected. Please connect the FastPass device and try again.");
+        }
         try {
             device.openDevice();
             try {
