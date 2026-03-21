@@ -1,6 +1,6 @@
 # FPHPS Web Example — 사용자 매뉴얼
 
-**Version**: 1.5.0
+**Version**: 1.6.0
 **Last Updated**: 2026-03-21
 **Application**: SMARTCORE FastPass SDK Web Demo
 
@@ -355,18 +355,23 @@ ICAO Local PKD를 통한 전자여권 진위 검증 기능입니다.
    - **Revocation Status**: 폐기 상태 (NOT_CHECKED 표시 가능)
    - **Non-Conformant**: DSC_NC 타입인 경우 비준수 사유 표시
 
-**클라이언트 PA (Client PA)** — 로컬 검증:
+**클라이언트 PA (Client PA)** — 로컬 검증 + 결과 보고 (v2.1.14+):
 1. **클라이언트 PA** (또는 **Client PA**) 버튼을 클릭합니다.
-2. SOD 서명 검증과 DG 해시 검증을 **로컬(클라이언트)**에서 수행합니다.
-3. Trust Chain만 PA Lookup API로 조회합니다.
-4. 검증 결과 표시:
-   - **Overall Status**: VALID / INVALID / PARTIAL (Trust Chain 미확인 시)
-   - **SOD Signature Verification (Local)**: 로컬 서명 검증 결과, 알고리즘
-   - **DSC Certificate (Local)**: 로컬 추출 인증서 정보 (Subject, Issuer, 유효기간, 지문)
-   - **Data Group Hash Verification (Local)**: SOD 해시 vs 실제 계산 해시 비교 테이블
-   - **Trust Chain (PA Lookup)**: 서버 조회 결과 (서버 미연결 시 "Not Checked" 표시)
+2. PA API 서버에서 **Trust Materials (CSCA/CRL/Link Certificate)**를 다운로드합니다.
+3. 로컬에서 **SOD 서명 검증**, **DG 해시 검증**, **Trust Chain 검증**, **CRL 체크**를 수행합니다.
+4. 검증 결과를 PA 서버에 **자동 보고**합니다 (이력/통계/감사용).
+5. 검증 결과 표시:
+   - **Overall Status**: VALID / INVALID / PARTIAL (Trust Materials 다운로드 실패 시)
+   - **서버 보고 상태**: 결과가 PA 서버에 보고되었는지 표시
+   - **SOD Signature Verification (Local)**: 로컬 서명 검증 결과
+   - **DSC Certificate (Local)**: 로컬 추출 인증서 정보
+   - **Data Group Hash Verification (Local)**: SOD 해시 vs 계산 해시 비교
+   - **Trust Chain (Local)**: 다운로드된 CSCA로 DSC 서명 검증 (DSC → CSCA 또는 DSC → Link → CSCA)
+   - **CRL Check (Local)**: 다운로드된 CRL로 DSC 폐기 여부 확인
+   - **Trust Materials Info**: 다운로드된 CSCA/CRL/Link Cert 수량 및 국가 코드
 
-> PA API 서버에 연결할 수 없어도 클라이언트 PA는 SOD 서명과 DG 해시를 로컬에서 검증할 수 있습니다 (Trust Chain만 "PARTIAL" 상태로 표시됨).
+> SOD/DG 원본 데이터는 서버로 전송되지 않으며, 검증 결과만 보고합니다 (PII 보호).
+> Trust Materials는 국가별로 캐시되어 반복 검증 시 응답 시간이 단축됩니다.
 
 > **세 가지 PA 검증 방식 비교**
 >
@@ -374,10 +379,12 @@ ICAO Local PKD를 통한 전자여권 진위 검증 기능입니다.
 > |------|-----------|-----------|-----------|
 > | SOD 서명 검증 | 서버 | X | **로컬** (Bouncy Castle) |
 > | DG 해시 검증 | 서버 | X | **로컬** |
-> | Trust Chain | 서버 (실시간) | 서버 (DB 조회) | 서버 (PA Lookup) |
+> | Trust Chain | 서버 (실시간) | 서버 (DB 조회) | **로컬** (다운로드된 CSCA) |
+> | CRL 체크 | 서버 | X | **로컬** (다운로드된 CRL) |
 > | DSC 자동 등록 | O | X | X |
-> | 데이터 전송량 | SOD + DG 바이너리 전체 | Subject DN + Fingerprint만 | Fingerprint만 |
-> | 응답 시간 | 100-500ms | 5-20ms | 로컬 즉시 + Lookup 5-20ms |
+> | 결과 서버 보고 | 자동 (검증 자체가 서버) | X | **자동 (비동기 보고)** |
+> | SOD/DG 전송 | 서버로 전체 전송 | X | **전송 안 함 (PII 보호)** |
+> | 응답 시간 | 100-500ms | 5-20ms | ~500-850ms (캐시 시 ~550ms) |
 > | 서버 미연결 시 | 사용 불가 | 사용 불가 | **부분 검증 가능 (PARTIAL)** |
 
 #### Tab 5: Face Verification
@@ -484,7 +491,16 @@ InsightFace 기반 얼굴 매칭 기능입니다.
 
 > **Note**: 설정 변경사항은 SQLite DB에 저장되어 애플리케이션 재시작 시 자동 복원됩니다.
 
-### 10.1 PA API Settings
+### 10.1 서비스 재시작
+
+Device Settings 페이지 헤더의 **서비스 재시작** (RESTART SERVICE) 버튼을 클릭하면 웹 서비스를 재시작할 수 있습니다.
+
+- 판독기 연결 문제 발생 시 서비스 재시작으로 해결할 수 있습니다.
+- 재시작 확인 모달이 표시되며, 확인 후 약 1분간 서비스가 중단됩니다.
+- 재시작 완료 후 페이지가 자동으로 새로고침됩니다.
+- Windows 서비스 환경 (Installer 설치)에서는 WinSW가 자동 재시작을 처리합니다.
+
+### 10.2 PA API Settings
 
 Device Settings 페이지 하단의 **PA API Settings** 카드에서 PA API 연결을 설정합니다.
 

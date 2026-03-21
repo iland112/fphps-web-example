@@ -140,6 +140,33 @@ public class FPHPSController {
         return result;
     }
 
+    /**
+     * 서비스 재시작
+     * WinSW 환경에서 System.exit(1)로 비정상 종료하면 자동 재시작됨
+     * 개발 환경에서는 프로세스가 종료됨 (수동 재시작 필요)
+     */
+    @PostMapping("/service-restart")
+    @ResponseBody
+    public Map<String, Object> restartService() {
+        log.info("Service restart requested via web UI");
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "Service is restarting...");
+
+        // 응답 전송 후 1.5초 뒤에 종료 (응답이 클라이언트에 도달할 시간 확보)
+        new Thread(() -> {
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            log.info("Shutting down for restart (exit code 1)...");
+            System.exit(1);
+        }).start();
+
+        return result;
+    }
+
     @GetMapping("/scan-page")
     public String showScanPage(Model model) {
         model.addAttribute("image", new FPHPSImage());

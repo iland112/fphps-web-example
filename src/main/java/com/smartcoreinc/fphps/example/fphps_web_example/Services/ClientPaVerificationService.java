@@ -3,11 +3,10 @@ package com.smartcoreinc.fphps.example.fphps_web_example.Services;
 import com.smartcoreinc.fphps.dto.DocumentReadResponse;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.CertificateInfo;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.ParsedSODInfo;
+import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.ClientPaReportRequest;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.ClientPaResult;
-import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaLookupRequest;
-import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaLookupResponse;
-import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaLookupValidation;
-import com.smartcoreinc.fphps.sod.DataGroupHashVerifier;
+import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.TrustMaterialsRequest;
+import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.TrustMaterialsResponse;
 import com.smartcoreinc.fphps.sod.ParsedSOD;
 import com.smartcoreinc.fphps.sod.SODSignatureVerifier;
 import lombok.extern.slf4j.Slf4j;
@@ -18,41 +17,51 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayInputStream;
 import java.security.MessageDigest;
+import java.security.PublicKey;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.*;
 
 /**
- * 클라이언트 모드 PA 검증 서비스
+ * 클라이언트 모드 PA 검증 서비스 (v2.1.14+)
  *
- * 로컬에서 SOD 서명 검증 + DG 해시 검증을 수행하고,
- * Trust Chain만 PA Lookup API로 조회하여 종합 결과를 반환
+ * 최적화:
+ * - Trust Materials 캐시 (국가별, TTL 1시간)
+ * - 로컬 검증과 Trust Materials 다운로드 병렬 수행
+ * - 결과 보고 비동기 수행
  */
 @Slf4j
 @Service
 public class ClientPaVerificationService {
 
-    private static final DateTimeFormatter CERT_DATE_FMT =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     private final RestTemplate paApiRestTemplate;
+    private final ExecutorService executor = Executors.newFixedThreadPool(3);
+
+    // Trust Materials 캐시 (국가코드 → 캐시 항목)
+    private final ConcurrentHashMap<String, CachedTrustMaterials> tmCache = new ConcurrentHashMap<>();
+    private static final long CACHE_TTL_MS = 60 * 60 * 1000; // 1시간
 
     public ClientPaVerificationService(RestTemplate paApiRestTemplate) {
         this.paApiRestTemplate = paApiRestTemplate;
     }
 
     /**
-     * 클라이언트 모드 PA 검증 수행
+     * 클라이언트 PA 검증 전체 수행 (최적화)
      *
-     * 1. SOD 서명 검증 (로컬, Bouncy Castle)
-     * 2. DG 해시 검증 (로컬)
-     * 3. Trust Chain 조회 (PA Lookup API)
-     * 4. 종합 결과 조립
+     * 병렬 실행:
+     * - Thread 1: Trust Materials 다운로드 (또는 캐시 히트)
+     * - Thread 2: SOD 서명 검증 + DG 해시 검증 (로컬, 네트워크 불필요)
+     *
+     * 비동기:
+     * - 결과 보고는 백그라운드에서 수행 (UI 응답 즉시 반환)
      */
     public ClientPaResult verify(DocumentReadResponse response) {
         long startTime = System.currentTimeMillis();
-        List<String> errors = new ArrayList<>();
+        List<String> errors = Collections.synchronizedList(new ArrayList<>());
 
         if (response == null) {
             throw new PassiveAuthenticationService.PaVerificationException(
@@ -71,59 +80,176 @@ public class ClientPaVerificationService {
                 "No Data Groups found in DocumentReadResponse");
         }
 
-        // ── Step 1: SOD 서명 검증 (로컬) ──
+        String countryCode = extractCountryCode(response);
+
+        // ── 병렬 실행: Trust Materials 다운로드 + 로컬 검증 ──
+        Future<TrustMaterialsResponse> tmFuture = executor.submit(
+            () -> getOrDownloadTrustMaterials(countryCode, parsedSOD));
+
+        // 로컬 검증은 메인 스레드에서 즉시 시작 (네트워크 불필요)
         ClientPaResult.SodSignatureResult sodSigResult = verifySodSignature(parsedSOD, errors);
-
-        // ── Step 2: DG 해시 검증 (로컬) ──
         ClientPaResult.DgHashResult dgHashResult = verifyDgHashes(parsedSOD, dgDataMap, errors);
-
-        // ── Step 3: DSC 인증서 정보 추출 (로컬) ──
         ClientPaResult.DscInfo dscInfo = extractDscInfo(parsedSOD);
 
-        // ── Step 4: Trust Chain 조회 (PA Lookup API) ──
-        PaLookupValidation trustChainLookup = null;
-        boolean trustChainAvailable = false;
+        // Trust Materials 결과 대기
+        String requestId = null;
+        TrustMaterialsResponse trustMaterials = null;
+        ClientPaResult.TrustMaterialsInfo tmInfo = null;
+        boolean cacheHit = false;
+
         try {
-            PaLookupResponse lookupResponse = callPaLookup(parsedSOD);
-            if (lookupResponse != null && lookupResponse.success()) {
-                trustChainLookup = lookupResponse.validation();
-                trustChainAvailable = true;
+            trustMaterials = tmFuture.get(15, TimeUnit.SECONDS);
+            if (trustMaterials != null && trustMaterials.success()) {
+                requestId = trustMaterials.requestId();
+                var data = trustMaterials.data();
+                tmInfo = new ClientPaResult.TrustMaterialsInfo(
+                    data != null && data.csca() != null ? data.csca().size() : 0,
+                    data != null && data.linkCert() != null ? data.linkCert().size() : 0,
+                    data != null && data.crl() != null ? data.crl().size() : 0,
+                    countryCode
+                );
+                CachedTrustMaterials cached = tmCache.get(countryCode);
+                cacheHit = cached != null && !cached.isExpired();
             }
         } catch (Exception e) {
-            log.warn("Trust Chain lookup failed (PA API unavailable): {}", e.getMessage());
-            errors.add("Trust Chain lookup failed: " + e.getMessage());
+            log.warn("Trust Materials download failed: {}", e.getMessage());
+            errors.add("Trust Materials download failed: " + e.getMessage());
         }
 
-        // ── Step 5: 종합 상태 결정 ──
+        // Trust Chain 검증 + CRL 체크 (Trust Materials 필요)
+        ClientPaResult.TrustChainResult trustChainResult = verifyTrustChainLocally(
+            parsedSOD, trustMaterials, errors);
+        ClientPaResult.CrlCheckResult crlCheckResult = checkCrlLocally(
+            parsedSOD, trustMaterials, errors);
+
         String overallStatus = determineOverallStatus(
-            sodSigResult, dgHashResult, trustChainLookup, trustChainAvailable);
+            sodSigResult, dgHashResult, trustChainResult, crlCheckResult);
 
         long duration = System.currentTimeMillis() - startTime;
 
-        log.info("Client PA verification completed: status={}, duration={}ms, " +
-                "sodSig={}, dgHash={}/{}, trustChain={}",
-            overallStatus, duration,
+        // ── 결과 보고 (비동기) ──
+        final String finalRequestId = requestId;
+        final String finalStatus = overallStatus;
+        CompletableFuture<Boolean> reportFuture = CompletableFuture.supplyAsync(() -> {
+            if (finalRequestId == null) return false;
+            try {
+                reportResult(finalRequestId, finalStatus, sodSigResult, dgHashResult,
+                    trustChainResult, crlCheckResult, (int) duration);
+                log.info("Client PA result reported: requestId={}, status={}", finalRequestId, finalStatus);
+                return true;
+            } catch (Exception e) {
+                log.warn("Failed to report client PA result: {}", e.getMessage());
+                return false;
+            }
+        }, executor);
+
+        // 보고 결과를 짧게 대기 (최대 2초)
+        boolean serverReported = false;
+        String serverReportError = null;
+        try {
+            serverReported = reportFuture.get(2, TimeUnit.SECONDS);
+            if (!serverReported && finalRequestId != null) {
+                serverReportError = "Report request failed";
+            }
+        } catch (TimeoutException e) {
+            // 2초 내 완료되지 않으면 백그라운드에서 계속 수행
+            serverReported = true; // 진행 중으로 표시
+            serverReportError = null;
+            log.debug("Result report still in progress (background)");
+        } catch (Exception e) {
+            serverReportError = e.getMessage();
+        }
+
+        if (finalRequestId == null) {
+            serverReportError = "No requestId (Trust Materials download failed)";
+        }
+
+        log.info("Client PA completed: status={}, duration={}ms, cache={}, " +
+                "sodSig={}, dgHash={}/{}, trustChain={}, crl={}",
+            overallStatus, duration, cacheHit ? "HIT" : "MISS",
             sodSigResult.valid(),
             dgHashResult.validGroups(), dgHashResult.totalGroups(),
-            trustChainAvailable ? (trustChainLookup != null ?
-                trustChainLookup.validationStatus() : "NOT_FOUND") : "UNAVAILABLE");
+            trustChainResult.valid(), crlCheckResult.passed());
 
         return new ClientPaResult(
-            "CLIENT",
-            overallStatus,
-            duration,
-            sodSigResult,
-            dgHashResult,
-            trustChainLookup,
-            trustChainAvailable,
-            dscInfo,
+            "CLIENT", overallStatus, duration, requestId,
+            sodSigResult, dgHashResult, trustChainResult, crlCheckResult,
+            tmInfo, dscInfo, serverReported, serverReportError,
             errors.isEmpty() ? null : errors
         );
     }
 
-    /**
-     * SOD 서명 검증 (로컬)
-     */
+    // ================================================================
+    // Trust Materials 캐시
+    // ================================================================
+
+    private TrustMaterialsResponse getOrDownloadTrustMaterials(
+            String countryCode, ParsedSOD parsedSOD) {
+
+        CachedTrustMaterials cached = tmCache.get(countryCode);
+        if (cached != null && !cached.isExpired()) {
+            log.debug("Trust Materials cache HIT for country={}", countryCode);
+            // 캐시 히트 시에도 새 requestId 발급을 위해 서버에 요청
+            // 단, 캐시된 CSCA/CRL 데이터를 재사용
+            try {
+                TrustMaterialsResponse fresh = downloadTrustMaterials(countryCode, parsedSOD);
+                if (fresh != null && fresh.success()) {
+                    // 새 requestId + 캐시된 데이터 조합
+                    tmCache.put(countryCode, new CachedTrustMaterials(fresh));
+                    return fresh;
+                }
+            } catch (Exception e) {
+                log.debug("Fresh download failed, using cached data: {}", e.getMessage());
+                return cached.response;
+            }
+        }
+
+        log.debug("Trust Materials cache MISS for country={}, downloading...", countryCode);
+        TrustMaterialsResponse response = downloadTrustMaterials(countryCode, parsedSOD);
+        if (response != null && response.success()) {
+            tmCache.put(countryCode, new CachedTrustMaterials(response));
+        }
+        return response;
+    }
+
+    private TrustMaterialsResponse downloadTrustMaterials(
+            String countryCode, ParsedSOD parsedSOD) {
+        String dscIssuerDn = null;
+        if (parsedSOD.dscCertificate() != null) {
+            dscIssuerDn = parsedSOD.dscCertificate().getIssuerX500Principal().getName();
+        }
+
+        TrustMaterialsRequest request = new TrustMaterialsRequest(
+            countryCode, dscIssuerDn, "fphps-web-example");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Connection", "close");
+        HttpEntity<TrustMaterialsRequest> entity = new HttpEntity<>(request, headers);
+
+        ResponseEntity<TrustMaterialsResponse> resp = paApiRestTemplate.postForEntity(
+            "/api/pa/trust-materials", entity, TrustMaterialsResponse.class);
+        return resp.getBody();
+    }
+
+    private static class CachedTrustMaterials {
+        final TrustMaterialsResponse response;
+        final long cachedAt;
+
+        CachedTrustMaterials(TrustMaterialsResponse response) {
+            this.response = response;
+            this.cachedAt = System.currentTimeMillis();
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() - cachedAt > CACHE_TTL_MS;
+        }
+    }
+
+    // ================================================================
+    // SOD 서명 검증 (로컬)
+    // ================================================================
+
     private ClientPaResult.SodSignatureResult verifySodSignature(
             ParsedSOD parsedSOD, List<String> errors) {
         String hashAlg = ParsedSODInfo.from(parsedSOD).getDigestAlgorithmName();
@@ -132,35 +258,27 @@ public class ClientPaVerificationService {
 
         try {
             SODSignatureVerifier.verifySignature(
-                parsedSOD.signerInformation(),
-                parsedSOD.dscCertificate()
-            );
+                parsedSOD.signerInformation(), parsedSOD.dscCertificate());
             return new ClientPaResult.SodSignatureResult(true, hashAlg, sigAlg, null);
         } catch (Exception e) {
-            String errorMsg = "SOD signature verification failed: " + e.getMessage();
-            log.warn(errorMsg);
-            errors.add(errorMsg);
+            errors.add("SOD signature verification failed: " + e.getMessage());
             return new ClientPaResult.SodSignatureResult(false, hashAlg, sigAlg, e.getMessage());
         }
     }
 
-    /**
-     * DG 해시 검증 (로컬)
-     */
+    // ================================================================
+    // DG 해시 검증 (로컬)
+    // ================================================================
+
     private ClientPaResult.DgHashResult verifyDgHashes(
-            ParsedSOD parsedSOD,
-            Map<Integer, byte[]> dgDataMap,
-            List<String> errors) {
+            ParsedSOD parsedSOD, Map<Integer, byte[]> dgDataMap, List<String> errors) {
 
         Map<Integer, byte[]> sodHashes = parsedSOD.dgHashes();
         String digestAlgOid = parsedSOD.digestAlgorithmOid();
-        String digestAlgName = ParsedSODInfo.from(parsedSOD).getDigestAlgorithmName();
 
         Map<String, ClientPaResult.DgHashDetail> details = new LinkedHashMap<>();
-        int validCount = 0;
-        int invalidCount = 0;
+        int validCount = 0, invalidCount = 0, skippedCount = 0;
 
-        // SOD에 포함된 DG 해시 기준으로 검증
         for (Map.Entry<Integer, byte[]> entry : new TreeMap<>(sodHashes).entrySet()) {
             int dgNum = entry.getKey();
             byte[] expectedHash = entry.getValue();
@@ -168,143 +286,251 @@ public class ClientPaVerificationService {
 
             byte[] dgData = dgDataMap.get(dgNum);
             if (dgData == null) {
-                // DG 데이터가 없는 경우 (SOD에는 해시가 있으나 읽지 않은 DG)
                 details.put(dgName, new ClientPaResult.DgHashDetail(
-                    false, bytesToHex(expectedHash), "N/A (not read)"));
-                invalidCount++;
+                    true, true, bytesToHex(expectedHash), "N/A (not read)"));
+                skippedCount++;
                 continue;
             }
 
             try {
-                // 실제 해시 계산
-                String jcaAlgName = oidToJcaName(digestAlgOid);
-                MessageDigest md = MessageDigest.getInstance(jcaAlgName);
+                MessageDigest md = MessageDigest.getInstance(oidToJcaName(digestAlgOid));
                 byte[] actualHash = md.digest(dgData);
-
                 boolean match = MessageDigest.isEqual(expectedHash, actualHash);
                 details.put(dgName, new ClientPaResult.DgHashDetail(
-                    match, bytesToHex(expectedHash), bytesToHex(actualHash)));
-
-                if (match) {
-                    validCount++;
-                } else {
-                    invalidCount++;
-                    errors.add("DG" + dgNum + " hash mismatch");
-                }
+                    match, false, bytesToHex(expectedHash), bytesToHex(actualHash)));
+                if (match) validCount++;
+                else { invalidCount++; errors.add("DG" + dgNum + " hash mismatch"); }
             } catch (Exception e) {
                 details.put(dgName, new ClientPaResult.DgHashDetail(
-                    false, bytesToHex(expectedHash), "Error: " + e.getMessage()));
+                    false, false, bytesToHex(expectedHash), "Error: " + e.getMessage()));
                 invalidCount++;
-                errors.add("DG" + dgNum + " hash calculation failed: " + e.getMessage());
             }
         }
 
         return new ClientPaResult.DgHashResult(
-            validCount + invalidCount, validCount, invalidCount, details);
+            validCount + invalidCount, validCount, invalidCount, skippedCount, details);
     }
 
-    /**
-     * DSC 인증서 정보 추출 (로컬)
-     */
-    private ClientPaResult.DscInfo extractDscInfo(ParsedSOD parsedSOD) {
-        X509Certificate cert = parsedSOD.dscCertificate();
-        if (cert == null) {
-            return null;
+    // ================================================================
+    // Trust Chain 검증 (로컬)
+    // ================================================================
+
+    private ClientPaResult.TrustChainResult verifyTrustChainLocally(
+            ParsedSOD parsedSOD, TrustMaterialsResponse trustMaterials, List<String> errors) {
+
+        if (trustMaterials == null || !trustMaterials.success() || trustMaterials.data() == null) {
+            return new ClientPaResult.TrustChainResult(
+                false, false, false, null, null, "Trust Materials not available");
         }
 
-        CertificateInfo certInfo = CertificateInfo.from(cert);
+        X509Certificate dscCert = parsedSOD.dscCertificate();
+        if (dscCert == null) {
+            return new ClientPaResult.TrustChainResult(
+                true, false, false, null, null, "DSC certificate not found in SOD");
+        }
 
+        var cscaList = trustMaterials.data().csca();
+        if (cscaList == null || cscaList.isEmpty()) {
+            return new ClientPaResult.TrustChainResult(
+                true, false, false, null, null, "No CSCA certificates available");
+        }
+
+        CertificateFactory cf = getCertificateFactory();
+
+        // DSC → CSCA 직접 서명 검증
+        for (var cscaEntry : cscaList) {
+            try {
+                byte[] cscaDer = Base64.getDecoder().decode(cscaEntry.derBase64());
+                X509Certificate cscaCert = (X509Certificate) cf.generateCertificate(
+                    new ByteArrayInputStream(cscaDer));
+                dscCert.verify(cscaCert.getPublicKey());
+
+                return new ClientPaResult.TrustChainResult(
+                    true, true, true,
+                    cscaCert.getSubjectX500Principal().getName(),
+                    "DSC → CSCA", null);
+            } catch (Exception e) {
+                log.debug("DSC not signed by CSCA {}: {}", cscaEntry.subjectDn(), e.getMessage());
+            }
+        }
+
+        // Link Certificate를 통한 검증
+        var linkCerts = trustMaterials.data().linkCert();
+        if (linkCerts != null && !linkCerts.isEmpty()) {
+            for (var linkEntry : linkCerts) {
+                try {
+                    byte[] linkDer = Base64.getDecoder().decode(linkEntry.derBase64());
+                    X509Certificate linkCert = (X509Certificate) cf.generateCertificate(
+                        new ByteArrayInputStream(linkDer));
+
+                    dscCert.verify(linkCert.getPublicKey());
+
+                    for (var cscaEntry : cscaList) {
+                        try {
+                            byte[] cscaDer = Base64.getDecoder().decode(cscaEntry.derBase64());
+                            X509Certificate cscaCert = (X509Certificate) cf.generateCertificate(
+                                new ByteArrayInputStream(cscaDer));
+                            linkCert.verify(cscaCert.getPublicKey());
+
+                            return new ClientPaResult.TrustChainResult(
+                                true, true, true,
+                                cscaCert.getSubjectX500Principal().getName(),
+                                "DSC → Link → CSCA", null);
+                        } catch (Exception ignored) {}
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        errors.add("Trust chain verification failed: DSC not signed by any available CSCA");
+        return new ClientPaResult.TrustChainResult(
+            true, false, true, null, null,
+            "DSC not signed by any available CSCA");
+    }
+
+    // ================================================================
+    // CRL 체크 (로컬)
+    // ================================================================
+
+    private ClientPaResult.CrlCheckResult checkCrlLocally(
+            ParsedSOD parsedSOD, TrustMaterialsResponse trustMaterials, List<String> errors) {
+
+        if (trustMaterials == null || !trustMaterials.success() || trustMaterials.data() == null) {
+            return new ClientPaResult.CrlCheckResult(false, true, false, null,
+                "Trust Materials not available");
+        }
+
+        var crlList = trustMaterials.data().crl();
+        if (crlList == null || crlList.isEmpty()) {
+            return new ClientPaResult.CrlCheckResult(false, true, false, null, "No CRL available");
+        }
+
+        X509Certificate dscCert = parsedSOD.dscCertificate();
+        if (dscCert == null) {
+            return new ClientPaResult.CrlCheckResult(false, true, false, null, "DSC not found");
+        }
+
+        CertificateFactory cf = getCertificateFactory();
+
+        for (var crlEntry : crlList) {
+            try {
+                byte[] crlDer = Base64.getDecoder().decode(crlEntry.derBase64());
+                X509CRL crl = (X509CRL) cf.generateCRL(new ByteArrayInputStream(crlDer));
+                boolean isRevoked = crl.isRevoked(dscCert);
+
+                if (isRevoked) {
+                    errors.add("DSC certificate is REVOKED");
+                }
+                return new ClientPaResult.CrlCheckResult(
+                    true, !isRevoked, isRevoked, crlEntry.issuerDn(), null);
+            } catch (Exception e) {
+                log.debug("CRL check failed for {}: {}", crlEntry.issuerDn(), e.getMessage());
+            }
+        }
+
+        return new ClientPaResult.CrlCheckResult(false, true, false, null, "CRL parsing failed");
+    }
+
+    // ================================================================
+    // DSC 인증서 정보 추출
+    // ================================================================
+
+    private ClientPaResult.DscInfo extractDscInfo(ParsedSOD parsedSOD) {
+        X509Certificate cert = parsedSOD.dscCertificate();
+        if (cert == null) return null;
+
+        CertificateInfo certInfo = CertificateInfo.from(cert);
         String sha256 = null;
         if (certInfo.getSha256Fingerprint() != null
                 && !"N/A".equals(certInfo.getSha256Fingerprint())) {
             sha256 = certInfo.getSha256Fingerprint().replace(":", "").toLowerCase();
         }
 
-        boolean expired = cert.getNotAfter().before(new Date());
-
         return new ClientPaResult.DscInfo(
-            certInfo.getSubject(),
-            certInfo.getIssuer(),
-            certInfo.getSerialNumber(),
-            certInfo.getNotBefore(),
-            certInfo.getNotAfter(),
-            expired,
-            certInfo.getSignatureAlgorithm(),
-            certInfo.getPublicKeyAlgorithm(),
-            certInfo.getPublicKeySize(),
-            sha256
-        );
+            certInfo.getSubject(), certInfo.getIssuer(), certInfo.getSerialNumber(),
+            certInfo.getNotBefore(), certInfo.getNotAfter(),
+            cert.getNotAfter().before(new Date()),
+            certInfo.getSignatureAlgorithm(), certInfo.getPublicKeyAlgorithm(),
+            certInfo.getPublicKeySize(), sha256);
     }
 
-    /**
-     * PA Lookup API 호출하여 Trust Chain 조회
-     */
-    private PaLookupResponse callPaLookup(ParsedSOD parsedSOD) {
-        CertificateInfo dscCert = CertificateInfo.from(parsedSOD.dscCertificate());
+    // ================================================================
+    // 종합 상태 결정
+    // ================================================================
 
-        String subjectDn = dscCert.getSubject();
-        String fingerprint = null;
-        if (dscCert.getSha256Fingerprint() != null
-                && !"N/A".equals(dscCert.getSha256Fingerprint())) {
-            fingerprint = dscCert.getSha256Fingerprint().replace(":", "").toLowerCase();
-        }
+    private String determineOverallStatus(
+            ClientPaResult.SodSignatureResult sodSig,
+            ClientPaResult.DgHashResult dgHash,
+            ClientPaResult.TrustChainResult trustChain,
+            ClientPaResult.CrlCheckResult crlCheck) {
 
-        PaLookupRequest request = new PaLookupRequest(subjectDn, fingerprint);
+        if (!sodSig.valid() || dgHash.invalidGroups() > 0) return "INVALID";
+        if (crlCheck.revoked()) return "INVALID";
+        if (!trustChain.available()) return "PARTIAL";
+        if (!trustChain.valid()) return "INVALID";
+        return "VALID";
+    }
+
+    // ================================================================
+    // 결과 보고
+    // ================================================================
+
+    private void reportResult(String requestId, String overallStatus,
+            ClientPaResult.SodSignatureResult sodSig,
+            ClientPaResult.DgHashResult dgHash,
+            ClientPaResult.TrustChainResult trustChain,
+            ClientPaResult.CrlCheckResult crlCheck,
+            int processingTimeMs) {
+
+        ClientPaReportRequest report = new ClientPaReportRequest(
+            requestId, overallStatus, null,
+            trustChain.valid(), sodSig.valid(),
+            dgHash.invalidGroups() == 0,
+            crlCheck.checked() && crlCheck.passed(),
+            processingTimeMs, null);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Connection", "close");
-        HttpEntity<PaLookupRequest> requestEntity = new HttpEntity<>(request, headers);
+        HttpEntity<ClientPaReportRequest> entity = new HttpEntity<>(report, headers);
 
-        ResponseEntity<PaLookupResponse> result = paApiRestTemplate.postForEntity(
-            "/api/certificates/pa-lookup",
-            requestEntity,
-            PaLookupResponse.class
-        );
-
-        return result.getBody();
+        paApiRestTemplate.postForEntity("/api/pa/trust-materials/result", entity, Map.class);
     }
 
-    /**
-     * 종합 상태 결정
-     */
-    private String determineOverallStatus(
-            ClientPaResult.SodSignatureResult sodSig,
-            ClientPaResult.DgHashResult dgHash,
-            PaLookupValidation trustChain,
-            boolean trustChainAvailable) {
+    // ================================================================
+    // 유틸리티
+    // ================================================================
 
-        // SOD 서명 또는 DG 해시 실패 → INVALID
-        if (!sodSig.valid() || dgHash.invalidGroups() > 0) {
-            return "INVALID";
+    private CertificateFactory getCertificateFactory() {
+        try {
+            return CertificateFactory.getInstance("X.509", "BC");
+        } catch (Exception e) {
+            try { return CertificateFactory.getInstance("X.509"); }
+            catch (Exception ex) { throw new RuntimeException("CertificateFactory init failed", ex); }
         }
-
-        // Trust Chain 조회 불가 → PARTIAL
-        if (!trustChainAvailable) {
-            return "PARTIAL";
-        }
-
-        // Trust Chain 결과 없음 (DSC 미등록) → PARTIAL
-        if (trustChain == null) {
-            return "PARTIAL";
-        }
-
-        // Trust Chain 결과에 따라 VALID/INVALID
-        if (trustChain.trustChainValid()) {
-            return "VALID";
-        }
-
-        // Trust Chain이 유효하지 않지만 validationStatus가 EXPIRED_VALID인 경우
-        if ("EXPIRED_VALID".equals(trustChain.validationStatus())) {
-            return "EXPIRED_VALID";
-        }
-
-        return "INVALID";
     }
 
-    /**
-     * Digest Algorithm OID → JCA 알고리즘 이름 변환
-     */
+    private String extractCountryCode(DocumentReadResponse response) {
+        if (response.getMrzInfo() != null && response.getMrzInfo().getIssuingState() != null) {
+            String state = response.getMrzInfo().getIssuingState().trim();
+            if (state.length() == 3) return iso3to2(state);
+            return state;
+        }
+        return "XX";
+    }
+
+    private String iso3to2(String iso3) {
+        return switch (iso3.toUpperCase()) {
+            case "KOR" -> "KR"; case "USA" -> "US"; case "JPN" -> "JP";
+            case "CHN" -> "CN"; case "GBR" -> "GB"; case "DEU" -> "DE";
+            case "FRA" -> "FR"; case "ARE" -> "AE"; case "THA" -> "TH";
+            case "VNM" -> "VN"; case "PHL" -> "PH"; case "IDN" -> "ID";
+            case "MYS" -> "MY"; case "SGP" -> "SG"; case "AUS" -> "AU";
+            case "CAN" -> "CA"; case "IND" -> "IN";
+            default -> iso3.substring(0, 2);
+        };
+    }
+
     private String oidToJcaName(String oid) {
         if (oid == null) return "SHA-256";
         return switch (oid) {
@@ -320,9 +546,7 @@ public class ClientPaVerificationService {
     private static String bytesToHex(byte[] bytes) {
         if (bytes == null) return "";
         StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
+        for (byte b : bytes) sb.append(String.format("%02x", b));
         return sb.toString();
     }
 }

@@ -11,7 +11,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
           </svg>
         </div>
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Photo Comparison</h4>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100" data-i18n="photoComparison">Photo Comparison</h4>
       </div>
       <div class="flex gap-3">
         <div class="flex-1 border border-gray-200 dark:border-neutral-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-neutral-700/50 p-2">
@@ -22,7 +22,7 @@
               th:src="${vizPhotoData != null} ? @{'data:image/png;base64, '+${vizPhotoData}} : @{/image/image-photo.jpg}"
               alt="document-photo"
             />
-            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-700 text-xs font-medium text-gray-700 dark:text-neutral-300">Document</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 dark:bg-neutral-700 text-xs font-medium text-gray-700 dark:text-neutral-300" data-i18n="document">Document</span>
           </div>
         </div>
         <div class="flex-1 border border-gray-200 dark:border-neutral-700 rounded-xl overflow-hidden bg-gray-50 dark:bg-neutral-700/50 p-2">
@@ -33,7 +33,7 @@
               th:src="${epassPhotoData != null} ? @{'data:image/png;base64, '+${epassPhotoData}} : @{/image/image-photo.jpg}"
               alt="chip-photo"
             />
-            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/20 text-xs font-medium text-blue-700 dark:text-blue-300">Chip</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-900/20 text-xs font-medium text-blue-700 dark:text-blue-300" data-i18n="chip">Chip</span>
           </div>
         </div>
       </div>
@@ -51,39 +51,39 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
           </svg>
         </div>
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Personal Information</h4>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100" data-i18n="personalInfo">Personal Information</h4>
       </div>
       <dl class="grid grid-cols-2 gap-x-3 gap-y-2">
         <div class="flex flex-col py-1">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Document Type</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider" data-i18n="documentType">Document Type</dt>
           <dd th:id="${docTypeId}" class="text-sm font-semibold text-gray-900 dark:text-neutral-100" th:text="${mrzInfo?.docType} ?: 'P'">P</dd>
         </div>
         <div class="flex flex-col py-1">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Issuing State</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider" data-i18n="issuingState">Issuing State</dt>
           <dd th:id="${issuingStateId}" class="text-sm font-semibold text-gray-900 dark:text-neutral-100" th:text="${mrzInfo?.issuingState} ?: 'UTO'">UTO</dd>
         </div>
         <div class="flex flex-col py-1">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Document No.</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider" data-i18n="documentNo">Document No.</dt>
           <dd th:id="${passportNumberId}" class="text-sm font-semibold text-gray-900 dark:text-neutral-100 font-mono" th:text="${mrzInfo?.passportNumber} ?: 'BC765432'">BC765432</dd>
         </div>
         <div class="flex flex-col py-1">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Name</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider" data-i18n="name_">Name</dt>
           <dd th:id="${nameId}" class="text-sm font-semibold text-gray-900 dark:text-neutral-100" th:text="${mrzInfo?.name} ?: 'JOHN DOE'">JOHN DOE</dd>
         </div>
         <div class="flex flex-col py-1">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Nationality</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider" data-i18n="nationality">Nationality</dt>
           <dd th:id="${nationalityId}" class="text-sm font-semibold text-gray-900 dark:text-neutral-100" th:text="${mrzInfo?.nationality} ?: 'UTOPIA'">UTOPIA</dd>
         </div>
         <div class="flex flex-col py-1">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Date of Birth</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider" data-i18n="dateOfBirth">Date of Birth</dt>
           <dd th:id="${birthId}" class="text-sm font-semibold text-gray-900 dark:text-neutral-100" th:text="${mrzInfo?.birth} ?: '07/02/1980'">07/02/1980</dd>
         </div>
         <div class="flex flex-col py-1">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Sex</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider" data-i18n="sex">Sex</dt>
           <dd th:id="${sexId}" class="text-sm font-semibold text-gray-900 dark:text-neutral-100" th:text="${mrzInfo?.sex} ?: 'M'">M</dd>
         </div>
         <div class="flex flex-col py-1">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Expiry Date</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider" data-i18n="expiryDate">Expiry Date</dt>
           <dd th:id="${expiryDateId}" class="text-sm font-semibold text-gray-900 dark:text-neutral-100" th:text="${mrzInfo?.expiryDate} ?: '07/02/2023'">07/02/2023</dd>
         </div>
       </dl>
@@ -101,7 +101,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
           </svg>
         </div>
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">Data Group Results</h4>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100" data-i18n="dgResults">Data Group Results</h4>
       </div>
       <fieldset class="grid grid-cols-4 gap-x-2 gap-y-2" disabled>
         <div th:each="i : ${#numbers.sequence(1, 16)}" class="flex items-center">
@@ -127,7 +127,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9h16.5m-16.5 6.75h16.5" />
           </svg>
         </div>
-        <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100">MRZ Data</h4>
+        <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100" data-i18n="mrzData">MRZ Data</h4>
       </div>
       <!-- 2행 그리드: Row 1 - MRZ Image, Row 2 - MRZ Lines -->
       <div class="grid gap-4">
@@ -142,7 +142,7 @@
         </div>
         <!-- Row 2: MRZ Lines -->
         <div class="bg-gray-50 dark:bg-neutral-700/50 rounded-xl p-3">
-          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2">MRZ Lines</dt>
+          <dt class="text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider mb-2" data-i18n="mrzLines">MRZ Lines</dt>
           <div class="space-y-2">
             <div class="flex items-center gap-2">
               <span class="text-xs font-medium text-gray-500 dark:text-neutral-400 w-12 shrink-0">Line 1:</span>

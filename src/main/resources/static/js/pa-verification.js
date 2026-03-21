@@ -1703,7 +1703,10 @@ function renderClientPaResult(data, container) {
   const sodSigCard = renderClientSodSignatureCard(data.sodSignature);
   const dgHashCard = renderClientDgHashCard(data.dgHashValidation);
   const dscInfoCard = renderClientDscInfoCard(data.dscInfo);
-  const trustChainCard = renderClientTrustChainCard(data.trustChainLookup, data.trustChainAvailable);
+  const trustChainCard = renderClientTrustChainCard2(data.trustChainResult);
+  const crlCard = renderClientCrlCard(data.crlCheckResult);
+  const tmInfoCard = renderTrustMaterialsInfoCard(data.trustMaterialsInfo);
+  const serverReportBadge = renderServerReportBadge(data.serverReported, data.serverReportError);
   const errorsCard = data.errors && data.errors.length > 0
     ? renderErrorsCard(data.errors.map(e => ({code: 'CLIENT_ERROR', message: e})))
     : '';
@@ -1711,6 +1714,7 @@ function renderClientPaResult(data, container) {
   container.innerHTML = `
     <div class="space-y-6">
       ${statusCard}
+      ${serverReportBadge}
 
       <!-- 2열 그리드: SOD Signature + DSC Info -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -1721,8 +1725,14 @@ function renderClientPaResult(data, container) {
       <!-- DG Hash Validation -->
       ${dgHashCard}
 
-      <!-- Trust Chain (PA Lookup) -->
-      ${trustChainCard}
+      <!-- 2열 그리드: Trust Chain + CRL -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        ${trustChainCard}
+        ${crlCard}
+      </div>
+
+      <!-- Trust Materials Info -->
+      ${tmInfoCard}
 
       ${errorsCard}
     </div>
@@ -1771,8 +1781,10 @@ function renderClientStatusCard(data) {
           </div>
           <div>
             <dt class="font-medium ${statusConfig.subtextColor}">${PA_I18N.trustChain}</dt>
-            <dd class="${statusConfig.textColor} mt-1">${data.trustChainAvailable
-              ? (data.trustChainLookup ? (data.trustChainLookup.trustChainValid ? '✓ ' + PA_I18N.validLabel : '✗ Invalid') : PA_I18N.notFound)
+            <dd class="${statusConfig.textColor} mt-1">${data.trustChainResult
+              ? (data.trustChainResult.available
+                ? (data.trustChainResult.valid ? '✓ ' + PA_I18N.validLabel : '✗ Invalid')
+                : PA_I18N.unavailable)
               : PA_I18N.unavailable}</dd>
           </div>
         </div>
@@ -1920,11 +1932,18 @@ function renderClientDgHashCard(dgHash) {
   let rows = '';
   if (dgHash.details) {
     for (const [dgName, detail] of Object.entries(dgHash.details)) {
-      const icon = detail.valid
-        ? '<svg class="size-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>'
-        : '<svg class="size-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+      let icon;
+      let rowClass = 'border-t border-gray-100 dark:border-neutral-700';
+      if (detail.skipped) {
+        icon = '<span class="text-xs text-gray-400 dark:text-neutral-500 italic">' + _t('미판독', 'skipped') + '</span>';
+        rowClass += ' opacity-50';
+      } else if (detail.valid) {
+        icon = '<svg class="size-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>';
+      } else {
+        icon = '<svg class="size-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+      }
       rows += `
-        <tr class="border-t border-gray-100 dark:border-neutral-700">
+        <tr class="${rowClass}">
           <td class="py-2 px-3 text-sm font-medium text-gray-900 dark:text-neutral-100">${escapeHtml(dgName)}</td>
           <td class="py-2 px-3 text-center">${icon}</td>
           <td class="py-2 px-3 text-xs font-mono text-gray-600 dark:text-neutral-400 break-all">${escapeHtml(detail.expectedHash || '')}</td>
@@ -1940,7 +1959,7 @@ function renderClientDgHashCard(dgHash) {
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
         </svg>
         ${PA_I18N.dgHashLocal}
-        <span class="ml-auto text-sm ${headerColor}">${dgHash.validGroups}/${dgHash.totalGroups} ${PA_I18N.valid}</span>
+        <span class="ml-auto text-sm ${headerColor}">${dgHash.validGroups}/${dgHash.totalGroups} ${PA_I18N.valid}${dgHash.skippedGroups ? ' <span class="text-gray-400 dark:text-neutral-500">(' + dgHash.skippedGroups + ' ' + _t('미판독', 'skipped') + ')</span>' : ''}</span>
       </h4>
       <div class="overflow-x-auto">
         <table class="w-full border border-gray-200 dark:border-neutral-700 rounded-lg">
@@ -1962,8 +1981,13 @@ function renderClientDgHashCard(dgHash) {
 /**
  * Client Trust Chain (PA Lookup) 결과 카드
  */
-function renderClientTrustChainCard(trustChain, trustChainAvailable) {
-  if (!trustChainAvailable) {
+/**
+ * Client Trust Chain 검증 결과 카드 (로컬 CSCA 검증)
+ */
+function renderClientTrustChainCard2(tc) {
+  if (!tc) return '';
+
+  if (!tc.available) {
     return `
       <div class="bg-gray-50 dark:bg-neutral-700/50 border border-gray-200 dark:border-neutral-700 rounded-lg p-4">
         <div class="flex items-center gap-3">
@@ -1972,45 +1996,18 @@ function renderClientTrustChainCard(trustChain, trustChainAvailable) {
           </svg>
           <div>
             <h4 class="text-sm font-semibold text-gray-700 dark:text-neutral-300">${PA_I18N.trustChainNotChecked}</h4>
-            <p class="text-xs text-gray-500 dark:text-neutral-400 mt-1">${PA_I18N.trustChainUnavailMsg}</p>
+            <p class="text-xs text-gray-500 dark:text-neutral-400 mt-1">${tc.errorMessage || PA_I18N.trustChainUnavailMsg}</p>
           </div>
         </div>
       </div>
     `;
   }
 
-  if (!trustChain) {
-    return `
-      <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
-        <div class="flex items-center gap-3">
-          <svg class="size-5 text-amber-500 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-          </svg>
-          <div>
-            <h4 class="text-sm font-semibold text-amber-800 dark:text-amber-300">${PA_I18N.dscNotFound}</h4>
-            <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">${PA_I18N.dscNotFoundMsg}</p>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  // Trust Chain 결과 표시
-  const tcValid = trustChain.trustChainValid;
-  const borderColor = tcValid ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800';
-  const bgColor = tcValid ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20';
-  const statusBadge = tcValid
+  const borderColor = tc.valid ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800';
+  const bgColor = tc.valid ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20';
+  const badge = tc.valid
     ? '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">VALID</span>'
     : '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">INVALID</span>';
-
-  // Non-Conformant 표시
-  const ncBanner = (trustChain.certificateType === 'DSC_NC' && trustChain.pkdConformanceCode) ? `
-    <div class="mt-3 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded text-xs">
-      <span class="font-semibold text-amber-800 dark:text-amber-300">${PA_I18N.nonConformant}:</span>
-      <span class="text-amber-700 dark:text-amber-400 ml-1">${escapeHtml(trustChain.pkdConformanceCode)}</span>
-      ${trustChain.pkdConformanceText ? `<p class="text-amber-600 dark:text-amber-500 mt-1">${escapeHtml(trustChain.pkdConformanceText)}</p>` : ''}
-    </div>
-  ` : '';
 
   return `
     <div class="${bgColor} border ${borderColor} rounded-lg p-4">
@@ -2018,43 +2015,127 @@ function renderClientTrustChainCard(trustChain, trustChainAvailable) {
         <svg class="size-4 text-gray-500 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
         </svg>
-        ${PA_I18N.trustChainLookup}
-        ${statusBadge}
+        ${_t('Trust Chain 검증 (로컬)', 'Trust Chain (Local)')}
+        ${badge}
       </h4>
       <div class="space-y-2 text-sm">
-        ${trustChain.cscaFound !== undefined ? `
-          <div class="flex justify-between">
-            <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.cscaFound}</span>
-            <span class="text-gray-900 dark:text-neutral-100">${trustChain.cscaFound ? '✓ Yes' : '✗ No'}</span>
-          </div>
-        ` : ''}
-        ${trustChain.cscaSubjectDn ? `
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.cscaFound}</span>
+          <span class="text-gray-900 dark:text-neutral-100">${tc.cscaFound ? '✓ Yes' : '✗ No'}</span>
+        </div>
+        ${tc.cscaSubject ? `
           <div><span class="text-gray-500 dark:text-neutral-400 text-xs">CSCA Subject</span>
-            <p class="font-mono text-xs text-gray-900 dark:text-neutral-100 break-all mt-0.5">${escapeHtml(trustChain.cscaSubjectDn)}</p></div>
+            <p class="font-mono text-xs text-gray-900 dark:text-neutral-100 break-all mt-0.5">${escapeHtml(tc.cscaSubject)}</p></div>
         ` : ''}
-        ${trustChain.trustChainPath ? `
+        ${tc.chainPath ? `
           <div class="flex justify-between">
             <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.chainPath}</span>
-            <span class="font-mono text-xs text-gray-900 dark:text-neutral-100">${escapeHtml(trustChain.trustChainPath)}</span>
+            <span class="font-mono text-xs text-gray-900 dark:text-neutral-100">${escapeHtml(tc.chainPath)}</span>
           </div>
         ` : ''}
-        ${trustChain.revocationStatus ? `
-          <div class="flex justify-between">
-            <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.revocation}</span>
-            <span class="text-xs font-medium ${trustChain.revocationStatus === 'not_revoked' ? 'text-green-700 dark:text-green-400' : trustChain.revocationStatus === 'revoked' ? 'text-red-700 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'}">${escapeHtml(trustChain.revocationStatus.toUpperCase())}</span>
-          </div>
-        ` : ''}
-        ${trustChain.validationStatus ? `
-          <div class="flex justify-between">
-            <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.validationStatus}</span>
-            <span class="text-xs font-medium text-gray-900 dark:text-neutral-100">${escapeHtml(trustChain.validationStatus)}</span>
-          </div>
+        ${tc.errorMessage && !tc.valid ? `
+          <div class="mt-1 text-xs text-red-600 dark:text-red-400">${escapeHtml(tc.errorMessage)}</div>
         ` : ''}
       </div>
-      ${ncBanner}
-      <div class="mt-3 p-2 bg-white/50 dark:bg-neutral-800/50 rounded text-xs text-gray-500 dark:text-neutral-400">
-        <strong>${PA_I18N.btnClientPa}</strong>: ${PA_I18N.clientPaNote}
+    </div>
+  `;
+}
+
+/**
+ * Client CRL 체크 결과 카드
+ */
+function renderClientCrlCard(crl) {
+  if (!crl) return '';
+
+  if (!crl.checked) {
+    return `
+      <div class="bg-gray-50 dark:bg-neutral-700/50 border border-gray-200 dark:border-neutral-700 rounded-lg p-4">
+        <h4 class="text-sm font-semibold text-gray-700 dark:text-neutral-300 flex items-center gap-2">
+          <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          ${_t('CRL 체크: 미수행', 'CRL Check: Not Performed')}
+        </h4>
+        ${crl.errorMessage ? `<p class="text-xs text-gray-500 dark:text-neutral-400 mt-1">${escapeHtml(crl.errorMessage)}</p>` : ''}
       </div>
+    `;
+  }
+
+  const borderColor = crl.passed ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800';
+  const bgColor = crl.passed ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20';
+  const badge = crl.revoked
+    ? '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">REVOKED</span>'
+    : '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">NOT REVOKED</span>';
+
+  return `
+    <div class="${bgColor} border ${borderColor} rounded-lg p-4">
+      <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
+        <svg class="size-4 text-gray-500 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        ${_t('CRL 체크 (로컬)', 'CRL Check (Local)')}
+        ${badge}
+      </h4>
+      ${crl.crlIssuer ? `
+        <div class="text-sm">
+          <span class="text-gray-500 dark:text-neutral-400 text-xs">CRL ${PA_I18N.issuer}</span>
+          <p class="font-mono text-xs text-gray-900 dark:text-neutral-100 break-all mt-0.5">${escapeHtml(crl.crlIssuer)}</p>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Trust Materials 다운로드 정보 카드
+ */
+function renderTrustMaterialsInfoCard(tmInfo) {
+  if (!tmInfo) return '';
+
+  return `
+    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+      <div class="flex items-start gap-3">
+        <svg class="size-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
+        </svg>
+        <div class="flex-1 min-w-0">
+          <h4 class="text-sm font-semibold text-blue-800 dark:text-blue-300">${_t('클라이언트 PA 검증 안내', 'Client PA Verification Info')}</h4>
+          <p class="mt-1 text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+            ${_t('서버에서 Trust Materials를 다운로드하여 로컬에서 모든 검증을 수행했습니다. SOD/DG 원본 데이터는 서버로 전송되지 않습니다 (PII 보호).',
+                 'Trust Materials were downloaded from the server and all verification was performed locally. Original SOD/DG data was not sent to the server (PII protection).')}
+          </p>
+          <div class="mt-2 flex items-center gap-4 text-xs text-blue-600 dark:text-blue-400">
+            <span>CSCA: ${tmInfo.cscaCount}</span>
+            <span>Link Cert: ${tmInfo.linkCertCount}</span>
+            <span>CRL: ${tmInfo.crlCount}</span>
+            <span>${_t('국가', 'Country')}: ${escapeHtml(tmInfo.countryCode || 'N/A')}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * 서버 보고 상태 배지
+ */
+function renderServerReportBadge(reported, error) {
+  if (reported) {
+    return `
+      <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-sm text-green-700 dark:text-green-400">
+        <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        ${_t('검증 결과가 PA 서버에 보고되었습니다', 'Verification result reported to PA server')}
+      </div>
+    `;
+  }
+  return `
+    <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-400">
+      <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+      ${_t('서버 보고 실패', 'Server report failed')}${error ? ': ' + escapeHtml(error) : ''}
     </div>
   `;
 }
