@@ -61,3 +61,6 @@ installer/staging/
 installer/jre/
 installer/output/
 installer/winsw/WinSW-x64.exe
+
+### Claude Code ###
+.claude/
