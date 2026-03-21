@@ -28,5 +28,10 @@ public record PaLookupValidation(
     String revocationStatus,        // not_revoked, revoked, unknown
     boolean crlChecked,
     String fingerprintSha256,
-    String validatedAt
+    String validatedAt,
+
+    // DSC Non-Conformant fields (v2.1.4+)
+    String pkdConformanceCode,
+    String pkdConformanceText,
+    String pkdVersion
 ) {}

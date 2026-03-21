@@ -4,7 +4,7 @@
 ; ================================================================
 
 #define MyAppName "FastPass Web"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.3.0"
 #define MyAppPublisher "SMARTCORE Inc."
 #define MyAppURL "http://localhost:50000"
 #define MyServiceName "FastPassWeb"

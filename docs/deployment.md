@@ -244,7 +244,7 @@ build-installer.bat
 ### 빌드 결과
 
 ```
-installer/output/FastPassSetup-1.2.0.exe    (~131MB)
+installer/output/FastPassSetup-1.3.0.exe    (~131MB)
 ```
 
 포함 내용:
@@ -362,7 +362,7 @@ installer/
 설치 프로그램 버전을 변경하려면 `installer/fastpass-setup.iss`의 상단을 수정합니다:
 
 ```iss
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.3.0"
 ```
 
 > **Note**: FastPass SDK (FPHPS.dll)는 설치 프로그램에 포함되지 않습니다.
@@ -517,6 +517,7 @@ Get-Content log\application.log -Wait -Tail 50
 | 1.1.0 | 2026-02 | 다크 모드 콘텐츠 영역 전체 적용, Tailwind CSS v4 @source 디렉티브 |
 | 1.1.0 | 2026-03 | MRZ diff 시각화, Installer 안정성 개선, Private CA 인증서 번들링 |
 | 1.2.0 | 2026-03 | 디바이스 미연결 경고 모달, 재연결 기능, i18n (한글/영문 자동 전환) |
+| 1.3.0 | 2026-03 | 클라이언트 PA 검증, CA 인증서 웹 업로드, 언어 전환 버튼, 버튼 디자인 통일 |
 
 ---
 

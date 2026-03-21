@@ -1,7 +1,7 @@
 # FPHPS Web Example — 사용자 매뉴얼
 
-**Version**: 1.4.0
-**Last Updated**: 2026-03-11
+**Version**: 1.5.0
+**Last Updated**: 2026-03-21
 **Application**: SMARTCORE FastPass SDK Web Demo
 
 ---
@@ -331,8 +331,8 @@ ICAO Local PKD를 통한 전자여권 진위 검증 기능입니다.
 > - 🟢 연결 성공: 녹색 배너 표시 후 3초 후 사라짐
 > - 🔴 연결 실패: 빨간 배너 유지 ("PA API server is not reachable")
 
-**Verify PA** (전체 검증):
-1. **Verify PA** 버튼을 클릭합니다.
+**서버 PA (Verify PA)** — 전체 검증:
+1. **서버 PA** (또는 **Verify PA**) 버튼을 클릭합니다.
 2. SOD와 Data Group 바이너리 데이터를 PA API 서버로 전송합니다.
 3. 서버에서 8단계 전체 검증 프로세스를 수행합니다 (100-500ms).
 4. 검증 결과 표시:
@@ -341,9 +341,11 @@ ICAO Local PKD를 통한 전자여권 진위 검증 기능입니다.
    - **CRL Status**: 인증서 폐기 여부 (Severity별 색상)
    - **SOD Signature Validation**: SOD 서명 검증
    - **Data Group Hash Validation**: 개별 DG별 해시 일치 여부
+   - **DSC Auto Registration**: DSC 인증서 자동 등록 결과 (신규/기존)
+   - **Non-Conformant 경고**: ICAO PKD 비준수 DSC인 경우 경고 배너 표시
 
-**PA Lookup** (간편 조회):
-1. **PA Lookup** 버튼을 클릭합니다.
+**PA 조회 (PA Lookup)** — 간편 조회:
+1. **PA 조회** (또는 **PA Lookup**) 버튼을 클릭합니다.
 2. DSC 인증서의 Subject DN과 SHA-256 Fingerprint만 전송합니다.
 3. PKD에 등록된 Trust Chain 검증 결과를 즉시 반환합니다 (5-20ms).
 4. 검증 결과 표시:
@@ -351,17 +353,32 @@ ICAO Local PKD를 통한 전자여권 진위 검증 기능입니다.
    - **Certificate Info**: Subject DN, Issuer DN, 유효기간 (Valid/Expired 배지)
    - **Trust Chain**: Trust Chain Valid, CSCA Found 등
    - **Revocation Status**: 폐기 상태 (NOT_CHECKED 표시 가능)
-   - **Info Note**: "간편 검증은 DSC Trust Chain만 확인합니다..." 안내
+   - **Non-Conformant**: DSC_NC 타입인 경우 비준수 사유 표시
 
-> **Verify PA vs PA Lookup 차이점**
+**클라이언트 PA (Client PA)** — 로컬 검증:
+1. **클라이언트 PA** (또는 **Client PA**) 버튼을 클릭합니다.
+2. SOD 서명 검증과 DG 해시 검증을 **로컬(클라이언트)**에서 수행합니다.
+3. Trust Chain만 PA Lookup API로 조회합니다.
+4. 검증 결과 표시:
+   - **Overall Status**: VALID / INVALID / PARTIAL (Trust Chain 미확인 시)
+   - **SOD Signature Verification (Local)**: 로컬 서명 검증 결과, 알고리즘
+   - **DSC Certificate (Local)**: 로컬 추출 인증서 정보 (Subject, Issuer, 유효기간, 지문)
+   - **Data Group Hash Verification (Local)**: SOD 해시 vs 실제 계산 해시 비교 테이블
+   - **Trust Chain (PA Lookup)**: 서버 조회 결과 (서버 미연결 시 "Not Checked" 표시)
+
+> PA API 서버에 연결할 수 없어도 클라이언트 PA는 SOD 서명과 DG 해시를 로컬에서 검증할 수 있습니다 (Trust Chain만 "PARTIAL" 상태로 표시됨).
+
+> **세 가지 PA 검증 방식 비교**
 >
-> | 항목 | Verify PA | PA Lookup |
-> |------|-----------|-----------|
-> | 전송 데이터 | SOD + DG 바이너리 전체 | Subject DN + Fingerprint만 |
-> | 검증 범위 | 인증서 체인 + SOD 서명 + DG 해시 | Trust Chain만 |
-> | 응답 시간 | 100-500ms | 5-20ms |
-> | signatureValid | 실제 검증 결과 | Not Checked |
-> | DG Hash | 개별 DG 해시 검증 | 검증하지 않음 |
+> | 항목 | 서버 PA (Verify PA) | PA 조회 (PA Lookup) | 클라이언트 PA (Client PA) |
+> |------|-----------|-----------|-----------|
+> | SOD 서명 검증 | 서버 | X | **로컬** (Bouncy Castle) |
+> | DG 해시 검증 | 서버 | X | **로컬** |
+> | Trust Chain | 서버 (실시간) | 서버 (DB 조회) | 서버 (PA Lookup) |
+> | DSC 자동 등록 | O | X | X |
+> | 데이터 전송량 | SOD + DG 바이너리 전체 | Subject DN + Fingerprint만 | Fingerprint만 |
+> | 응답 시간 | 100-500ms | 5-20ms | 로컬 즉시 + Lookup 5-20ms |
+> | 서버 미연결 시 | 사용 불가 | 사용 불가 | **부분 검증 가능 (PARTIAL)** |
 
 #### Tab 5: Face Verification
 
@@ -467,6 +484,23 @@ InsightFace 기반 얼굴 매칭 기능입니다.
 
 > **Note**: 설정 변경사항은 SQLite DB에 저장되어 애플리케이션 재시작 시 자동 복원됩니다.
 
+### 10.1 PA API Settings
+
+Device Settings 페이지 하단의 **PA API Settings** 카드에서 PA API 연결을 설정합니다.
+
+| 항목 | 설명 |
+|------|------|
+| **PA API Base URL** | PA API 서버 주소 (예: `https://dev.pkd.smartcoreinc.com`) |
+| **API Key** | PA API 인증 키 (`X-API-Key` 헤더로 전송) |
+| **CA Certificate** | HTTPS 연결 시 사용할 Private CA 인증서 (.crt/.pem) |
+
+- **Save Settings**: Base URL과 API Key를 저장합니다 (SQLite에 영구 저장, 앱 재시작 후에도 유지).
+- **Test Connection**: PA API 서버 연결 상태를 확인합니다.
+- **Upload .crt / .pem**: Private CA 인증서를 업로드합니다. PA API 서버가 자체 서명 CA 또는 Private CA를 사용하는 경우 필요합니다.
+- **Delete**: 업로드된 CA 인증서를 삭제하고 시스템 기본 truststore로 복귀합니다.
+
+> **CA 인증서가 필요한 경우**: PA API 서버가 `https://` HTTPS로 운영되며 공인 CA가 아닌 Private CA 인증서를 사용하는 경우, 해당 CA 인증서를 업로드해야 합니다. 업로드 즉시 SSL 설정이 적용되며, 앱 재시작 시에도 자동으로 로드됩니다.
+
 ---
 
 ## 11. 외부 서비스 연동
@@ -522,20 +556,30 @@ face-api.base-url=http://localhost:10100
 
 ## 12. 다국어 지원 (i18n)
 
-애플리케이션의 일부 UI 요소는 시스템 로케일에 따라 한글 또는 영문으로 자동 전환됩니다.
+애플리케이션 UI는 한글과 영문을 지원하며, 시스템 로케일 기반 자동 감지 또는 수동 전환이 가능합니다.
+
+### 언어 전환 방법
+
+- **자동 감지**: 최초 접속 시 브라우저의 시스템 언어(`navigator.language`)를 기반으로 한글 또는 영문이 자동 선택됩니다.
+- **수동 전환**: 헤더 오른쪽의 언어 전환 버튼(**한** / **EN**)을 클릭하여 언어를 변경합니다.
+  - 선택한 언어는 `localStorage`에 저장되어 페이지 새로고침 후에도 유지됩니다.
+  - 언어 전환 시 페이지가 자동으로 새로고침됩니다.
 
 ### 지원 범위
 
-| 기능 | 한글 (ko) | 영문 (en, 기타) |
-|------|----------|----------------|
+| 기능 | 한글 (ko) | 영문 (en) |
+|------|----------|----------|
 | 디바이스 미연결 경고 모달 | 한글 안내 | 영문 안내 |
 | 재연결 상태 메시지 | 한글 응답 | 영문 응답 |
+| Passive Authentication 탭 | 한글 라벨 | 영문 라벨 |
+| PA 검증 결과 (서버/클라이언트/조회) | 한글 표시 | 영문 표시 |
+| PA Health Check 배너 | 한글 메시지 | 영문 메시지 |
 
 ### 동작 방식
 
-- 브라우저의 `navigator.language` 값을 기반으로 로케일을 자동 감지합니다.
-- 한국어 로케일(`ko`, `ko-KR` 등)인 경우 한글, 그 외는 영문으로 표시됩니다.
-- 서버 응답 메시지는 `Accept-Language` HTTP 헤더를 기반으로 로컬라이징됩니다.
+1. `localStorage.appLang`에 저장된 값 확인 (`ko` 또는 `en`)
+2. 저장된 값이 없으면 `navigator.language` 기반 자동 감지 (`ko*` → 한글, 나머지 → 영문)
+3. 서버 응답 메시지는 `Accept-Language` HTTP 헤더 기반으로 로컬라이징
 
 ---
 
@@ -562,6 +606,12 @@ face-api.base-url=http://localhost:10100
 - PA API 서버가 실행 중인지 확인하세요.
 - 네트워크 연결 상태를 확인하세요.
 - 방화벽이 해당 포트를 차단하고 있지 않은지 확인하세요.
+
+**Q. "PKIX path validation failed" 오류가 발생합니다.**
+- PA API 서버가 Private CA 인증서를 사용하는 HTTPS 서버일 수 있습니다.
+- Device Settings > PA API Settings에서 해당 서버의 CA 인증서(.crt/.pem)를 업로드하세요.
+- 업로드 후 **Test Connection**으로 연결 상태를 확인하세요.
+- CA 인증서가 갱신된 경우 새 인증서를 다시 업로드해야 합니다.
 
 **Q. PA 검증 시 401/403 오류가 발생합니다.**
 - `pa-api.api-key` 값이 올바른지 확인하세요.

@@ -72,6 +72,17 @@
 
                 <!-- Right Side - Dark Mode Toggle & Logo/Brand -->
                 <div class="flex items-center gap-x-3 ms-auto">
+                    <!-- Language Toggle Button -->
+                    <button
+                        id="lang-toggle"
+                        type="button"
+                        class="size-9 flex justify-center items-center border border-gray-200 text-gray-800 hover:bg-gray-100 rounded-lg focus:outline-none focus:bg-gray-100 transition-colors dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-700"
+                        aria-label="Toggle language"
+                        onclick="toggleLanguage()"
+                    >
+                        <span id="lang-label" class="text-xs font-bold">EN</span>
+                    </button>
+
                     <!-- Dark Mode Toggle Button -->
                     <button
                         id="dark-mode-toggle"

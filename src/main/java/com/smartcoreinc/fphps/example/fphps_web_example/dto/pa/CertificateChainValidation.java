@@ -56,5 +56,16 @@ public record CertificateChainValidation(
     Boolean cscaExpired,
     Boolean validAtSigningTime,
     String expirationStatus,
-    String expirationMessage
+    String expirationMessage,
+
+    // DSC Non-Conformant fields (v2.1.4+)
+    Boolean dscNonConformant,
+    String pkdConformanceCode,
+    String pkdConformanceText,
+
+    // Country & Validity Period
+    String countryCode,
+    String notBefore,
+    String notAfter,
+    String cscaFingerprint
 ) {}

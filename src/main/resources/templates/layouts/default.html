@@ -182,6 +182,14 @@
                 });
             }
 
+            // Language Toggle Functionality
+            const langLabel = document.getElementById('lang-label');
+            function updateLangLabel() {
+                const lang = localStorage.getItem('appLang') || ((/^ko\b/i.test(navigator.language)) ? 'ko' : 'en');
+                if (langLabel) langLabel.textContent = lang === 'ko' ? '한' : 'EN';
+            }
+            updateLangLabel();
+
             // Mini Sidebar Toggle Functionality
             const toggleBtn = document.getElementById('sidebar-toggle-btn');
             const collapseIcon = document.getElementById('sidebar-collapse-icon');
@@ -258,6 +266,33 @@
             }
         });
 
+    </script>
+    <script>
+        /**
+         * 전역 언어 설정 시스템
+         * localStorage에 'appLang' 키로 저장 ('ko' 또는 'en')
+         * 저장된 값이 없으면 navigator.language 기반 자동 감지
+         */
+        function getAppLang() {
+            return localStorage.getItem('appLang') || ((/^ko\b/i.test(navigator.language)) ? 'ko' : 'en');
+        }
+
+        function isAppKorean() {
+            return getAppLang() === 'ko';
+        }
+
+        function toggleLanguage() {
+            var current = getAppLang();
+            var next = current === 'ko' ? 'en' : 'ko';
+            localStorage.setItem('appLang', next);
+
+            // 라벨 업데이트
+            var label = document.getElementById('lang-label');
+            if (label) label.textContent = next === 'ko' ? '한' : 'EN';
+
+            // 페이지 새로고침하여 모든 i18n 재적용
+            location.reload();
+        }
     </script>
 </body>
 </html>

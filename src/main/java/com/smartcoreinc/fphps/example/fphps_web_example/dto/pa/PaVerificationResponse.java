@@ -17,6 +17,7 @@ public record PaVerificationResponse(
     CertificateChainValidation certificateChainValidation,
     SodSignatureValidation sodSignatureValidation,
     DataGroupValidation dataGroupValidation,
+    DscAutoRegistration dscAutoRegistration,
     Long processingDurationMs,
     List<PaError> errors
 ) {

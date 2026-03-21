@@ -22,6 +22,7 @@ public record PaVerificationData(
     CertificateChainValidation certificateChainValidation,
     SodSignatureValidation sodSignatureValidation,
     DataGroupValidation dataGroupValidation,
+    DscAutoRegistration dscAutoRegistration,
     List<PaError> errors
 ) {
     /**
@@ -58,6 +59,7 @@ public record PaVerificationData(
             certificateChainValidation,
             sodSignatureValidation,
             dataGroupValidation,
+            dscAutoRegistration,
             (long) processingDurationMs,
             errors
         );

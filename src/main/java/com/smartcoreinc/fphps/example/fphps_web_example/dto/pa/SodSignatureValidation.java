@@ -10,5 +10,6 @@ public record SodSignatureValidation(
     boolean valid,
     String signatureAlgorithm,
     String hashAlgorithm,
+    String algorithm,
     String validationErrors
 ) {}

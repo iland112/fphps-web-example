@@ -9,6 +9,7 @@ import com.smartcoreinc.fphps.example.fphps_web_example.Services.DevicePropertie
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FPHPSService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.PaApiSettingsService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.PassiveAuthenticationService;
+import com.smartcoreinc.fphps.example.fphps_web_example.Services.ClientPaVerificationService;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.FaceVerificationService;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.DevSettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.forms.EPassportSettingForm;
@@ -17,6 +18,7 @@ import com.smartcoreinc.fphps.example.fphps_web_example.forms.SettingsForm;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.CertificateInfo;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.ParsedSODInfo;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaLookupResponse;
+import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.ClientPaResult;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResponse;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.pa.PaVerificationResultWithData;
 import com.smartcoreinc.fphps.example.fphps_web_example.dto.face.FaceVerificationResponse;
@@ -32,7 +34,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.util.Locale;
@@ -48,6 +52,7 @@ public class FPHPSController {
     private final FPHPSService fphpsService;
     private final DevicePropertiesService devicePropertiesService;
     private final PassiveAuthenticationService paService;
+    private final ClientPaVerificationService clientPaService;
     private final FaceVerificationService faceService;
     private final PaApiSettingsService paApiSettingsService;
 
@@ -55,11 +60,13 @@ public class FPHPSController {
     private String exportBaseDir;
 
     public FPHPSController(FPHPSService fphpsService, DevicePropertiesService devicePropertiesService,
-                           PassiveAuthenticationService paService, FaceVerificationService faceService,
+                           PassiveAuthenticationService paService, ClientPaVerificationService clientPaService,
+                           FaceVerificationService faceService,
                            PaApiSettingsService paApiSettingsService) {
         this.fphpsService = fphpsService;
         this.devicePropertiesService = devicePropertiesService;
         this.paService = paService;
+        this.clientPaService = clientPaService;
         this.faceService = faceService;
         this.paApiSettingsService = paApiSettingsService;
     }
@@ -326,6 +333,24 @@ public class FPHPSController {
     }
 
     /**
+     * 클라이언트 모드 PA 검증
+     * 로컬에서 SOD 서명 + DG 해시 검증, Trust Chain만 PA Lookup API로 조회
+     */
+    @PostMapping("/passport/verify-pa-client")
+    @ResponseBody
+    public ClientPaResult verifyPassportPAClient() {
+        log.debug("Client PA verification requested");
+
+        DocumentReadResponse lastResponse = fphpsService.getLastReadResponse();
+        if (lastResponse == null) {
+            throw new PassiveAuthenticationService.PaVerificationException(
+                "No passport data available. Please read passport first.");
+        }
+
+        return clientPaService.verify(lastResponse);
+    }
+
+    /**
      * PA API 서버 연결 상태 확인 (헬스 체크)
      */
     @GetMapping("/passport/pa-health")
@@ -381,6 +406,58 @@ public class FPHPSController {
             log.error("Failed to save PA API settings", e);
             result.put("success", false);
             result.put("message", "Failed to save: " + e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * CA 인증서 업로드
+     */
+    @PostMapping("/pa-api-settings/ca-cert")
+    @ResponseBody
+    public Map<String, Object> uploadCaCert(@RequestParam("certFile") MultipartFile certFile) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            String info = paApiSettingsService.uploadCaCertificate(certFile);
+            result.put("success", true);
+            result.put("message", "CA certificate uploaded successfully");
+            result.put("certInfo", info);
+        } catch (Exception e) {
+            log.error("Failed to upload CA certificate: {}", e.getMessage());
+            result.put("success", false);
+            result.put("message", "Failed to upload: " + e.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * CA 인증서 정보 조회
+     */
+    @GetMapping("/pa-api-settings/ca-cert")
+    @ResponseBody
+    public Map<String, Object> getCaCertInfo() {
+        Map<String, Object> result = new HashMap<>();
+        String info = paApiSettingsService.getCaCertificateInfo();
+        result.put("exists", info != null);
+        result.put("certInfo", info);
+        return result;
+    }
+
+    /**
+     * CA 인증서 삭제
+     */
+    @PostMapping("/pa-api-settings/ca-cert/delete")
+    @ResponseBody
+    public Map<String, Object> deleteCaCert() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            paApiSettingsService.deleteCaCertificate();
+            result.put("success", true);
+            result.put("message", "CA certificate deleted");
+        } catch (Exception e) {
+            log.error("Failed to delete CA certificate: {}", e.getMessage());
+            result.put("success", false);
+            result.put("message", "Failed to delete: " + e.getMessage());
         }
         return result;
     }

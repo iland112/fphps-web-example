@@ -3,6 +3,156 @@
  * 공통 PA 검증 함수들
  */
 
+// ============================================================
+// i18n (Internationalization) - Korean / English
+// ============================================================
+const _paIsKo = (function() {
+  var saved = localStorage.getItem('appLang');
+  if (saved) return saved === 'ko';
+  return /^ko\b/i.test(navigator.language);
+})();
+
+function _t(ko, en) {
+  return _paIsKo ? ko : en;
+}
+
+// PA 탭 정적 텍스트 i18n
+const PA_I18N = {
+  // Header
+  paTitle:            _t('수동 인증 (Passive Authentication)', 'Passive Authentication'),
+  paSubtitle:         _t('ICAO Local PKD를 통한 여권 진위 검증', 'Verify passport authenticity using ICAO Local PKD'),
+
+  // Buttons
+  btnVerifyPa:        _t('서버 PA', 'Verify PA'),
+  btnPaLookup:        _t('PA 조회', 'PA Lookup'),
+  btnClientPa:        _t('클라이언트 PA', 'Client PA'),
+
+  // Empty state
+  emptyTitle:         _t('"서버 PA", "PA 조회" 또는 "클라이언트 PA" 버튼을 클릭하여 여권을 인증하세요',
+                         'Click "Verify PA", "PA Lookup" or "Client PA" to authenticate the passport'),
+  emptySubtitle:      _t('검증 결과가 여기에 표시됩니다', 'Verification results will appear here'),
+
+  // Health check
+  healthChecking:     _t('PA API 서버 연결 확인 중...', 'Checking PA API server connection...'),
+  healthOk:           _t('PA API 서버 연결 성공', 'PA API server connected'),
+  healthFail:         _t('PA API 서버에 연결할 수 없습니다. 서버 PA 및 PA 조회 기능을 사용할 수 없습니다.',
+                         'PA API server is not reachable. Verify PA and PA Lookup features are unavailable.'),
+
+  // Verify PA result
+  paResult:           _t('수동 인증 결과', 'Passive Authentication Result'),
+  processingTime:     _t('처리 시간', 'Processing Time'),
+  verificationId:     _t('검증 ID', 'Verification ID'),
+  country:            _t('국가', 'Country'),
+  documentNo:         _t('문서 번호', 'Document No.'),
+  timestamp:          _t('시간', 'Timestamp'),
+
+  // Certificate Chain
+  certChainTitle:     _t('인증서 체인 검증', 'Certificate Chain Validation'),
+  sodSigTitle:        _t('SOD 서명 검증', 'SOD Signature Validation'),
+  dgHashTitle:        _t('데이터 그룹 해시 검증', 'Data Group Hash Validation'),
+  hashAlgorithm:      _t('해시 알고리즘', 'Hash Algorithm'),
+  sigAlgorithm:       _t('서명 알고리즘', 'Signature Algorithm'),
+
+  // DG Hash table
+  dgName:             _t('DG', 'DG'),
+  status:             _t('상태', 'Status'),
+  expectedHash:       _t('기대 해시 (SOD)', 'Expected (SOD)'),
+  actualHash:         _t('실제 해시 (계산)', 'Actual (Computed)'),
+  valid:              _t('유효', 'valid'),
+
+  // Auto Registration
+  autoRegTitle:       _t('DSC 자동 등록', 'DSC Auto Registration'),
+  autoRegNew:         _t('신규 등록', 'Newly Registered'),
+  autoRegExists:      _t('이미 등록됨', 'Already Exists'),
+
+  // Non-Conformant
+  ncTitle:            _t('ICAO PKD 비준수 DSC', 'ICAO PKD Non-Conformant DSC'),
+  ncDescription:      _t('이 DSC는 ICAO Doc 9303 기술 사양을 준수하지 않습니다. 검증 결과와는 독립적입니다.',
+                         'This DSC does not conform to ICAO Doc 9303 technical specifications. This is independent from the verification result.'),
+
+  // Client PA
+  clientPaResult:     _t('클라이언트 측 PA 검증', 'Client-Side PA Verification'),
+  clientMode:         _t('클라이언트 모드', 'CLIENT MODE'),
+  sodSigLocal:        _t('SOD 서명 검증 (로컬)', 'SOD Signature Verification'),
+  dscCertLocal:       _t('DSC 인증서 (로컬)', 'DSC Certificate (Local)'),
+  dgHashLocal:        _t('데이터 그룹 해시 검증 (로컬)', 'Data Group Hash Verification (Local)'),
+  trustChainLookup:   _t('Trust Chain (PA 조회)', 'Trust Chain (PA Lookup)'),
+  trustChainNotChecked: _t('Trust Chain: 미확인', 'Trust Chain: Not Checked'),
+  trustChainUnavailMsg: _t('PA API 서버에 연결할 수 없습니다. SOD 서명과 DG 해시 검증은 로컬에서 수행되었습니다.',
+                            'PA API server is not reachable. SOD signature and DG hash verification were performed locally.'),
+  dscNotFound:        _t('PKD에 DSC가 등록되지 않음', 'DSC Not Found in PKD'),
+  dscNotFoundMsg:     _t('이 DSC 인증서가 Local PKD에 등록되어 있지 않습니다. Trust Chain을 검증할 수 없습니다.',
+                         'This DSC certificate is not registered in the Local PKD. Trust chain could not be verified.'),
+  clientPaNote:       _t('SOD 서명과 DG 해시는 로컬에서 검증되었습니다. Trust Chain은 PA Lookup API를 통해 검증되었습니다.',
+                         'SOD signature and DG hashes verified locally. Trust chain verified via PA Lookup API.'),
+
+  // Lookup
+  lookupTitle:        _t('간편 검증 안내 (PA 조회)', '간편 검증 안내 (PA Lookup)'),
+  lookupNote:         _t('PA 조회는 DSC의 Subject DN 또는 SHA-256 Fingerprint를 기반으로 PKD에 등록된 Trust Chain 검증 결과를 조회합니다. SOD 서명 검증 및 Data Group 해시 검증은 전체 검증(<strong>서버 PA</strong>)에서만 수행됩니다.',
+                         'PA Lookup queries the trust chain validation result registered in PKD based on the DSC Subject DN or SHA-256 Fingerprint. SOD signature and Data Group hash verification are only performed in full verification (<strong>Verify PA</strong>).'),
+
+  // Common
+  subject:            _t('주체', 'Subject'),
+  issuer:             _t('발급자', 'Issuer'),
+  serialNumber:       _t('일련번호', 'Serial Number'),
+  notBefore:          _t('유효 시작', 'Not Before'),
+  notAfter:           _t('유효 종료', 'Not After'),
+  expired:            _t('만료됨', 'Expired'),
+  validLabel:         _t('유효', 'Valid'),
+  chainPath:          _t('체인 경로', 'Chain Path'),
+  revocation:         _t('폐기 상태', 'Revocation'),
+  validationStatus:   _t('검증 상태', 'Validation Status'),
+  cscaFound:          _t('CSCA 검색', 'CSCA Found'),
+  nonConformant:      _t('비준수', 'Non-Conformant'),
+  sodSignature:       _t('SOD 서명', 'SOD Signature'),
+  dgHash:             _t('DG 해시', 'DG Hash'),
+  trustChain:         _t('Trust Chain', 'Trust Chain'),
+  unavailable:        _t('사용 불가', 'Unavailable'),
+  notFound:           _t('미등록', 'Not Found'),
+  paVerifyError:      _t('PA 검증 오류', 'PA Verification Error'),
+  clientPaError:      _t('클라이언트 PA 검증 오류', 'Client PA Verification Error'),
+  fingerprint:        _t('지문', 'Fingerprint'),
+};
+
+/**
+ * PA 탭 HTML 정적 텍스트 i18n 적용
+ * PA 탭이 로드될 때 호출
+ */
+function applyPaI18n() {
+  // Header
+  document.querySelectorAll('.pa-tab-wrapper h3').forEach(el => {
+    if (el.textContent.trim() === 'Passive Authentication') {
+      el.textContent = PA_I18N.paTitle;
+    }
+  });
+  document.querySelectorAll('.pa-tab-wrapper h3 + p').forEach(el => {
+    if (el.textContent.includes('Verify passport authenticity')) {
+      el.textContent = PA_I18N.paSubtitle;
+    }
+  });
+
+  // Buttons
+  document.querySelectorAll('[id$="-text"]').forEach(el => {
+    if (el.textContent.trim() === 'Verify PA') el.textContent = PA_I18N.btnVerifyPa;
+    if (el.textContent.trim() === 'PA Lookup') el.textContent = PA_I18N.btnPaLookup;
+    if (el.textContent.trim() === 'Client PA') el.textContent = PA_I18N.btnClientPa;
+  });
+
+  // Empty state
+  document.querySelectorAll('.pa-tab-wrapper .text-sm.text-gray-500').forEach(el => {
+    if (el.textContent.includes('Click "Verify PA"')) el.textContent = PA_I18N.emptyTitle;
+  });
+  document.querySelectorAll('.pa-tab-wrapper .text-xs.text-gray-400').forEach(el => {
+    if (el.textContent.includes('Verification results will appear here')) el.textContent = PA_I18N.emptySubtitle;
+  });
+}
+
+// DOM 로드 시 및 HTMX 콘텐츠 교체 시 i18n 적용
+document.addEventListener('DOMContentLoaded', applyPaI18n);
+document.body.addEventListener('htmx:afterSwap', function() {
+  setTimeout(applyPaI18n, 100);
+});
+
 /**
  * PA API 서버 연결 상태 확인
  * PA 탭 선택 시 호출되어 연결 상태를 배너로 표시
@@ -29,7 +179,7 @@ function checkPaApiHealth(prefix) {
       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
     </svg>
-    <span>Checking PA API server connection...</span>
+    <span>${PA_I18N.healthChecking}</span>
   `;
   wrapper.insertBefore(banner, wrapper.firstChild);
 
@@ -45,7 +195,7 @@ function checkPaApiHealth(prefix) {
           <svg class="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span>PA API server connected</span>
+          <span>${PA_I18N.healthOk}</span>
         `;
         // 성공 시 3초 후 fade out
         setTimeout(() => {
@@ -61,7 +211,7 @@ function checkPaApiHealth(prefix) {
           <svg class="size-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
           </svg>
-          <span>PA API server is not reachable. Verify PA and PA Lookup features are unavailable.</span>
+          <span>${PA_I18N.healthFail}</span>
         `;
       }
     })
@@ -143,7 +293,7 @@ async function verifyPassportPA(btnId, containerId, emptyStateId) {
 
   } catch (error) {
     console.error('PA verification failed:', error);
-    resultContainer.innerHTML = renderErrorCard('PA Verification Error', error.message);
+    resultContainer.innerHTML = renderErrorCard(PA_I18N.paVerifyError, error.message);
   } finally {
     // 버튼 상태 복원
     btn.disabled = false;
@@ -236,9 +386,11 @@ function renderPAResultV2(data, container) {
   const faceImageBase64 = data.faceImageBase64;
 
   const statusCard = renderStatusCard(result);
+  const nonConformantBanner = renderNonConformantBanner(result.certificateChainValidation);
   const certChainCard = renderCertificateChainCard(result.certificateChainValidation);
   const sodSigCard = renderSODSignatureCard(result.sodSignatureValidation);
   const dgValidationCard = renderDataGroupValidationCard(result.dataGroupValidation);
+  const autoRegCard = renderAutoRegistrationCard(result.dscAutoRegistration);
   const dgParsedCard = renderDGParsedDataCard(mrzData, faceImageBase64);
   const errorsCard = renderErrorsCard(result.errors);
 
@@ -246,6 +398,9 @@ function renderPAResultV2(data, container) {
     <div class="space-y-6">
       <!-- 상태 요약 카드 -->
       ${statusCard}
+
+      <!-- DSC Non-Conformant 경고 -->
+      ${nonConformantBanner}
 
       <!-- 2열 그리드: Certificate Chain + SOD Signature -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -255,6 +410,9 @@ function renderPAResultV2(data, container) {
 
       <!-- Data Group Hash Validation -->
       ${dgValidationCard}
+
+      <!-- DSC Auto Registration -->
+      ${autoRegCard}
 
       <!-- DG1/DG2 파싱 결과 -->
       ${dgParsedCard}
@@ -280,11 +438,11 @@ function renderStatusCard(result) {
           </div>
           <div>
             <h3 class="text-xl font-bold ${statusConfig.textColor}">${result.status}</h3>
-            <p class="text-sm ${statusConfig.subtextColor}">Passive Authentication Result</p>
+            <p class="text-sm ${statusConfig.subtextColor}">${PA_I18N.paResult}</p>
           </div>
         </div>
         <div class="text-right">
-          <p class="text-xs ${statusConfig.subtextColor}">Processing Time</p>
+          <p class="text-xs ${statusConfig.subtextColor}">${PA_I18N.processingTime}</p>
           <p class="text-lg font-semibold ${statusConfig.textColor}">${result.processingDurationMs || 0} ms</p>
         </div>
       </div>
@@ -292,19 +450,19 @@ function renderStatusCard(result) {
       <div class="mt-4 pt-4 border-t ${statusConfig.borderColor}">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
-            <dt class="font-medium ${statusConfig.subtextColor}">Verification ID</dt>
+            <dt class="font-medium ${statusConfig.subtextColor}">${PA_I18N.verificationId}</dt>
             <dd class="${statusConfig.textColor} font-mono text-xs mt-1 truncate" title="${result.verificationId || 'N/A'}">${result.verificationId ? result.verificationId.substring(0, 8) + '...' : 'N/A'}</dd>
           </div>
           <div>
-            <dt class="font-medium ${statusConfig.subtextColor}">Country</dt>
+            <dt class="font-medium ${statusConfig.subtextColor}">${PA_I18N.country}</dt>
             <dd class="${statusConfig.textColor} mt-1">${result.issuingCountry || 'N/A'}</dd>
           </div>
           <div>
-            <dt class="font-medium ${statusConfig.subtextColor}">Document No.</dt>
+            <dt class="font-medium ${statusConfig.subtextColor}">${PA_I18N.documentNo}</dt>
             <dd class="${statusConfig.textColor} font-mono mt-1">${result.documentNumber || 'N/A'}</dd>
           </div>
           <div>
-            <dt class="font-medium ${statusConfig.subtextColor}">Timestamp</dt>
+            <dt class="font-medium ${statusConfig.subtextColor}">${PA_I18N.timestamp}</dt>
             <dd class="${statusConfig.textColor} mt-1 text-xs">${result.verificationTimestamp ? new Date(result.verificationTimestamp).toLocaleString() : 'N/A'}</dd>
           </div>
         </div>
@@ -1413,13 +1571,489 @@ function renderLookupInfoNote() {
           </svg>
         </div>
         <div class="flex-1 min-w-0">
-          <h4 class="text-sm font-semibold text-cyan-800 dark:text-cyan-300">간편 검증 안내 (PA Lookup)</h4>
+          <h4 class="text-sm font-semibold text-cyan-800 dark:text-cyan-300">${PA_I18N.lookupTitle}</h4>
           <p class="mt-1 text-xs text-cyan-700 dark:text-cyan-300 leading-relaxed">
-            PA Lookup은 DSC(Document Signer Certificate)의 Subject DN 또는 SHA-256 Fingerprint를 기반으로
-            PKD에 등록된 Trust Chain 검증 결과를 조회합니다.
-            SOD 서명 검증 및 Data Group 해시 검증은 전체 검증(<strong>Verify PA</strong>)에서만 수행됩니다.
+            ${PA_I18N.lookupNote}
           </p>
         </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// Phase 1-2: DSC Auto Registration Card (Verify PA 신규 필드)
+// ============================================================
+
+/**
+ * DSC 자동 등록 결과 카드 렌더링
+ */
+function renderAutoRegistrationCard(autoReg) {
+  if (!autoReg) return '';
+
+  const statusColor = autoReg.newlyRegistered
+    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+    : 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+  const statusText = autoReg.newlyRegistered ? PA_I18N.autoRegNew : PA_I18N.autoRegExists;
+  const statusBadgeColor = autoReg.newlyRegistered
+    ? 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300'
+    : 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300';
+
+  return `
+    <div class="${statusColor} border rounded-lg p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg class="size-5 ${autoReg.newlyRegistered ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-blue-400'}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="text-sm font-semibold text-gray-800 dark:text-neutral-200">${PA_I18N.autoRegTitle}</span>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium ${statusBadgeColor}">${statusText}</span>
+        </div>
+        ${autoReg.countryCode ? `<span class="text-xs text-gray-500 dark:text-neutral-400">${escapeHtml(autoReg.countryCode)}</span>` : ''}
+      </div>
+      ${autoReg.fingerprint ? `
+        <p class="mt-2 text-xs font-mono text-gray-600 dark:text-neutral-400 break-all">
+          ${PA_I18N.fingerprint}: ${escapeHtml(autoReg.fingerprint)}
+        </p>
+      ` : ''}
+    </div>
+  `;
+}
+
+/**
+ * DSC Non-Conformant 경고 배너 렌더링
+ */
+function renderNonConformantBanner(certChain) {
+  if (!certChain || !certChain.dscNonConformant) return '';
+
+  return `
+    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg p-4">
+      <div class="flex items-start gap-3">
+        <svg class="size-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+        </svg>
+        <div>
+          <h4 class="text-sm font-semibold text-amber-800 dark:text-amber-300">${PA_I18N.ncTitle}</h4>
+          ${certChain.pkdConformanceCode ? `<p class="text-xs font-mono text-amber-700 dark:text-amber-400 mt-1">${escapeHtml(certChain.pkdConformanceCode)}</p>` : ''}
+          ${certChain.pkdConformanceText ? `<p class="text-xs text-amber-700 dark:text-amber-400 mt-1">${escapeHtml(certChain.pkdConformanceText)}</p>` : ''}
+          <p class="text-xs text-amber-600 dark:text-amber-500 mt-2">${PA_I18N.ncDescription}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ============================================================
+// Phase 2-4: Client PA Verification
+// ============================================================
+
+/**
+ * Client PA 검증 API 호출
+ */
+async function clientPaVerify(btnId, containerId, emptyStateId) {
+  const btn = document.getElementById(btnId);
+  const btnSpinner = document.getElementById(btnId + '-spinner');
+  const resultContainer = document.getElementById(containerId);
+  const emptyState = document.getElementById(emptyStateId);
+
+  btn.disabled = true;
+  if (btnSpinner) btnSpinner.classList.remove('hidden');
+  if (emptyState) emptyState.classList.add('hidden');
+
+  try {
+    const response = await fetch('/passport/verify-pa-client', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+
+    let data;
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const errorText = await response.text();
+      throw new Error(`Unexpected response: ${errorText.substring(0, 200)}`);
+    }
+
+    if (!response.ok) {
+      const errorMessage = data.message || `HTTP ${response.status} error`;
+      throw new Error(errorMessage);
+    }
+
+    console.log('Client PA Result:', data);
+    renderClientPaResult(data, resultContainer);
+
+  } catch (error) {
+    console.error('Client PA verification failed:', error);
+    resultContainer.innerHTML = renderErrorCard(PA_I18N.clientPaError, error.message);
+  } finally {
+    btn.disabled = false;
+    if (btnSpinner) btnSpinner.classList.add('hidden');
+  }
+}
+
+/**
+ * Client PA 검증 결과 렌더링
+ */
+function renderClientPaResult(data, container) {
+  const statusCard = renderClientStatusCard(data);
+  const sodSigCard = renderClientSodSignatureCard(data.sodSignature);
+  const dgHashCard = renderClientDgHashCard(data.dgHashValidation);
+  const dscInfoCard = renderClientDscInfoCard(data.dscInfo);
+  const trustChainCard = renderClientTrustChainCard(data.trustChainLookup, data.trustChainAvailable);
+  const errorsCard = data.errors && data.errors.length > 0
+    ? renderErrorsCard(data.errors.map(e => ({code: 'CLIENT_ERROR', message: e})))
+    : '';
+
+  container.innerHTML = `
+    <div class="space-y-6">
+      ${statusCard}
+
+      <!-- 2열 그리드: SOD Signature + DSC Info -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        ${sodSigCard}
+        ${dscInfoCard}
+      </div>
+
+      <!-- DG Hash Validation -->
+      ${dgHashCard}
+
+      <!-- Trust Chain (PA Lookup) -->
+      ${trustChainCard}
+
+      ${errorsCard}
+    </div>
+  `;
+}
+
+/**
+ * Client PA 상태 카드
+ */
+function renderClientStatusCard(data) {
+  const statusConfig = getClientStatusConfig(data.overallStatus);
+
+  return `
+    <div class="rounded-xl ${statusConfig.bgGradient} p-6 shadow-sm dark:shadow-neutral-900/30">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <div class="flex size-14 items-center justify-center rounded-xl ${statusConfig.iconBg}">
+            ${statusConfig.icon}
+          </div>
+          <div>
+            <h3 class="text-xl font-bold ${statusConfig.textColor}">${data.overallStatus}</h3>
+            <p class="text-sm ${statusConfig.subtextColor}">${PA_I18N.clientPaResult}</p>
+          </div>
+        </div>
+        <div class="text-right space-y-1">
+          <div>
+            <p class="text-xs ${statusConfig.subtextColor}">${PA_I18N.processingTime}</p>
+            <p class="text-lg font-semibold ${statusConfig.textColor}">${data.processingDurationMs || 0} ms</p>
+          </div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+            <svg class="size-3" fill="currentColor" viewBox="0 0 20 20"><path d="M2 4.25A2.25 2.25 0 014.25 2h11.5A2.25 2.25 0 0118 4.25v8.5A2.25 2.25 0 0115.75 15h-3.105a3.501 3.501 0 001.1 1.677A.75.75 0 0113.26 18H6.74a.75.75 0 01-.484-1.323A3.501 3.501 0 007.355 15H4.25A2.25 2.25 0 012 12.75v-8.5z"/></svg>
+            ${PA_I18N.clientMode}
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-4 border-t ${statusConfig.borderColor}">
+        <div class="grid grid-cols-3 gap-4 text-sm">
+          <div>
+            <dt class="font-medium ${statusConfig.subtextColor}">${PA_I18N.sodSignature}</dt>
+            <dd class="${statusConfig.textColor} mt-1">${data.sodSignature && data.sodSignature.valid ? '✓ ' + PA_I18N.validLabel : '✗ Invalid'}</dd>
+          </div>
+          <div>
+            <dt class="font-medium ${statusConfig.subtextColor}">${PA_I18N.dgHash}</dt>
+            <dd class="${statusConfig.textColor} mt-1">${data.dgHashValidation ? data.dgHashValidation.validGroups + '/' + data.dgHashValidation.totalGroups + ' ' + PA_I18N.valid : 'N/A'}</dd>
+          </div>
+          <div>
+            <dt class="font-medium ${statusConfig.subtextColor}">${PA_I18N.trustChain}</dt>
+            <dd class="${statusConfig.textColor} mt-1">${data.trustChainAvailable
+              ? (data.trustChainLookup ? (data.trustChainLookup.trustChainValid ? '✓ ' + PA_I18N.validLabel : '✗ Invalid') : PA_I18N.notFound)
+              : PA_I18N.unavailable}</dd>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Client PA 상태별 설정
+ */
+function getClientStatusConfig(status) {
+  switch (status) {
+    case 'VALID':
+      return {
+        bgGradient: 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800',
+        iconBg: 'bg-green-100 dark:bg-green-900/40',
+        textColor: 'text-green-800 dark:text-green-200',
+        subtextColor: 'text-green-600 dark:text-green-400',
+        borderColor: 'border-green-200 dark:border-green-700',
+        icon: '<svg class="size-7 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>'
+      };
+    case 'PARTIAL':
+      return {
+        bgGradient: 'bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border border-amber-200 dark:border-amber-800',
+        iconBg: 'bg-amber-100 dark:bg-amber-900/40',
+        textColor: 'text-amber-800 dark:text-amber-200',
+        subtextColor: 'text-amber-600 dark:text-amber-400',
+        borderColor: 'border-amber-200 dark:border-amber-700',
+        icon: '<svg class="size-7 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>'
+      };
+    case 'EXPIRED_VALID':
+      return {
+        bgGradient: 'bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800',
+        iconBg: 'bg-amber-100 dark:bg-amber-900/40',
+        textColor: 'text-amber-800 dark:text-amber-200',
+        subtextColor: 'text-amber-600 dark:text-amber-400',
+        borderColor: 'border-amber-200 dark:border-amber-700',
+        icon: '<svg class="size-7 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+      };
+    default: // INVALID
+      return {
+        bgGradient: 'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 border border-red-200 dark:border-red-800',
+        iconBg: 'bg-red-100 dark:bg-red-900/40',
+        textColor: 'text-red-800 dark:text-red-200',
+        subtextColor: 'text-red-600 dark:text-red-400',
+        borderColor: 'border-red-200 dark:border-red-700',
+        icon: '<svg class="size-7 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+      };
+  }
+}
+
+/**
+ * Client SOD 서명 검증 카드
+ */
+function renderClientSodSignatureCard(sodSig) {
+  if (!sodSig) return '';
+
+  const validIcon = sodSig.valid
+    ? '<span class="text-green-600 dark:text-green-400">✓ Valid</span>'
+    : '<span class="text-red-600 dark:text-red-400">✗ Invalid</span>';
+
+  return `
+    <div class="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
+      <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
+        <svg class="size-4 text-gray-500 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+        </svg>
+        ${PA_I18N.sodSigLocal}
+        <span class="ml-auto text-sm">${validIcon}</span>
+      </h4>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.hashAlgorithm}</span>
+          <span class="font-mono text-gray-900 dark:text-neutral-100">${escapeHtml(sodSig.hashAlgorithm || 'N/A')}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.sigAlgorithm}</span>
+          <span class="font-mono text-gray-900 dark:text-neutral-100">${escapeHtml(sodSig.signatureAlgorithm || 'N/A')}</span>
+        </div>
+        ${sodSig.errorMessage ? `
+          <div class="mt-2 p-2 bg-red-50 dark:bg-red-900/20 rounded text-xs text-red-700 dark:text-red-300 break-all">
+            ${escapeHtml(sodSig.errorMessage)}
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Client DSC 인증서 정보 카드
+ */
+function renderClientDscInfoCard(dscInfo) {
+  if (!dscInfo) return '';
+
+  const expiredBadge = dscInfo.expired
+    ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">${PA_I18N.expired}</span>`
+    : `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">${PA_I18N.validLabel}</span>`;
+
+  return `
+    <div class="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
+      <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
+        <svg class="size-4 text-gray-500 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        ${PA_I18N.dscCertLocal}
+        ${expiredBadge}
+      </h4>
+      <div class="space-y-2 text-sm">
+        <div><span class="text-gray-500 dark:text-neutral-400">${PA_I18N.subject}</span>
+          <p class="font-mono text-xs text-gray-900 dark:text-neutral-100 break-all mt-0.5">${escapeHtml(dscInfo.subject || 'N/A')}</p></div>
+        <div><span class="text-gray-500 dark:text-neutral-400">${PA_I18N.issuer}</span>
+          <p class="font-mono text-xs text-gray-900 dark:text-neutral-100 break-all mt-0.5">${escapeHtml(dscInfo.issuer || 'N/A')}</p></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><span class="text-gray-500 dark:text-neutral-400 text-xs">${PA_I18N.notBefore}</span>
+            <p class="text-xs text-gray-900 dark:text-neutral-100">${escapeHtml(dscInfo.notBefore || 'N/A')}</p></div>
+          <div><span class="text-gray-500 dark:text-neutral-400 text-xs">${PA_I18N.notAfter}</span>
+            <p class="text-xs text-gray-900 dark:text-neutral-100">${escapeHtml(dscInfo.notAfter || 'N/A')}</p></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><span class="text-gray-500 dark:text-neutral-400 text-xs">${PA_I18N.sigAlgorithm}</span>
+            <p class="text-xs font-mono text-gray-900 dark:text-neutral-100">${escapeHtml(dscInfo.signatureAlgorithm || 'N/A')}</p></div>
+          <div><span class="text-gray-500 dark:text-neutral-400 text-xs">Public Key</span>
+            <p class="text-xs font-mono text-gray-900 dark:text-neutral-100">${escapeHtml(dscInfo.publicKeyAlgorithm || '')} ${dscInfo.publicKeySize || ''} bit</p></div>
+        </div>
+        ${dscInfo.sha256Fingerprint ? `
+          <div><span class="text-gray-500 dark:text-neutral-400 text-xs">SHA-256 ${PA_I18N.fingerprint}</span>
+            <p class="font-mono text-xs text-gray-600 dark:text-neutral-400 break-all mt-0.5">${escapeHtml(dscInfo.sha256Fingerprint)}</p></div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Client DG 해시 검증 결과 카드
+ */
+function renderClientDgHashCard(dgHash) {
+  if (!dgHash) return '';
+
+  const allValid = dgHash.invalidGroups === 0;
+  const headerColor = allValid ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+
+  let rows = '';
+  if (dgHash.details) {
+    for (const [dgName, detail] of Object.entries(dgHash.details)) {
+      const icon = detail.valid
+        ? '<svg class="size-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>'
+        : '<svg class="size-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>';
+      rows += `
+        <tr class="border-t border-gray-100 dark:border-neutral-700">
+          <td class="py-2 px-3 text-sm font-medium text-gray-900 dark:text-neutral-100">${escapeHtml(dgName)}</td>
+          <td class="py-2 px-3 text-center">${icon}</td>
+          <td class="py-2 px-3 text-xs font-mono text-gray-600 dark:text-neutral-400 break-all">${escapeHtml(detail.expectedHash || '')}</td>
+          <td class="py-2 px-3 text-xs font-mono text-gray-600 dark:text-neutral-400 break-all">${escapeHtml(detail.actualHash || '')}</td>
+        </tr>`;
+    }
+  }
+
+  return `
+    <div class="bg-white dark:bg-neutral-800 rounded-lg border border-gray-200 dark:border-neutral-700 p-4">
+      <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
+        <svg class="size-4 text-gray-500 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        ${PA_I18N.dgHashLocal}
+        <span class="ml-auto text-sm ${headerColor}">${dgHash.validGroups}/${dgHash.totalGroups} ${PA_I18N.valid}</span>
+      </h4>
+      <div class="overflow-x-auto">
+        <table class="w-full border border-gray-200 dark:border-neutral-700 rounded-lg">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-neutral-700/50">
+              <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-400">${PA_I18N.dgName}</th>
+              <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 dark:text-neutral-400">${PA_I18N.status}</th>
+              <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-400">${PA_I18N.expectedHash}</th>
+              <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-400">${PA_I18N.actualHash}</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Client Trust Chain (PA Lookup) 결과 카드
+ */
+function renderClientTrustChainCard(trustChain, trustChainAvailable) {
+  if (!trustChainAvailable) {
+    return `
+      <div class="bg-gray-50 dark:bg-neutral-700/50 border border-gray-200 dark:border-neutral-700 rounded-lg p-4">
+        <div class="flex items-center gap-3">
+          <svg class="size-5 text-gray-400 dark:text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a5 5 0 01-7.072 0"/>
+          </svg>
+          <div>
+            <h4 class="text-sm font-semibold text-gray-700 dark:text-neutral-300">${PA_I18N.trustChainNotChecked}</h4>
+            <p class="text-xs text-gray-500 dark:text-neutral-400 mt-1">${PA_I18N.trustChainUnavailMsg}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (!trustChain) {
+    return `
+      <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
+        <div class="flex items-center gap-3">
+          <svg class="size-5 text-amber-500 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+          </svg>
+          <div>
+            <h4 class="text-sm font-semibold text-amber-800 dark:text-amber-300">${PA_I18N.dscNotFound}</h4>
+            <p class="text-xs text-amber-700 dark:text-amber-400 mt-1">${PA_I18N.dscNotFoundMsg}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Trust Chain 결과 표시
+  const tcValid = trustChain.trustChainValid;
+  const borderColor = tcValid ? 'border-green-200 dark:border-green-800' : 'border-red-200 dark:border-red-800';
+  const bgColor = tcValid ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20';
+  const statusBadge = tcValid
+    ? '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300">VALID</span>'
+    : '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300">INVALID</span>';
+
+  // Non-Conformant 표시
+  const ncBanner = (trustChain.certificateType === 'DSC_NC' && trustChain.pkdConformanceCode) ? `
+    <div class="mt-3 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded text-xs">
+      <span class="font-semibold text-amber-800 dark:text-amber-300">${PA_I18N.nonConformant}:</span>
+      <span class="text-amber-700 dark:text-amber-400 ml-1">${escapeHtml(trustChain.pkdConformanceCode)}</span>
+      ${trustChain.pkdConformanceText ? `<p class="text-amber-600 dark:text-amber-500 mt-1">${escapeHtml(trustChain.pkdConformanceText)}</p>` : ''}
+    </div>
+  ` : '';
+
+  return `
+    <div class="${bgColor} border ${borderColor} rounded-lg p-4">
+      <h4 class="text-sm font-semibold text-gray-900 dark:text-neutral-100 mb-3 flex items-center gap-2">
+        <svg class="size-4 text-gray-500 dark:text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+        </svg>
+        ${PA_I18N.trustChainLookup}
+        ${statusBadge}
+      </h4>
+      <div class="space-y-2 text-sm">
+        ${trustChain.cscaFound !== undefined ? `
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.cscaFound}</span>
+            <span class="text-gray-900 dark:text-neutral-100">${trustChain.cscaFound ? '✓ Yes' : '✗ No'}</span>
+          </div>
+        ` : ''}
+        ${trustChain.cscaSubjectDn ? `
+          <div><span class="text-gray-500 dark:text-neutral-400 text-xs">CSCA Subject</span>
+            <p class="font-mono text-xs text-gray-900 dark:text-neutral-100 break-all mt-0.5">${escapeHtml(trustChain.cscaSubjectDn)}</p></div>
+        ` : ''}
+        ${trustChain.trustChainPath ? `
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.chainPath}</span>
+            <span class="font-mono text-xs text-gray-900 dark:text-neutral-100">${escapeHtml(trustChain.trustChainPath)}</span>
+          </div>
+        ` : ''}
+        ${trustChain.revocationStatus ? `
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.revocation}</span>
+            <span class="text-xs font-medium ${trustChain.revocationStatus === 'not_revoked' ? 'text-green-700 dark:text-green-400' : trustChain.revocationStatus === 'revoked' ? 'text-red-700 dark:text-red-400' : 'text-gray-500 dark:text-neutral-400'}">${escapeHtml(trustChain.revocationStatus.toUpperCase())}</span>
+          </div>
+        ` : ''}
+        ${trustChain.validationStatus ? `
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-neutral-400">${PA_I18N.validationStatus}</span>
+            <span class="text-xs font-medium text-gray-900 dark:text-neutral-100">${escapeHtml(trustChain.validationStatus)}</span>
+          </div>
+        ` : ''}
+      </div>
+      ${ncBanner}
+      <div class="mt-3 p-2 bg-white/50 dark:bg-neutral-800/50 rounded text-xs text-gray-500 dark:text-neutral-400">
+        <strong>${PA_I18N.btnClientPa}</strong>: ${PA_I18N.clientPaNote}
       </div>
     </div>
   `;
