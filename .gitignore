@@ -64,3 +64,6 @@ installer/winsw/WinSW-x64.exe
 
 ### Claude Code ###
 .claude/
+
+### Face Verification Service ###
+face-verification-service/
