@@ -4,7 +4,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -24,6 +25,18 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class FPHPSService {
 
+    /** 디바이스 작업 상태 */
+    public enum DeviceOperationStatus {
+        IDLE,       // 대기 중
+        RUNNING,    // 작업 진행 중
+        TIMED_OUT   // 타임아웃 발생 (스레드가 아직 멈춰있을 수 있음)
+    }
+
+    /** 디바이스 작업 타임아웃 (초) - RF 통신 응답 대기 최대 시간 */
+    private static final int DEVICE_OPERATION_TIMEOUT_SECONDS = 60;
+    /** 디바이스 락 획득 대기 시간 (초) */
+    private static final int LOCK_ACQUIRE_TIMEOUT_SECONDS = 5;
+
     private final FPHPSDeviceManager deviceManager;
     private final FastPassWebSocketHandler fastPassWebSocketHandler;
     private final List<DocumentReadStrategy> strategies;
@@ -33,6 +46,25 @@ public class FPHPSService {
 
     // Auto-read의 마지막 읽기 결과 저장
     private volatile DocumentReadResponse lastReadResponse;
+
+    // synchronized 대신 ReentrantLock 사용 (타임아웃 지원)
+    private final ReentrantLock deviceLock = new ReentrantLock();
+    // 디바이스 작업 전용 단일 스레드 (타임아웃 제어용, 멈추면 교체 가능)
+    private volatile ExecutorService deviceExecutor = createDeviceExecutor();
+    // 현재 작업 상태
+    private volatile DeviceOperationStatus operationStatus = DeviceOperationStatus.IDLE;
+    // 현재 실행 중인 Future (강제 취소용)
+    private volatile Future<?> currentOperation;
+    // 현재 작업을 실행 중인 스레드 (interrupt용)
+    private volatile Thread operationThread;
+
+    private static ExecutorService createDeviceExecutor() {
+        return Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "DeviceOp");
+            t.setDaemon(true);
+            return t;
+        });
+    }
 
     public FPHPSService(FastPassWebSocketHandler fastPassWebSocketHandler, List<DocumentReadStrategy> strategies, DevicePropertiesService devicePropertiesService) {
         this.fastPassWebSocketHandler = fastPassWebSocketHandler;
@@ -134,48 +166,207 @@ public class FPHPSService {
         return device.getDeviceInfo();
     }
 
-    private synchronized <R> R executeWithDevice(Function<FPHPSDevice, R> action) {
+    /**
+     * 디바이스 작업을 타임아웃 보호와 함께 실행.
+     * - ReentrantLock으로 동시 접근 방지 (tryLock 타임아웃)
+     * - 별도 스레드에서 실행하여 Future.get(timeout)으로 타임아웃 강제
+     * - 타임아웃 시 디바이스 강제 닫기 및 스레드 인터럽트
+     */
+    private <R> R executeWithDevice(Function<FPHPSDevice, R> action) {
         if (!deviceAvailable || device == null) {
             throw new DeviceOperationException("Device not connected. Please connect the FastPass device and try again.");
         }
+
+        // 1. 락 획득 (다른 작업이 진행 중이면 짧게 대기 후 실패)
+        boolean locked;
         try {
-            device.openDevice();
+            locked = deviceLock.tryLock(LOCK_ACQUIRE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new DeviceOperationException("Device operation interrupted while waiting.");
+        }
+        if (!locked) {
+            if (operationStatus == DeviceOperationStatus.TIMED_OUT) {
+                throw new DeviceOperationException(
+                    "A previous device operation has timed out and the device may be unresponsive. " +
+                    "Please cancel the operation or restart the service.");
+            }
+            throw new DeviceOperationException(
+                "Another device operation is in progress. Please wait for it to complete.");
+        }
+
+        // 2. 별도 스레드에서 디바이스 작업 실행 (타임아웃 제어)
+        operationStatus = DeviceOperationStatus.RUNNING;
+        try {
+            Future<R> future = deviceExecutor.submit(() -> {
+                operationThread = Thread.currentThread();
+                try {
+                    device.openDevice();
+                    try {
+                        return action.apply(device);
+                    } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
+                        log.error("FPHPS device operation failed: {}", e.getMessage(), e);
+                        throw new DeviceOperationException("FPHPS device error: " + e.getMessage(), e);
+                    } catch (Exception e) {
+                        log.error("An unexpected error during device operation: {}", e.getMessage(), e);
+                        throw new DeviceOperationException(
+                            "An unexpected error occurred during device operation: " + e.getMessage(), e);
+                    }
+                } finally {
+                    try {
+                        if (device.isDeviceOpened()) {
+                            device.closeDevice();
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to close device in finally block: {}", e.getMessage());
+                    }
+                    operationThread = null;
+                }
+            });
+            currentOperation = future;
+
+            // 3. 타임아웃 대기
             try {
-                return action.apply(device);
-            } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
-                log.error("FPHPS device operation failed: {}", e.getMessage(), e);
-                throw new DeviceOperationException("FPHPS device error: " + e.getMessage(), e);
-            } catch (Exception e) {
-                log.error("An unexpected error during device operation: {}", e.getMessage(), e);
-                throw new DeviceOperationException("An unexpected error occurred during device operation: " + e.getMessage(), e);
+                R result = future.get(DEVICE_OPERATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                operationStatus = DeviceOperationStatus.IDLE;
+                return result;
+            } catch (TimeoutException e) {
+                operationStatus = DeviceOperationStatus.TIMED_OUT;
+                log.error("Device operation timed out after {} seconds. " +
+                          "RF communication may be stuck.", DEVICE_OPERATION_TIMEOUT_SECONDS);
+                // 타임아웃 시 강제 정리
+                forceAbortCurrentOperation();
+                throw new DeviceOperationException(
+                    "Device operation timed out (" + DEVICE_OPERATION_TIMEOUT_SECONDS +
+                    "s). The RF reader may be unresponsive. Please try again or restart the service.");
+            } catch (ExecutionException e) {
+                operationStatus = DeviceOperationStatus.IDLE;
+                Throwable cause = e.getCause();
+                if (cause instanceof DeviceOperationException) {
+                    throw (DeviceOperationException) cause;
+                }
+                throw new DeviceOperationException("Device operation failed: " + cause.getMessage(), cause);
+            } catch (InterruptedException e) {
+                operationStatus = DeviceOperationStatus.IDLE;
+                Thread.currentThread().interrupt();
+                future.cancel(true);
+                throw new DeviceOperationException("Device operation was interrupted.");
             }
         } finally {
-            if (device.isDeviceOpened()) {
-                device.closeDevice();
-            }
+            currentOperation = null;
+            deviceLock.unlock();
         }
     }
 
-    private synchronized void executeWithDeviceVoid(Consumer<FPHPSDevice> action) {
-        if (!deviceAvailable || device == null) {
-            throw new DeviceOperationException("Device not connected. Please connect the FastPass device and try again.");
+    private void executeWithDeviceVoid(Consumer<FPHPSDevice> action) {
+        executeWithDevice(device -> {
+            action.accept(device);
+            return null;
+        });
+    }
+
+    /**
+     * 현재 진행 중인 디바이스 작업 강제 취소.
+     * 타임아웃 또는 사용자 취소 시 호출.
+     * - Future.cancel(true)로 인터럽트 시도
+     * - device.closeDevice()로 네이티브 레벨 중단 시도
+     */
+    private void forceAbortCurrentOperation() {
+        Future<?> op = currentOperation;
+        if (op != null) {
+            op.cancel(true);
         }
+        Thread t = operationThread;
+        if (t != null) {
+            t.interrupt();
+        }
+        // 디바이스 강제 닫기 (네이티브 라이브러리가 블로킹 해제될 수 있음)
         try {
-            device.openDevice();
-            try {
-                action.accept(device);
-            } catch (com.smartcoreinc.fphps.exception.FPHPSException e) {
-                log.error("FPHPS device operation failed: {}", e.getMessage(), e);
-                throw new DeviceOperationException("FPHPS device error: " + e.getMessage(), e);
-            } catch (Exception e) {
-                log.error("An unexpected error during device operation: {}", e.getMessage(), e);
-                throw new DeviceOperationException("An unexpected error occurred during device operation: " + e.getMessage(), e);
-            }
-        } finally {
-            if (device.isDeviceOpened()) {
+            if (device != null && device.isDeviceOpened()) {
+                log.warn("Force-closing device to abort stuck operation");
                 device.closeDevice();
             }
+        } catch (Exception e) {
+            log.warn("Failed to force-close device: {}", e.getMessage());
         }
+    }
+
+    /**
+     * 현재 디바이스 작업 상태 조회
+     */
+    public DeviceOperationStatus getOperationStatus() {
+        return operationStatus;
+    }
+
+    /**
+     * 사용자 또는 시스템에 의한 강제 작업 취소.
+     * UI에서 "Cancel Operation" 버튼 클릭 시 호출.
+     * @return 취소 시도 결과
+     */
+    public boolean cancelCurrentOperation() {
+        if (operationStatus == DeviceOperationStatus.IDLE) {
+            return false; // 취소할 작업 없음
+        }
+        log.warn("Cancel requested by user - aborting current device operation");
+        forceAbortCurrentOperation();
+
+        // deviceExecutor가 타임아웃 후에도 멈춰있을 수 있으므로
+        // 새 executor로 교체하여 다음 작업이 가능하도록 함
+        resetDeviceExecutorIfNeeded();
+        operationStatus = DeviceOperationStatus.IDLE;
+        return true;
+    }
+
+    /**
+     * 타임아웃으로 멈춘 executor를 새 것으로 교체.
+     * 기존 스레드는 daemon이므로 JVM 종료 시 정리됨.
+     * 새 executor로 교체하여 다음 작업이 즉시 가능하도록 함.
+     */
+    private void resetDeviceExecutorIfNeeded() {
+        ExecutorService oldExecutor = deviceExecutor;
+        deviceExecutor = createDeviceExecutor();
+        // 기존 executor는 shutdownNow로 정리 시도 (daemon 스레드이므로 멈춘 채로 남아도 JVM에는 영향 없음)
+        oldExecutor.shutdownNow();
+        log.info("Device executor replaced with a fresh instance.");
+    }
+
+    /**
+     * 서비스 강제 종료 (서비스 재시작용).
+     * 일반 System.exit(1)이 synchronized lock에 의해 차단될 수 있으므로
+     * Runtime.halt()를 폴백으로 사용.
+     */
+    public void forceShutdown() {
+        log.warn("Force shutdown requested");
+        // 진행 중인 작업 정리 시도
+        forceAbortCurrentOperation();
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(1500); // 응답 전송 대기
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            log.info("Shutting down for restart (exit code 1)...");
+            try {
+                System.exit(1);
+            } catch (Exception e) {
+                // System.exit가 shutdown hook에서 멈출 경우 강제 종료
+                log.error("System.exit blocked, using Runtime.halt(1)");
+                Runtime.getRuntime().halt(1);
+            }
+        }, "ShutdownThread").start();
+
+        // System.exit이 5초 내 완료되지 않으면 halt로 강제 종료
+        new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+            log.error("Graceful shutdown timed out. Forcing halt.");
+            Runtime.getRuntime().halt(1);
+        }, "ShutdownWatchdog").start();
     }
 
     public DocumentReadResponse read(String docType, boolean isAuto) {

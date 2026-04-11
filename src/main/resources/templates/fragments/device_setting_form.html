@@ -219,6 +219,8 @@
           el.className += ' bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800';
         } else if (type === 'error') {
           el.className += ' bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800';
+        } else if (type === 'warning') {
+          el.className += ' bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800';
         } else {
           el.className += ' bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800';
         }
@@ -352,10 +354,12 @@
             spinner.classList.add('hidden');
             icon.classList.remove('hidden');
             text.textContent = 'Test Connection';
-            if (data.connected) {
-              showPaStatus('PA API server is reachable and responding.', 'success');
-            } else {
+            if (!data.connected) {
               showPaStatus('Connection failed: ' + (data.message || 'Server not reachable'), 'error');
+            } else if (data.apiKeyValid) {
+              showPaStatus('PA API server is reachable and API Key is valid.', 'success');
+            } else {
+              showPaStatus('Server reachable, but: ' + (data.message || 'API Key verification failed'), 'warning');
             }
           })
           .catch(function(err) {

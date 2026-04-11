@@ -42,9 +42,6 @@ public class PaApiSettingsService {
     @Value("${pa-api.base-url:http://localhost:8080}")
     private String defaultBaseUrl;
 
-    @Value("${pa-api.api-key:}")
-    private String defaultApiKey;
-
     private String baseUrl;
     private String apiKey;
     private Long currentSettingsId;
@@ -64,12 +61,12 @@ public class PaApiSettingsService {
             this.apiKey = settings.getApiKey();
             this.currentSettingsId = settings.getId();
             log.info("PA API settings loaded from database: baseUrl={}", baseUrl);
-            reconfigureRestTemplate();
         } else {
             this.baseUrl = defaultBaseUrl;
-            this.apiKey = defaultApiKey;
-            log.info("PA API settings using defaults from application.properties: baseUrl={}", baseUrl);
+            this.apiKey = "";
+            log.info("PA API settings: no DB entry found. baseUrl from properties={}, API Key not set (configure via UI)", baseUrl);
         }
+        reconfigureRestTemplate();
     }
 
     public String getBaseUrl() {
@@ -202,9 +199,12 @@ public class PaApiSettingsService {
         }
 
         paApiRestTemplate.setInterceptors(interceptors);
-        log.debug("RestTemplate reconfigured: baseUrl={}, apiKey={}",
+        log.info("RestTemplate reconfigured: baseUrl={}, apiKey={}, interceptors={}",
                   this.baseUrl,
-                  this.apiKey != null && !this.apiKey.isBlank() ? "configured" : "empty");
+                  this.apiKey != null && !this.apiKey.isBlank()
+                      ? this.apiKey.substring(0, Math.min(20, this.apiKey.length())) + "..."
+                      : "(empty)",
+                  interceptors.size());
     }
 
     /**
@@ -215,6 +215,8 @@ public class PaApiSettingsService {
         try {
             paApiRestTemplate.setRequestFactory(PaApiClientConfig.createHttpRequestFactory());
             log.info("RestTemplate HttpClient rebuilt with updated SSL context");
+            // SSL 재설정 후 Base URL과 API Key 인터셉터도 재적용
+            reconfigureRestTemplate();
         } catch (Exception e) {
             log.error("Failed to rebuild HttpClient: {}", e.getMessage(), e);
         }

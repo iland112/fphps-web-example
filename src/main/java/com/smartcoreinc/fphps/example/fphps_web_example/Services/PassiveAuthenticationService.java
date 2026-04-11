@@ -13,6 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -30,7 +31,7 @@ public class PassiveAuthenticationService {
 
     private final RestTemplate paApiRestTemplate;
 
-    public PassiveAuthenticationService(RestTemplate paApiRestTemplate) {
+    public PassiveAuthenticationService(@Qualifier("paApiRestTemplate") RestTemplate paApiRestTemplate) {
         this.paApiRestTemplate = paApiRestTemplate;
     }
 
@@ -268,15 +269,18 @@ public class PassiveAuthenticationService {
     }
 
     /**
-     * PA API 서버 헬스 체크
-     * /api/health 엔드포인트로 연결 상태 확인
+     * PA API 서버 연결 확인 (인증 불필요)
      */
     public void healthCheck() {
-        try {
-            paApiRestTemplate.getForEntity("/api/health", String.class);
-        } catch (Exception e) {
-            throw new PaVerificationException("PA API server is not reachable: " + e.getMessage(), e);
-        }
+        paApiRestTemplate.getForEntity("/api/health", String.class);
+    }
+
+    /**
+     * PA API Key 유효성 검증
+     * 인증이 필요한 엔드포인트를 호출하여 API Key가 유효한지 확인
+     */
+    public void verifyApiKey() {
+        paApiRestTemplate.getForEntity("/api/pa/statistics", String.class);
     }
 
     /**

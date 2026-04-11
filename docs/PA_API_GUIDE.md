@@ -1,7 +1,7 @@
 # PA Service API Guide for External Clients
 
-**Version**: 2.1.15
-**Last Updated**: 2026-03-21
+**Version**: 2.1.17
+**Last Updated**: 2026-04-09
 **API Gateway**: HTTP (:80) / HTTPS (:443) / Internal (:8080)
 
 ---
@@ -59,24 +59,33 @@ Frontend:           http://192.168.100.10
 
 ### 인증
 
-PA Service의 모든 엔드포인트는 **인증 불필요**(Public)입니다. 전자여권 판독기 등 외부 클라이언트에서 별도 인증 없이 호출할 수 있습니다.
+PA Service의 모든 엔드포인트는 **인증 필수**입니다. 다음 두 가지 방법 중 하나로 인증해야 합니다:
 
-#### API Key 인증 (선택, v2.1.10+)
+#### 1. API Key 인증 (외부 클라이언트, M2M)
 
-관리자가 발급한 **API Key**를 `X-API-Key` 헤더에 포함하면, 클라이언트별 사용량 추적 및 Rate Limiting이 적용됩니다. API Key가 없어도 Public 엔드포인트는 정상 호출 가능합니다.
+관리자가 발급한 **API Key**를 `X-API-Key` 헤더에 포함해야 합니다. 등록되지 않은 API Key는 **401 Unauthorized**로 거부됩니다.
 
 ```
 X-API-Key: icao_XXXXXXXX_YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
 ```
 
-| 구분 | 인증 없음 | API Key 사용 |
-|------|-----------|-------------|
-| Public 엔드포인트 호출 | O | O |
-| 클라이언트별 사용량 추적 | X | O |
-| Rate Limiting (분/시/일) | X | O (클라이언트별 개별 한도) |
-| 권한(Permission) 제어 | X | O (`pa:verify`, `pa:read` 등) |
+#### 2. JWT Bearer 인증 (웹 UI)
 
-> **API Key 발급**: 시스템 관리자가 `/admin/api-clients` 페이지 또는 `POST /api/auth/api-clients` API로 발급합니다. 자세한 내용은 [API_CLIENT_USER_GUIDE.md](API_CLIENT_USER_GUIDE.md)를 참조하세요.
+웹 UI 사용자는 로그인 후 발급된 JWT 토큰으로 인증합니다.
+
+```
+Authorization: Bearer <jwt_token>
+```
+
+| 기능 | API Key | JWT |
+|------|---------|-----|
+| 외부 M2M 클라이언트 | O | X |
+| 웹 UI 사용자 | X | O |
+| 클라이언트별 사용량 추적 | O | X |
+| Rate Limiting (분/시/일) | O (클라이언트별 개별 한도) | O (IP 기반) |
+| 권한(Permission) 제어 | O (`pa:verify`, `pa:read` 등) | O (RBAC) |
+
+> **API Key 발급**: 시스템 관리자가 `/admin/api-clients` 페이지 또는 `POST /api/auth/api-clients` API로 발급합니다. 외부 클라이언트는 `/api-client-request` 페이지에서 API 접근을 요청할 수도 있습니다. 자세한 내용은 [API_CLIENT_USER_GUIDE.md](API_CLIENT_USER_GUIDE.md)를 참조하세요.
 
 #### PA 관련 Permission
 
@@ -90,7 +99,7 @@ API Key에 할당 가능한 PA 관련 권한:
 | `cert:read` | `POST /api/certificates/pa-lookup`, `GET /api/certificates/search` |
 | `ai:read` | `GET /api/ai/certificate/{fingerprint}`, `GET /api/ai/anomalies`, `GET /api/ai/statistics`, 리포트 API |
 
-> **Note**: API Key 없이도 위 엔드포인트는 모두 Public으로 접근 가능합니다. Permission은 API Key를 사용하는 경우에만 적용됩니다.
+> **Note**: 모든 PA 엔드포인트는 인증 필수입니다. 외부 클라이언트는 등록된 API Key가 있어야 하며, 웹 UI 사용자는 JWT로 인증됩니다. Permission은 API Key를 사용하는 경우에 적용됩니다.
 
 ---
 
@@ -372,11 +381,16 @@ API Key에 할당 가능한 PA 관련 권한:
     │  - CRL로 DSC 폐기 여부 확인                  │
     │  - SOD 서명 검증 + DG 해시 검증              │
     │                                            │
+    │  [encKey = SHA-256(apiKey)]                 │ (키 파생 — 전달 불필요)
+    │  [encryptedMrz = AES-256-GCM(MRZ, encKey)] │
+    │                                            │
     │  Step 2: 검증 결과 보고                      │
     │  POST /api/pa/trust-materials/result       │
     │  { requestId, verificationStatus,          │
     │    encryptedMrz (선택) }         ────────→  │
-    │                                            │ → 결과 저장 + MRZ 복호화/재암호화
+    │                                            │ → requestId로 api_key_hash 조회
+    │                                            │ → AES-256-GCM 복호화 (같은 키)
+    │                                            │ → PII 키로 재암호화 → DB 저장
     │  ←──────────  200 OK                       │
     │                                            │
 ```
@@ -492,15 +506,51 @@ API Key에 할당 가능한 PA 관련 권한:
 | dgHashValid | boolean | 선택 | Data Group 해시 검증 통과 여부 |
 | crlCheckPassed | boolean | 선택 | CRL 기반 DSC 폐기 여부 확인 통과 |
 | processingTimeMs | integer | 선택 | 클라이언트 검증 소요 시간 (밀리초) |
-| encryptedMrz | string | 선택 | AES-256-GCM으로 암호화된 MRZ 텍스트 (TD3 형식 2줄 × 44자) |
+| encryptedMrz | string | 선택 | API Key 파생 AES-256-GCM으로 암호화된 MRZ (형식: Base64(IV[12]‖ct‖tag[16])) |
 
-#### MRZ 전송 (PII 보호)
+#### MRZ 암호화 프로토콜 (키 전달 불필요)
 
-- Trust Materials 요청 시 (Step 1) MRZ는 **전송하지 않습니다**
-- 결과 보고 시 (Step 2)에만 **암호화된 MRZ**를 선택적으로 전송할 수 있습니다
-- 서버는 수신한 MRZ를 복호화한 후 **서버 측 키로 재암호화**하여 DB에 저장합니다
-- MRZ에서 추출되는 필드: `nationality` (국적), `documentType` (문서 유형), `documentNumber` (여권 번호)
-- 여권 번호는 **개인정보보호법 제24조** 고유식별정보에 해당하며 암호화 저장이 법적 의무입니다
+MRZ는 클라이언트가 보유한 **API Key에서 파생한 키**로 암호화합니다. 서버는 DB에 이미 `SHA-256(apiKey)`를 저장하고 있으므로 **키를 별도 전달하지 않아도** 복호화가 가능합니다.
+
+```
+클라이언트 (ICRM)                    서버 (api_clients 테이블)
+─────────────────────────────────────────────────────────────
+apiKey = "icao_XXXXXXXX_..."         api_key_hash = SHA-256(apiKey)  ← 인증 시 저장
+encKey = SHA-256(apiKey)   ←──(동일)──→  encKey = api_key_hash (hex→bytes)
+```
+
+**클라이언트 암호화 절차:**
+
+```
+1. encKey   = SHA-256(apiKey.getBytes("UTF-8"))          // 32 bytes
+2. IV       = SecureRandom(12 bytes)
+3. cipher   = AES-256-GCM(plainMrz, encKey, IV)          // + 128-bit authTag
+4. encryptedMrz = Base64(IV[12] ‖ ciphertext ‖ tag[16])  // 전송 값
+```
+
+> **전송 형식**: `Base64(IV[12] + ciphertext + authTag[16])` — "ENC:" 접두어 없음 (서버 내부 PII 형식과 구별)
+
+**서버 복호화 절차:**
+
+```
+1. requestId → api_client_id (trust_material_request)
+2. api_client_id → api_key_hash (api_clients)   // 32-byte key
+3. Base64 디코드 → IV[12] + ct + tag[16] 분리
+4. AES-256-GCM 복호화 → 평문 MRZ
+5. parseMrz() → nationality / documentType / documentNumber
+6. PII 키로 재암호화 → DB 저장
+```
+
+**MRZ 데이터 형식 (TD3 여권):**
+- 2줄 × 44자 plain text (CRLF 또는 LF 구분)
+- 예: `P<KORKIM<<GILDONG<<<<<<<<<<<<<<<<<<<<<<<<<<\n1234567890KOR8001011M3101010<<<<<<<<<<<<<<<6`
+- 추출 필드: `nationality` (line1[2:5]), `documentType` (line1[0:1]), `documentNumber` (line2[0:9])
+- 여권 번호는 **개인정보보호법 제24조** 고유식별정보 → 암호화 저장 법적 의무
+
+**선택적 전송 시 주의사항:**
+- `encryptedMrz`를 생략해도 결과 보고는 성공합니다 (MRZ 필드만 빈 값으로 저장)
+- JWT 인증(웹 UI) 사용 시 API Key가 없으므로 `encryptedMrz` 전송 불가 (생략해야 함)
+- API Key 없이 요청한 경우(anonymous) `encryptedMrz` 전송 시 복호화 실패 → MRZ 필드 비어 저장
 
 #### Response (Success)
 
@@ -1510,10 +1560,7 @@ class PAServiceClient:
 
 # Usage example
 if __name__ == "__main__":
-    # API Key 없이 사용 (Public 접근)
-    client = PAServiceClient()
-
-    # API Key로 사용 (사용량 추적 + Rate Limiting 적용)
+    # API Key로 사용 (필수 — 인증 없이는 401 거부)
     # client = PAServiceClient(api_key="icao_XXXXXXXX_YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
 
     # Read passport data from reader
@@ -1620,7 +1667,7 @@ import org.springframework.http.*;
 public class PAServiceClient {
     private final RestTemplate restTemplate = new RestTemplate();
     private final String baseUrl;
-    private final String apiKey; // nullable — API Key 없이도 사용 가능
+    private final String apiKey; // 필수 — 등록된 API Key 필요
 
     public PAServiceClient(String baseUrl) {
         this(baseUrl, null);
@@ -1679,11 +1726,8 @@ public class PAServiceClient {
     }
 }
 
-// Usage
-// API Key 없이 사용
-PAServiceClient client = new PAServiceClient("http://localhost:8080/api");
-
-// API Key로 사용 (사용량 추적 + Rate Limiting)
+// Usage — API Key 필수
+// API Key로 사용 (인증 + 사용량 추적 + Rate Limiting)
 PAServiceClient client = new PAServiceClient(
     "http://localhost:8080/api",
     "icao_XXXXXXXX_YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
@@ -1760,7 +1804,7 @@ public class PAServiceClient
 > - 유선 LAN: `192.168.100.10:8080`
 > - 도메인: `pkd.smartcoreinc.com`
 
-> **API Key 사용 시**: 모든 curl 명령에 `-H "X-API-Key: icao_XXXXXXXX_..."` 헤더를 추가하면 됩니다. API Key 없이도 Public 엔드포인트는 정상 호출됩니다.
+> **인증 필수**: 모든 curl 명령에 `-H "X-API-Key: icao_XXXXXXXX_..."` 헤더를 포함해야 합니다. API Key 없이 호출하면 401 Unauthorized가 반환됩니다.
 
 ```bash
 # Full PA Verify (SOD + DG files required)
@@ -1907,6 +1951,18 @@ curl http://localhost:8080/api/ai/health | jq .
 
 ## Rate Limiting (v2.1.10+)
 
+PA verify 엔드포인트에는 **두 단계의 Rate Limiting**이 적용됩니다:
+
+### 1. API Gateway (nginx) 레벨 — `/api/pa/verify` 전용 (v2.46.0+)
+
+| 구간 | 한도 | 범위 |
+|------|------|------|
+| 분당 | **30 requests** | API 클라이언트 키 기준 |
+
+> PA 서명 검증은 CPU 집약적이므로 nginx 레벨에서 별도로 30r/m 제한이 적용됩니다. 이 한도는 API Key 레벨 Rate Limit보다 우선합니다.
+
+### 2. API Key 레벨 — 전체 API Key 요청 (설정 가능)
+
 API Key를 사용하는 경우, 클라이언트별 Rate Limiting이 적용됩니다. 기본 한도는 관리자가 클라이언트 생성 시 설정하며, 기본값은 다음과 같습니다:
 
 | 구간 | 기본 한도 | 설명 |
@@ -1970,7 +2026,6 @@ API Key를 사용하는 경우 발생할 수 있는 추가 에러:
 |-------------|-------|-------------|
 | `401` | Unauthorized | API Key가 유효하지 않거나 만료됨 (**PKD Management 엔드포인트만 해당**) |
 | `403` | Forbidden | API Key에 해당 엔드포인트 접근 권한이 없음 (Permission 부족) |
-| `403` | IP Not Allowed | API Key에 설정된 IP 화이트리스트에 포함되지 않은 IP에서 접근 |
 | `429` | Rate Limit Exceeded | 분/시/일 중 하나의 Rate Limit 초과 |
 
 ```json
@@ -1994,9 +2049,7 @@ API Key를 사용하는 경우 발생할 수 있는 추가 에러:
 }
 ```
 
-> **Note**: 이 에러들은 API Key를 `X-API-Key` 헤더에 포함한 경우에만 발생합니다. API Key 없이 Public 엔드포인트를 호출하면 이 에러가 발생하지 않습니다.
->
-> **PA Service 엔드포인트 (v2.22.1+)**: `/api/pa/*` 경로는 Public API이므로, 미등록/유효하지 않은 API Key를 전송해도 **401이 발생하지 않고 정상 처리**됩니다. 등록된 유효한 API Key인 경우에만 사용량 추적이 적용됩니다. 이는 기존 클라이언트의 하위 호환성을 보장합니다.
+> **Note**: 모든 PA 엔드포인트는 인증 필수입니다. API Key 또는 JWT가 없으면 401 Unauthorized가 반환됩니다. 미등록/유효하지 않은 API Key를 전송해도 401이 반환됩니다.
 
 ---
 
@@ -2037,12 +2090,37 @@ API Key를 사용하는 경우 발생할 수 있는 추가 에러:
 **8. 401 Unauthorized — Invalid API key (v2.1.10+)**
 - 원인: API Key가 유효하지 않거나, 비활성화되었거나, 만료됨
 - 해결: 관리자에게 API Key 재발급 요청 (`POST /api/auth/api-clients/{id}/regenerate`)
-- 참고: API Key 없이 호출하면 Public 엔드포인트는 정상 접근 가능
-- **PA 엔드포인트 (v2.22.1+)**: `/api/pa/*` 경로에서는 미등록 API Key를 전송해도 401이 발생하지 않습니다 (Public API 하위 호환). 서버 로그에 경고만 기록됩니다.
+- 참고: 모든 PA 엔드포인트는 인증 필수 — API Key 없이 호출하면 401 반환
 
 ---
 
 ## Changelog
+
+### v2.1.16 (2026-03-30)
+
+**PA 인증 정책 강화 — Fail-Closed 전환**:
+- 모든 PA 엔드포인트 인증 필수 (API Key 또는 JWT)
+- `handleInternalAuthCheck()` fail-open → fail-closed 전환
+- 인증 없음/무효한 API Key/무효한 JWT → 401 Unauthorized 반환
+- nginx auth_request에 Authorization 헤더 전달 추가 (JWT 폴백 지원)
+- 서비스 컨테이너 불가 시 401 반환 (이전: 200 fail-open)
+
+### v2.1.17 (2026-04-09)
+
+**MRZ 암호화 프로토콜 확정 (API Key 파생 키, 수동 전달 불필요)**:
+- `encryptedMrz` 암호화 방식 명세 확정: `encKey = SHA-256(apiKey)` (클라이언트 측)
+- 서버는 `api_clients.api_key_hash` (= SHA-256(apiKey))를 이미 보유 → 키 전달 불필요
+- 전송 형식: `Base64(IV[12] ‖ ciphertext ‖ tag[16])` — "ENC:" 접두어 없이 서버 PII 형식과 구별
+- 서버 처리: `requestId → api_client_id → api_key_hash` JOIN으로 복호화 키 복원 → PII 키로 재암호화 저장
+- JWT 인증(웹 UI) 사용 시 `encryptedMrz` 전송 불가 명시 (API Key 없음)
+- 시퀀스 다이어그램 갱신: 키 파생 및 서버 복호화 절차 표시
+
+### v2.1.16 (2026-04-09)
+
+**nginx PA verify Rate Limiting 추가 문서화 (v2.46.0)**:
+- `/api/pa/verify` 엔드포인트에 nginx 레벨 Rate Limit 30r/m 적용 — CPU 집약적 서명 검증 보호
+- Rate Limiting 섹션에 2단계 구조(nginx + API Key) 명시
+- 접속 IP 화이트리스트 항목 제거 (v2.42.1 제거된 기능)
 
 ### v2.1.15 (2026-03-21)
 

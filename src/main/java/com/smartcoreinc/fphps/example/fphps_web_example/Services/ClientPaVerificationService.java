@@ -14,12 +14,18 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -39,14 +45,17 @@ import java.util.concurrent.*;
 public class ClientPaVerificationService {
 
     private final RestTemplate paApiRestTemplate;
+    private final PaApiSettingsService paApiSettingsService;
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
     // Trust Materials 캐시 (국가코드 → 캐시 항목)
     private final ConcurrentHashMap<String, CachedTrustMaterials> tmCache = new ConcurrentHashMap<>();
     private static final long CACHE_TTL_MS = 60 * 60 * 1000; // 1시간
 
-    public ClientPaVerificationService(RestTemplate paApiRestTemplate) {
+    public ClientPaVerificationService(@Qualifier("paApiRestTemplate") RestTemplate paApiRestTemplate,
+                                       PaApiSettingsService paApiSettingsService) {
         this.paApiRestTemplate = paApiRestTemplate;
+        this.paApiSettingsService = paApiSettingsService;
     }
 
     /**
@@ -92,15 +101,22 @@ public class ClientPaVerificationService {
         ClientPaResult.DscInfo dscInfo = extractDscInfo(parsedSOD);
 
         // Trust Materials 결과 대기
+        // cacheHit: 다운로드 시작 전 캐시 상태 확인 (다운로드 후 put으로 덮어씌워지므로 사전 확인 필요)
+        boolean cacheHit = tmCache.containsKey(countryCode) && !tmCache.get(countryCode).isExpired();
+
         String requestId = null;
         TrustMaterialsResponse trustMaterials = null;
         ClientPaResult.TrustMaterialsInfo tmInfo = null;
-        boolean cacheHit = false;
 
         try {
             trustMaterials = tmFuture.get(15, TimeUnit.SECONDS);
             if (trustMaterials != null && trustMaterials.success()) {
                 requestId = trustMaterials.requestId();
+                log.info("Trust Materials received: requestId={}, topLevel={}, dataLevel={}, cacheWas={}",
+                    requestId,
+                    trustMaterials.topLevelRequestId(),
+                    trustMaterials.data() != null ? trustMaterials.data().requestId() : "null",
+                    cacheHit ? "HIT" : "MISS");
                 var data = trustMaterials.data();
                 tmInfo = new ClientPaResult.TrustMaterialsInfo(
                     data != null && data.csca() != null ? data.csca().size() : 0,
@@ -108,8 +124,6 @@ public class ClientPaVerificationService {
                     data != null && data.crl() != null ? data.crl().size() : 0,
                     countryCode
                 );
-                CachedTrustMaterials cached = tmCache.get(countryCode);
-                cacheHit = cached != null && !cached.isExpired();
             }
         } catch (Exception e) {
             log.warn("Trust Materials download failed: {}", e.getMessage());
@@ -128,18 +142,20 @@ public class ClientPaVerificationService {
         long duration = System.currentTimeMillis() - startTime;
 
         // ── 결과 보고 (비동기) ──
+        // null = 성공, non-null 문자열 = 실패 원인
         final String finalRequestId = requestId;
         final String finalStatus = overallStatus;
-        CompletableFuture<Boolean> reportFuture = CompletableFuture.supplyAsync(() -> {
-            if (finalRequestId == null) return false;
+        final DocumentReadResponse finalResponse = response;
+        CompletableFuture<String> reportFuture = CompletableFuture.supplyAsync(() -> {
+            if (finalRequestId == null) return "No requestId";
             try {
                 reportResult(finalRequestId, finalStatus, sodSigResult, dgHashResult,
-                    trustChainResult, crlCheckResult, (int) duration);
+                    trustChainResult, crlCheckResult, (int) duration, finalResponse);
                 log.info("Client PA result reported: requestId={}, status={}", finalRequestId, finalStatus);
-                return true;
+                return null; // 성공
             } catch (Exception e) {
                 log.warn("Failed to report client PA result: {}", e.getMessage());
-                return false;
+                return e.getMessage(); // 실제 오류 메시지 반환
             }
         }, executor);
 
@@ -147,14 +163,15 @@ public class ClientPaVerificationService {
         boolean serverReported = false;
         String serverReportError = null;
         try {
-            serverReported = reportFuture.get(2, TimeUnit.SECONDS);
-            if (!serverReported && finalRequestId != null) {
-                serverReportError = "Report request failed";
+            String reportError = reportFuture.get(2, TimeUnit.SECONDS);
+            if (reportError == null) {
+                serverReported = true;
+            } else {
+                serverReportError = reportError;
             }
         } catch (TimeoutException e) {
             // 2초 내 완료되지 않으면 백그라운드에서 계속 수행
             serverReported = true; // 진행 중으로 표시
-            serverReportError = null;
             log.debug("Result report still in progress (background)");
         } catch (Exception e) {
             serverReportError = e.getMessage();
@@ -190,17 +207,28 @@ public class ClientPaVerificationService {
         if (cached != null && !cached.isExpired()) {
             log.debug("Trust Materials cache HIT for country={}", countryCode);
             // 캐시 히트 시에도 새 requestId 발급을 위해 서버에 요청
-            // 단, 캐시된 CSCA/CRL 데이터를 재사용
             try {
                 TrustMaterialsResponse fresh = downloadTrustMaterials(countryCode, parsedSOD);
                 if (fresh != null && fresh.success()) {
-                    // 새 requestId + 캐시된 데이터 조합
                     tmCache.put(countryCode, new CachedTrustMaterials(fresh));
                     return fresh;
                 }
             } catch (Exception e) {
-                log.debug("Fresh download failed, using cached data: {}", e.getMessage());
-                return cached.response;
+                // fresh download 실패 시 cached CSCA/CRL 데이터는 유지하되
+                // requestId는 null로 대체 — 만료된 requestId로 보고하면 서버가 400 반환
+                log.warn("Fresh Trust Materials download failed for country={}: {}. " +
+                    "Verification will proceed with cached data but result will NOT be reported.",
+                    countryCode, e.getMessage());
+                var d = cached.response.data();
+                return new TrustMaterialsResponse(
+                    true,
+                    new TrustMaterialsResponse.TrustMaterialsData(
+                        null,  // requestId 제거 → 결과 보고 스킵
+                        d.countryCode(), d.csca(), d.linkCertificates(),
+                        d.crl(), d.processingTimeMs(), d.timestamp()
+                    ),
+                    null
+                );
             }
         }
 
@@ -480,21 +508,131 @@ public class ClientPaVerificationService {
             ClientPaResult.DgHashResult dgHash,
             ClientPaResult.TrustChainResult trustChain,
             ClientPaResult.CrlCheckResult crlCheck,
-            int processingTimeMs) {
+            int processingTimeMs,
+            DocumentReadResponse response) {
+
+        String verificationMessage = buildVerificationMessage(overallStatus, sodSig, dgHash, trustChain, crlCheck);
+        String encryptedMrz = buildEncryptedMrz(response);
 
         ClientPaReportRequest report = new ClientPaReportRequest(
-            requestId, overallStatus, null,
+            requestId, overallStatus, verificationMessage,
             trustChain.valid(), sodSig.valid(),
             dgHash.invalidGroups() == 0,
             crlCheck.checked() && crlCheck.passed(),
-            processingTimeMs, null);
+            processingTimeMs, encryptedMrz);
+
+        log.info("Reporting Client PA result: requestId={}, status={}, trustChain={}, sodSig={}, dgHash={}, crl={}, encryptedMrz={}",
+            requestId, overallStatus,
+            trustChain.valid(), sodSig.valid(),
+            dgHash.invalidGroups() == 0,
+            crlCheck.checked() && crlCheck.passed(),
+            encryptedMrz != null ? "present(" + encryptedMrz.length() + "chars)" : "null");
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Connection", "close");
         HttpEntity<ClientPaReportRequest> entity = new HttpEntity<>(report, headers);
 
-        paApiRestTemplate.postForEntity("/api/pa/trust-materials/result", entity, Map.class);
+        ResponseEntity<Map> reportResponse = paApiRestTemplate.postForEntity(
+            "/api/pa/trust-materials/result", entity, Map.class);
+        log.info("Report response: status={}, body={}", reportResponse.getStatusCode(), reportResponse.getBody());
+    }
+
+    /**
+     * 검증 결과 상세 메시지 생성
+     */
+    private String buildVerificationMessage(String overallStatus,
+            ClientPaResult.SodSignatureResult sodSig,
+            ClientPaResult.DgHashResult dgHash,
+            ClientPaResult.TrustChainResult trustChain,
+            ClientPaResult.CrlCheckResult crlCheck) {
+
+        if ("VALID".equals(overallStatus)) {
+            String chainPath = trustChain.chainPath() != null ? trustChain.chainPath() : "CSCA";
+            return String.format(
+                "Passive Authentication successful: SOD signature valid (%s), " +
+                "DG hashes valid (%d/%d), trust chain verified via %s, CRL check passed.",
+                sodSig.signatureAlgorithm() != null ? sodSig.signatureAlgorithm() : "OK",
+                dgHash.validGroups(), dgHash.totalGroups(),
+                chainPath);
+        }
+
+        List<String> failures = new ArrayList<>();
+        if (!sodSig.valid()) {
+            failures.add("SOD signature invalid" +
+                (sodSig.errorMessage() != null ? ": " + sodSig.errorMessage() : ""));
+        }
+        if (dgHash.invalidGroups() > 0) {
+            failures.add(dgHash.invalidGroups() + " DG hash(es) invalid");
+        }
+        if (crlCheck.revoked()) {
+            failures.add("DSC certificate revoked");
+        } else if (trustChain.available() && !trustChain.valid()) {
+            failures.add("trust chain verification failed" +
+                (trustChain.errorMessage() != null ? ": " + trustChain.errorMessage() : ""));
+        }
+        if (!trustChain.available()) {
+            failures.add("trust materials unavailable");
+        }
+
+        if (failures.isEmpty()) {
+            return "Verification " + overallStatus.toLowerCase() + ".";
+        }
+        return "Passive Authentication " + overallStatus + ": " + String.join("; ", failures) + ".";
+    }
+
+    /**
+     * MRZ를 AES-256-GCM으로 암호화하여 Base64 반환
+     * 암호화 키: SHA-256(apiKey) → 32바이트 AES-256 키
+     * 출력 형식: Base64(IV[12] + Ciphertext + AuthTag[16])
+     */
+    private String buildEncryptedMrz(DocumentReadResponse response) {
+        if (response == null) return null;
+
+        // ePassMrzLines 우선, 없으면 mrzLines 사용
+        com.smartcoreinc.fphps.dto.mrz.MrzLines mrzLines = response.getEPassMrzLines();
+        if (mrzLines == null) mrzLines = response.getMrzLines();
+        if (mrzLines == null || mrzLines.getLine1() == null || mrzLines.getLine2() == null) return null;
+
+        String line1 = mrzLines.getLine1().trim();
+        String line2 = mrzLines.getLine2().trim();
+        if (line1.isEmpty() || line2.isEmpty()) return null;
+
+        String apiKey = paApiSettingsService.getApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            log.debug("API key not configured; skipping MRZ encryption");
+            return null;
+        }
+
+        try {
+            // AES-256 키 도출: SHA-256(apiKey UTF-8 bytes)
+            MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+            byte[] keyBytes = sha256.digest(apiKey.getBytes(StandardCharsets.UTF_8));
+
+            // TD3 MRZ 평문: line1\nline2
+            String mrzText = line1 + "\n" + line2;
+            byte[] plaintext = mrzText.getBytes(StandardCharsets.UTF_8);
+
+            // AES-256-GCM 암호화
+            SecretKeySpec keySpec = new SecretKeySpec(keyBytes, "AES");
+            byte[] iv = new byte[12];
+            new SecureRandom().nextBytes(iv);
+            GCMParameterSpec gcmSpec = new GCMParameterSpec(128, iv);
+
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmSpec);
+            byte[] ciphertext = cipher.doFinal(plaintext);
+
+            // 출력: IV(12) + Ciphertext+AuthTag
+            byte[] combined = new byte[iv.length + ciphertext.length];
+            System.arraycopy(iv, 0, combined, 0, iv.length);
+            System.arraycopy(ciphertext, 0, combined, iv.length, ciphertext.length);
+
+            return Base64.getEncoder().encodeToString(combined);
+        } catch (Exception e) {
+            log.warn("MRZ encryption failed: {}", e.getMessage());
+            return null;
+        }
     }
 
     // ================================================================

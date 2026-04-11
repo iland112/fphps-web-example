@@ -1,6 +1,7 @@
 package com.smartcoreinc.fphps.example.fphps_web_example.strategies;
 
 import com.smartcoreinc.fphps.dto.DocumentReadResponse;
+import com.smartcoreinc.fphps.dto.properties.EPassportAuthProperties;
 import com.smartcoreinc.fphps.dto.properties.FPHPSDeviceProperties;
 import com.smartcoreinc.fphps.example.fphps_web_example.Services.DevicePropertiesService;
 import com.smartcoreinc.fphps.example.fphps_web_example.config.handler.FastPassWebSocketHandler;
@@ -37,7 +38,22 @@ public class PassportReadStrategy implements DocumentReadStrategy {
         properties.setEnableIDCard(0); // Explicitly disable ID Card reading
         properties.setEnableBarcode(0); // Explicitly disable Barcode reading
 
-        log.debug("Device properties set: RF=1, IDCard=0, Barcode=0");
+        // SAC(PACE) 항상 활성화 - PACE-only 여권(BAC 미지원) 호환을 위해 필수
+        // SAC는 BAC와 하위 호환되므로 BAC 여권에서도 정상 동작
+        if (properties.getEPassportAuthProperties() != null) {
+            EPassportAuthProperties auth = properties.getEPassportAuthProperties();
+            properties.setEPassportAuthProperties(
+                EPassportAuthProperties.builder()
+                    .pa(auth.getPa())
+                    .aa(auth.getAa())
+                    .ca(auth.getCa())
+                    .ta(auth.getTa())
+                    .sac(1)
+                    .build()
+            );
+        }
+
+        log.debug("Device properties set: RF=1, IDCard=0, Barcode=0, SAC=1");
         device.getDeviceSetting().setDeviceProperties(properties);
 
         EPassportReader reader = new EPassportReader(device, fastPassWebSocketHandler);

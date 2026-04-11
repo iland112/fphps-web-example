@@ -25,7 +25,7 @@ async function verifyPassportPA(btnId, containerId, emptyStateId) {
   if (btnSpinner) btnSpinner.classList.remove('hidden');
 
   try {
-    const response = await fetch('/passport/verify-pa', {
+    const response = await fetch('/passport/verify-pa-v2', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -37,8 +37,11 @@ async function verifyPassportPA(btnId, containerId, emptyStateId) {
       throw new Error(`HTTP ${response.status}: ${errorText}`);
     }
 
-    const paResult = await response.json();
-    console.log('PA Verification Result:', paResult);
+    const responseData = await response.json();
+    console.log('PA Verification Result:', responseData);
+
+    // Extract paResult from wrapper (controller returns {paResult, mrzData, faceImageBase64})
+    var paResult = responseData.paResult || responseData;
 
     // Render results
     renderPAResult(paResult, container);
@@ -552,7 +555,7 @@ function renderSODInformation(parsedSOD, containerId = 'sod-info-container') {
 // MRZ Tooltip Descriptions
 // ============================================
 
-const MRZ_TOOLTIPS = {
+var MRZ_TOOLTIPS = {
   mrzLines:
     'TD3 여권의 MRZ는 2줄 × 44자로 구성됩니다.\n' +
     '• Line 1: 문서 타입(P) + 발급국(3자리) + 이름(성<<이름)\n' +
@@ -981,3 +984,4 @@ function countMrzDiffs(vizLine1, vizLine2, chipLine1, chipLine2) {
   }
   return count;
 }
+

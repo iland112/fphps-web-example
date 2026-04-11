@@ -46,9 +46,11 @@ public class PaApiClientConfig {
     @Value("${pa-api.base-url:http://localhost:8080}")
     private String baseUrl;
 
-    @Value("${pa-api.api-key:}")
-    private String apiKey;
-
+    /**
+     * PA API RestTemplate Bean 생성.
+     * API Key 인터셉터는 여기서 설정하지 않음 - PaApiSettingsService가
+     * SQLite DB에서 로드한 키로 런타임에 설정함.
+     */
     @Bean
     public RestTemplate paApiRestTemplate() {
         log.info("Initializing PA API RestTemplate with base URL: {}", baseUrl);
@@ -56,19 +58,7 @@ public class PaApiClientConfig {
         RestTemplate restTemplate = new RestTemplate(createHttpRequestFactory());
         restTemplate.setUriTemplateHandler(new DefaultUriBuilderFactory(baseUrl));
 
-        if (apiKey != null && !apiKey.isBlank()) {
-            var interceptors = new ArrayList<>(restTemplate.getInterceptors());
-            interceptors.add((request, body, execution) -> {
-                request.getHeaders().set("X-API-Key", apiKey);
-                return execution.execute(request, body);
-            });
-            restTemplate.setInterceptors(interceptors);
-            log.info("PA API Key configured (prefix: {}...)", apiKey.substring(0, Math.min(15, apiKey.length())));
-        } else {
-            log.warn("PA API Key is not configured. Set 'pa-api.api-key' in application.properties");
-        }
-
-        log.info("PA API RestTemplate initialized successfully");
+        log.info("PA API RestTemplate initialized (API Key will be configured by PaApiSettingsService from DB)");
         return restTemplate;
     }
 

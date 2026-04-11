@@ -144,6 +144,7 @@ public class FPHPSController {
      * 서비스 재시작
      * WinSW 환경에서 System.exit(1)로 비정상 종료하면 자동 재시작됨
      * 개발 환경에서는 프로세스가 종료됨 (수동 재시작 필요)
+     * 디바이스 작업이 멈춘 경우에도 강제 종료 가능 (Runtime.halt 폴백)
      */
     @PostMapping("/service-restart")
     @ResponseBody
@@ -153,17 +154,40 @@ public class FPHPSController {
         result.put("success", true);
         result.put("message", "Service is restarting...");
 
-        // 응답 전송 후 1.5초 뒤에 종료 (응답이 클라이언트에 도달할 시간 확보)
-        new Thread(() -> {
-            try {
-                Thread.sleep(1500);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            log.info("Shutting down for restart (exit code 1)...");
-            System.exit(1);
-        }).start();
+        fphpsService.forceShutdown();
 
+        return result;
+    }
+
+    /**
+     * 현재 디바이스 작업 상태 조회
+     * IDLE: 대기 중, RUNNING: 작업 중, TIMED_OUT: 타임아웃 발생
+     */
+    @GetMapping("/device-operation-status")
+    @ResponseBody
+    public Map<String, Object> getDeviceOperationStatus() {
+        Map<String, Object> result = new HashMap<>();
+        result.put("status", fphpsService.getOperationStatus().name());
+        result.put("available", fphpsService.isDeviceAvailable());
+        return result;
+    }
+
+    /**
+     * 현재 디바이스 작업 강제 취소
+     * RF 통신이 멈춘 경우 디바이스를 강제 닫고 작업을 취소
+     */
+    @PostMapping("/device-operation-cancel")
+    @ResponseBody
+    public Map<String, Object> cancelDeviceOperation(Locale locale) {
+        boolean isKo = locale != null && locale.getLanguage().equals("ko");
+        Map<String, Object> result = new HashMap<>();
+        boolean cancelled = fphpsService.cancelCurrentOperation();
+        result.put("success", cancelled);
+        if (cancelled) {
+            result.put("message", isKo ? "작업이 취소되었습니다." : "Operation cancelled.");
+        } else {
+            result.put("message", isKo ? "취소할 작업이 없습니다." : "No operation to cancel.");
+        }
         return result;
     }
 
@@ -378,20 +402,51 @@ public class FPHPSController {
     }
 
     /**
-     * PA API 서버 연결 상태 확인 (헬스 체크)
+     * PA API 서버 연결 상태 및 API Key 유효성 확인
+     * 1단계: 서버 연결 확인 (GET /api/health - 인증 불필요)
+     * 2단계: API Key 검증 (GET /api/pa/statistics - 인증 필요)
      */
     @GetMapping("/passport/pa-health")
     @ResponseBody
     public Map<String, Object> checkPaHealth() {
         Map<String, Object> result = new HashMap<>();
+
+        // 1단계: 서버 연결 확인
         try {
             paService.healthCheck();
-            result.put("connected", true);
         } catch (Exception e) {
             log.warn("PA API health check failed: {}", e.getMessage());
             result.put("connected", false);
-            result.put("message", e.getMessage());
+            result.put("apiKeyValid", false);
+            result.put("message", "Server not reachable: " + e.getMessage());
+            return result;
         }
+        result.put("connected", true);
+
+        // 2단계: API Key 유효성 검증
+        String apiKey = paApiSettingsService.getApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            result.put("apiKeyValid", false);
+            result.put("message", "API Key is not configured. Please enter an API Key and save.");
+            return result;
+        }
+
+        try {
+            paService.verifyApiKey();
+            result.put("apiKeyValid", true);
+        } catch (Exception e) {
+            log.warn("PA API Key verification failed: {}", e.getMessage());
+            result.put("apiKeyValid", false);
+            String msg = e.getMessage();
+            if (msg != null && (msg.contains("401") || msg.contains("Unauthorized"))) {
+                result.put("message", "API Key authentication failed. The key may be invalid or expired.");
+            } else if (msg != null && msg.contains("403")) {
+                result.put("message", "API Key does not have sufficient permissions (pa:verify required).");
+            } else {
+                result.put("message", "API Key verification failed: " + msg);
+            }
+        }
+
         return result;
     }
 

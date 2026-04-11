@@ -26,14 +26,26 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record TrustMaterialsResponse(
     boolean success,
+    @JsonProperty("requestId") String topLevelRequestId,  // PA API 응답에서 requestId가 최상위 필드인 경우
     TrustMaterialsData data,
     String error
 ) {
     /**
-     * requestId는 data 안에 있으므로 편의 메서드 제공
+     * requestId 접근자 — 최상위 필드 우선, 없으면 data 내부에서 조회
+     * PA API 문서 예제: trust["requestId"] (최상위) + trust["data"]["csca"]
      */
     public String requestId() {
+        if (topLevelRequestId != null && !topLevelRequestId.isBlank()) {
+            return topLevelRequestId;
+        }
         return data != null ? data.requestId() : null;
+    }
+
+    /**
+     * 하위 호환성 생성자 (3-arg) — 내부 캐시 폴백 생성 시 사용
+     */
+    public TrustMaterialsResponse(boolean success, TrustMaterialsData data, String error) {
+        this(success, null, data, error);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
