@@ -149,21 +149,28 @@ public class ClientPaVerificationService {
         CompletableFuture<String> reportFuture = CompletableFuture.supplyAsync(() -> {
             if (finalRequestId == null) return "No requestId";
             try {
+                // 서버가 trust_material_request 레코드를 DB에 커밋하기 전에 결과를 보고하면
+                // "requestId may not exist" 400 오류가 발생하는 race condition 방지
+                // trust-materials 응답 직후 즉시 보고하면 서버 DB 미반영 → 300ms 대기
+                Thread.sleep(300);
                 reportResult(finalRequestId, finalStatus, sodSigResult, dgHashResult,
                     trustChainResult, crlCheckResult, (int) duration, finalResponse);
                 log.info("Client PA result reported: requestId={}, status={}", finalRequestId, finalStatus);
                 return null; // 성공
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return "Interrupted while waiting to report";
             } catch (Exception e) {
                 log.warn("Failed to report client PA result: {}", e.getMessage());
                 return e.getMessage(); // 실제 오류 메시지 반환
             }
         }, executor);
 
-        // 보고 결과를 짧게 대기 (최대 2초)
+        // 보고 결과를 짧게 대기 (최대 4초: 300ms delay + 네트워크 왕복)
         boolean serverReported = false;
         String serverReportError = null;
         try {
-            String reportError = reportFuture.get(2, TimeUnit.SECONDS);
+            String reportError = reportFuture.get(4, TimeUnit.SECONDS);
             if (reportError == null) {
                 serverReported = true;
             } else {
