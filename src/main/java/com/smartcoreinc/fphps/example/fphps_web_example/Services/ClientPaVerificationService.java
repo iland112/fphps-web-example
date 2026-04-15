@@ -16,7 +16,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
@@ -47,6 +49,7 @@ public class ClientPaVerificationService {
 
     private final RestTemplate paApiRestTemplate;
     private final PaApiSettingsService paApiSettingsService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
 
     // Trust Materials 캐시 (국가코드 → 캐시 항목)
@@ -111,20 +114,28 @@ public class ClientPaVerificationService {
 
         try {
             trustMaterials = tmFuture.get(15, TimeUnit.SECONDS);
-            if (trustMaterials != null && trustMaterials.success()) {
+            if (trustMaterials != null) {
+                // success 여부와 관계없이 requestId 항상 추출
+                // (서버 v2.1.17+: 404 Not Found 시에도 requestId 반환 → 감사 보고 가능)
                 requestId = trustMaterials.requestId();
-                log.info("Trust Materials received: requestId={}, topLevel={}, dataLevel={}, cacheWas={}",
-                    requestId,
-                    trustMaterials.topLevelRequestId(),
-                    trustMaterials.data() != null ? trustMaterials.data().requestId() : "null",
-                    cacheHit ? "HIT" : "MISS");
-                var data = trustMaterials.data();
-                tmInfo = new ClientPaResult.TrustMaterialsInfo(
-                    data != null && data.csca() != null ? data.csca().size() : 0,
-                    data != null && data.linkCert() != null ? data.linkCert().size() : 0,
-                    data != null && data.crl() != null ? data.crl().size() : 0,
-                    countryCode
-                );
+                if (trustMaterials.success()) {
+                    log.info("Trust Materials received: requestId={}, topLevel={}, dataLevel={}, cacheWas={}",
+                        requestId,
+                        trustMaterials.topLevelRequestId(),
+                        trustMaterials.data() != null ? trustMaterials.data().requestId() : "null",
+                        cacheHit ? "HIT" : "MISS");
+                    var data = trustMaterials.data();
+                    tmInfo = new ClientPaResult.TrustMaterialsInfo(
+                        data != null && data.csca() != null ? data.csca().size() : 0,
+                        data != null && data.linkCert() != null ? data.linkCert().size() : 0,
+                        data != null && data.crl() != null ? data.crl().size() : 0,
+                        countryCode
+                    );
+                } else {
+                    log.info("Trust Materials not available for country={}, requestId={} (audit reporting will proceed)",
+                        countryCode, requestId);
+                    errors.add("Trust Materials not available: " + trustMaterials.error());
+                }
             }
         } catch (Exception e) {
             log.warn("Trust Materials download failed: {}", e.getMessage());
@@ -153,24 +164,11 @@ public class ClientPaVerificationService {
         CompletableFuture<String> reportFuture = CompletableFuture.supplyAsync(() -> {
             String reportRequestId = finalRequestId;
 
-            // Trust Materials 다운로드 실패 또는 캐시 폴백으로 requestId가 없는 경우에도
-            // 서버에 감사 정보(encryptedMrz 포함)를 남기기 위해 requestId를 별도 발급 시도
             if (reportRequestId == null) {
-                log.info("No requestId from trust materials, fetching separately for audit reporting...");
-                try {
-                    TrustMaterialsResponse auditTm = downloadTrustMaterials(countryCode, parsedSOD);
-                    if (auditTm != null && auditTm.success() && auditTm.requestId() != null) {
-                        reportRequestId = auditTm.requestId();
-                        effectiveRequestIdRef.set(reportRequestId);
-                        log.info("Audit requestId obtained: {}", reportRequestId);
-                    }
-                } catch (Exception e2) {
-                    log.warn("Failed to obtain audit requestId: {}", e2.getMessage());
-                }
-            }
-
-            if (reportRequestId == null) {
-                return "No requestId (trust materials unavailable and audit request failed)";
+                // 서버 v2.1.17+에서는 404 응답에도 requestId를 반환하므로
+                // 여기까지 오는 경우는 네트워크 오류 등 서버 응답 자체를 받지 못한 경우
+                log.warn("No requestId available (network error or server unavailable) — skipping audit report");
+                return "No requestId (server unreachable or did not return requestId)";
             }
 
             try {
@@ -190,11 +188,11 @@ public class ClientPaVerificationService {
             }
         }, executor);
 
-        // 보고 결과를 짧게 대기 (최대 6초: 감사용 requestId 발급 + 300ms delay + 네트워크 왕복)
+        // 보고 결과를 짧게 대기 (최대 4초: 300ms delay + 네트워크 왕복)
         boolean serverReported = false;
         String serverReportError = null;
         try {
-            String reportError = reportFuture.get(6, TimeUnit.SECONDS);
+            String reportError = reportFuture.get(4, TimeUnit.SECONDS);
             if (reportError == null) {
                 serverReported = true;
             } else {
@@ -235,15 +233,32 @@ public class ClientPaVerificationService {
         if (cached != null && !cached.isExpired()) {
             log.debug("Trust Materials cache HIT for country={}", countryCode);
             // 캐시 히트 시에도 새 requestId 발급을 위해 서버에 요청
+            // (v2.1.17+: 404 응답에도 requestId 포함 → 캐시 데이터 + 새 requestId 조합 가능)
             try {
                 TrustMaterialsResponse fresh = downloadTrustMaterials(countryCode, parsedSOD);
                 if (fresh != null && fresh.success()) {
+                    // 200 OK: 최신 Trust Materials + 새 requestId
                     tmCache.put(countryCode, new CachedTrustMaterials(fresh));
                     return fresh;
+                } else if (fresh != null && fresh.requestId() != null) {
+                    // 404: Trust Materials 없지만 requestId는 발급됨
+                    // 캐시된 CSCA/CRL 데이터 + 새 requestId 조합
+                    log.info("Fresh download returned success=false for country={}, " +
+                        "using cached data with new requestId={}", countryCode, fresh.requestId());
+                    var d = cached.response.data();
+                    return new TrustMaterialsResponse(
+                        true,
+                        new TrustMaterialsResponse.TrustMaterialsData(
+                            fresh.requestId(),  // 새 requestId 사용
+                            d.countryCode(), d.csca(), d.linkCertificates(),
+                            d.crl(), d.processingTimeMs(), d.timestamp()
+                        ),
+                        null
+                    );
                 }
             } catch (Exception e) {
-                // fresh download 실패 시 cached CSCA/CRL 데이터는 유지하되
-                // requestId는 null로 대체 — 만료된 requestId로 보고하면 서버가 400 반환
+                // 네트워크 오류 등 HTTP 응답 자체를 받지 못한 경우
+                // requestId 없이 캐시 데이터로 검증만 수행 (보고 불가)
                 log.warn("Fresh Trust Materials download failed for country={}: {}. " +
                     "Verification will proceed with cached data but result will NOT be reported.",
                     countryCode, e.getMessage());
@@ -251,7 +266,7 @@ public class ClientPaVerificationService {
                 return new TrustMaterialsResponse(
                     true,
                     new TrustMaterialsResponse.TrustMaterialsData(
-                        null,  // requestId 제거 → 결과 보고 스킵
+                        null,  // requestId 없음 → 결과 보고 스킵
                         d.countryCode(), d.csca(), d.linkCertificates(),
                         d.crl(), d.processingTimeMs(), d.timestamp()
                     ),
@@ -283,9 +298,29 @@ public class ClientPaVerificationService {
         headers.set("Connection", "close");
         HttpEntity<TrustMaterialsRequest> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<TrustMaterialsResponse> resp = paApiRestTemplate.postForEntity(
-            "/api/pa/trust-materials", entity, TrustMaterialsResponse.class);
-        return resp.getBody();
+        try {
+            ResponseEntity<TrustMaterialsResponse> resp = paApiRestTemplate.postForEntity(
+                "/api/pa/trust-materials", entity, TrustMaterialsResponse.class);
+            return resp.getBody();
+        } catch (HttpClientErrorException e) {
+            // 서버 v2.1.17+: 404 (Trust Materials 없음) 포함 4xx 응답에도
+            // requestId를 포함하여 반환 → body 파싱으로 requestId 추출
+            String body = e.getResponseBodyAsString();
+            if (body != null && !body.isBlank()) {
+                try {
+                    TrustMaterialsResponse errorResponse =
+                        objectMapper.readValue(body, TrustMaterialsResponse.class);
+                    if (errorResponse != null && errorResponse.requestId() != null) {
+                        log.info("Trust Materials not found for country={}, server returned requestId={} (HTTP {})",
+                            countryCode, errorResponse.requestId(), e.getStatusCode());
+                        return errorResponse; // success=false, requestId 포함
+                    }
+                } catch (Exception parseEx) {
+                    log.debug("Could not parse error response body: {}", parseEx.getMessage());
+                }
+            }
+            throw e; // requestId 없는 경우 원래 예외 재throw
+        }
     }
 
     private static class CachedTrustMaterials {
@@ -561,8 +596,8 @@ public class ClientPaVerificationService {
         headers.set("Connection", "close");
         HttpEntity<ClientPaReportRequest> entity = new HttpEntity<>(report, headers);
 
-        ResponseEntity<Map> reportResponse = paApiRestTemplate.postForEntity(
-            "/api/pa/trust-materials/result", entity, Map.class);
+        ResponseEntity<String> reportResponse = paApiRestTemplate.postForEntity(
+            "/api/pa/trust-materials/result", entity, String.class);
         log.info("Report response: status={}, body={}", reportResponse.getStatusCode(), reportResponse.getBody());
     }
 
