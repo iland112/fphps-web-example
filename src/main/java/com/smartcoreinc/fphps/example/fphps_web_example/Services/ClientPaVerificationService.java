@@ -31,6 +31,7 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 클라이언트 모드 PA 검증 서비스 (v2.1.14+)
@@ -143,19 +144,42 @@ public class ClientPaVerificationService {
 
         // ── 결과 보고 (비동기) ──
         // null = 성공, non-null 문자열 = 실패 원인
+        // effectiveRequestIdRef: 감사용 requestId 별도 발급 시 갱신되어 ClientPaResult에 반영됨
         final String finalRequestId = requestId;
         final String finalStatus = overallStatus;
         final DocumentReadResponse finalResponse = response;
+        final AtomicReference<String> effectiveRequestIdRef = new AtomicReference<>(requestId);
+
         CompletableFuture<String> reportFuture = CompletableFuture.supplyAsync(() -> {
-            if (finalRequestId == null) return "No requestId";
+            String reportRequestId = finalRequestId;
+
+            // Trust Materials 다운로드 실패 또는 캐시 폴백으로 requestId가 없는 경우에도
+            // 서버에 감사 정보(encryptedMrz 포함)를 남기기 위해 requestId를 별도 발급 시도
+            if (reportRequestId == null) {
+                log.info("No requestId from trust materials, fetching separately for audit reporting...");
+                try {
+                    TrustMaterialsResponse auditTm = downloadTrustMaterials(countryCode, parsedSOD);
+                    if (auditTm != null && auditTm.success() && auditTm.requestId() != null) {
+                        reportRequestId = auditTm.requestId();
+                        effectiveRequestIdRef.set(reportRequestId);
+                        log.info("Audit requestId obtained: {}", reportRequestId);
+                    }
+                } catch (Exception e2) {
+                    log.warn("Failed to obtain audit requestId: {}", e2.getMessage());
+                }
+            }
+
+            if (reportRequestId == null) {
+                return "No requestId (trust materials unavailable and audit request failed)";
+            }
+
             try {
                 // 서버가 trust_material_request 레코드를 DB에 커밋하기 전에 결과를 보고하면
                 // "requestId may not exist" 400 오류가 발생하는 race condition 방지
-                // trust-materials 응답 직후 즉시 보고하면 서버 DB 미반영 → 300ms 대기
                 Thread.sleep(300);
-                reportResult(finalRequestId, finalStatus, sodSigResult, dgHashResult,
+                reportResult(reportRequestId, finalStatus, sodSigResult, dgHashResult,
                     trustChainResult, crlCheckResult, (int) duration, finalResponse);
-                log.info("Client PA result reported: requestId={}, status={}", finalRequestId, finalStatus);
+                log.info("Client PA result reported: requestId={}, status={}", reportRequestId, finalStatus);
                 return null; // 성공
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -166,37 +190,34 @@ public class ClientPaVerificationService {
             }
         }, executor);
 
-        // 보고 결과를 짧게 대기 (최대 4초: 300ms delay + 네트워크 왕복)
+        // 보고 결과를 짧게 대기 (최대 6초: 감사용 requestId 발급 + 300ms delay + 네트워크 왕복)
         boolean serverReported = false;
         String serverReportError = null;
         try {
-            String reportError = reportFuture.get(4, TimeUnit.SECONDS);
+            String reportError = reportFuture.get(6, TimeUnit.SECONDS);
             if (reportError == null) {
                 serverReported = true;
             } else {
                 serverReportError = reportError;
             }
         } catch (TimeoutException e) {
-            // 2초 내 완료되지 않으면 백그라운드에서 계속 수행
-            serverReported = true; // 진행 중으로 표시
+            serverReported = true; // 백그라운드에서 계속 수행 중
             log.debug("Result report still in progress (background)");
         } catch (Exception e) {
             serverReportError = e.getMessage();
         }
 
-        if (finalRequestId == null) {
-            serverReportError = "No requestId (Trust Materials download failed)";
-        }
+        String effectiveRequestId = effectiveRequestIdRef.get();
 
-        log.info("Client PA completed: status={}, duration={}ms, cache={}, " +
+        log.info("Client PA completed: status={}, duration={}ms, cache={}, requestId={}, " +
                 "sodSig={}, dgHash={}/{}, trustChain={}, crl={}",
-            overallStatus, duration, cacheHit ? "HIT" : "MISS",
+            overallStatus, duration, cacheHit ? "HIT" : "MISS", effectiveRequestId,
             sodSigResult.valid(),
             dgHashResult.validGroups(), dgHashResult.totalGroups(),
             trustChainResult.valid(), crlCheckResult.passed());
 
         return new ClientPaResult(
-            "CLIENT", overallStatus, duration, requestId,
+            "CLIENT", overallStatus, duration, effectiveRequestId,
             sodSigResult, dgHashResult, trustChainResult, crlCheckResult,
             tmInfo, dscInfo, serverReported, serverReportError,
             errors.isEmpty() ? null : errors
