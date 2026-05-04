@@ -711,6 +711,32 @@ public class ClientPaVerificationService {
         }
     }
 
+    // ================================================================
+    // ISO 3166-1 alpha-3 → alpha-2 완전 변환 맵 (JVM 로드 시 1회 빌드)
+    // Java Locale 기반으로 ~250개국 자동 포함 — 하드코딩 테이블 불필요
+    // ================================================================
+
+    private static final Map<String, String> ISO3_TO_ISO2 = buildIso3ToIso2Map();
+
+    private static Map<String, String> buildIso3ToIso2Map() {
+        Map<String, String> map = new HashMap<>();
+        for (String alpha2 : Locale.getISOCountries()) {
+            try {
+                String alpha3 = Locale.of("", alpha2).getISO3Country();
+                if (alpha3 != null && !alpha3.isBlank()) {
+                    map.put(alpha3.toUpperCase(), alpha2);
+                }
+            } catch (Exception ignored) {}
+        }
+        // MRZ 특수 코드 (ICAO Doc 9303 Annex B)
+        map.put("D<<", "DE");  // 독일 구여권 MRZ 코드
+        map.put("GBD", "GB"); map.put("GBN", "GB"); map.put("GBO", "GB");
+        map.put("GBP", "GB"); map.put("GBS", "GB");  // 영국령 시민권 변형
+        map.put("EUE", "EU");  // EU 여행증명서
+        map.put("UNK", "XX"); map.put("UNO", "XX"); map.put("XXX", "XX"); // 무국적/기관
+        return Collections.unmodifiableMap(map);
+    }
+
     private String extractCountryCode(DocumentReadResponse response) {
         if (response.getMrzInfo() != null && response.getMrzInfo().getIssuingState() != null) {
             String state = response.getMrzInfo().getIssuingState().trim();
@@ -721,15 +747,14 @@ public class ClientPaVerificationService {
     }
 
     private String iso3to2(String iso3) {
-        return switch (iso3.toUpperCase()) {
-            case "KOR" -> "KR"; case "USA" -> "US"; case "JPN" -> "JP";
-            case "CHN" -> "CN"; case "GBR" -> "GB"; case "DEU" -> "DE";
-            case "FRA" -> "FR"; case "ARE" -> "AE"; case "THA" -> "TH";
-            case "VNM" -> "VN"; case "PHL" -> "PH"; case "IDN" -> "ID";
-            case "MYS" -> "MY"; case "SGP" -> "SG"; case "AUS" -> "AU";
-            case "CAN" -> "CA"; case "IND" -> "IN";
-            default -> iso3.substring(0, 2);
-        };
+        if (iso3 == null || iso3.isBlank()) return "XX";
+        String upper = iso3.toUpperCase().trim();
+        String alpha2 = ISO3_TO_ISO2.get(upper);
+        if (alpha2 != null) return alpha2;
+        // 미매핑 코드: alpha-3 그대로 전송하여 서버 정규화에 위임
+        // (서버 /api/pa/verify처럼 alpha-3 입력도 처리하는 경우 대응)
+        log.warn("Unknown ISO 3166-1 alpha-3 code: '{}' — sending as-is for server normalization", upper);
+        return upper;
     }
 
     private String oidToJcaName(String oid) {
